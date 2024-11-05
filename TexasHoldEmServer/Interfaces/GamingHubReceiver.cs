@@ -23,6 +23,7 @@ namespace TexasHoldEmServer.Interfaces
             if (group == null)
             {
                 var guid = Guid.NewGuid();
+                self.RoomId = guid;
                 (room, storage) = await Group.AddAsync(guid.ToString(), self);
                 serverManager.AddGroup(guid, new RoomEntity(guid, room, storage));
             }
@@ -30,15 +31,15 @@ namespace TexasHoldEmServer.Interfaces
             {
                 (room, storage) = await Group.AddAsync(group.Id.ToString(), self);
             }
-            
-            
+
+            self.RoomId = Guid.Parse(room.GroupName);
             Broadcast(room).OnJoinRoom(self, storage.AllValues.Count);
             
             Console.WriteLine($"{userName} joined");
             return self;
         }
 
-        public async ValueTask<PlayerEntity> LeaveRoomAsync(string roomName)
+        public async ValueTask<PlayerEntity> LeaveRoomAsync()
         {
             if (room == null)
                 return null;
@@ -50,7 +51,7 @@ namespace TexasHoldEmServer.Interfaces
             return self;
         }
 
-        public async ValueTask<PlayerEntity[]> GetAllPlayers(string roomName)
+        public async ValueTask<PlayerEntity[]> GetAllPlayers()
         {
             if (room == null)
                 return null;
@@ -59,15 +60,40 @@ namespace TexasHoldEmServer.Interfaces
             return storage.AllValues.ToArray();
         }
 
-        public async ValueTask StartGame(string roomName)
+        public async ValueTask StartGame(Guid playerId)
         {
             if (room == null)
                 return;
             
             var players = storage.AllValues.ToList();
+            var currentPlayer = players.FirstOrDefault(player => player.Id == playerId);
+            if (currentPlayer != null)
+                currentPlayer.IsReady = true;
+            
+            if (players.Any(player => !player.IsReady))
+                return;
+            
             SetRoles(players);
             SetCards(players);
             Broadcast(room).OnGameStart(storage.AllValues.ToArray());
+        }
+
+        public async ValueTask CancelStart(Guid playerId)
+        {
+            if (room == null)
+                return;
+            
+            var players = storage.AllValues.ToList();
+            var currentPlayer = players.FirstOrDefault(player => player.Id == playerId);
+            if (currentPlayer != null)
+                currentPlayer.IsReady = false;
+            
+            Broadcast(room).OnCancelGameStart();
+        }
+
+        public async ValueTask QuitGame(Guid playerId)
+        {
+            throw new NotImplementedException();
         }
 
         private void SetRoles(List<PlayerEntity> players)
