@@ -13,7 +13,7 @@ namespace TexasHoldEmServer.Interfaces
         private IInMemoryStorage<PlayerEntity>? storage;
         private IServerManager? serverManager;
         
-        public async ValueTask<PlayerEntity> JoinRoomAsync(string userName)
+        public async Task<PlayerEntity> JoinRoomAsync(string userName)
         {
             if (serverManager == null)
                 serverManager = Context.ServiceProvider.GetService<IServerManager>();
@@ -39,7 +39,7 @@ namespace TexasHoldEmServer.Interfaces
             return self;
         }
 
-        public async ValueTask<PlayerEntity> LeaveRoomAsync()
+        public async Task<PlayerEntity> LeaveRoomAsync()
         {
             if (room == null)
                 return null;
@@ -51,7 +51,7 @@ namespace TexasHoldEmServer.Interfaces
             return self;
         }
 
-        public async ValueTask<PlayerEntity[]> GetAllPlayers()
+        public async Task<PlayerEntity[]> GetAllPlayers()
         {
             if (room == null)
                 return null;
@@ -60,7 +60,7 @@ namespace TexasHoldEmServer.Interfaces
             return storage.AllValues.ToArray();
         }
 
-        public async ValueTask StartGame(Guid playerId)
+        public async Task StartGame(Guid playerId)
         {
             if (room == null)
                 return;
@@ -78,7 +78,7 @@ namespace TexasHoldEmServer.Interfaces
             Broadcast(room).OnGameStart(storage.AllValues.ToArray());
         }
 
-        public async ValueTask CancelStart(Guid playerId)
+        public async Task CancelStart(Guid playerId)
         {
             if (room == null)
                 return;
@@ -91,7 +91,7 @@ namespace TexasHoldEmServer.Interfaces
             Broadcast(room).OnCancelGameStart();
         }
 
-        public async ValueTask QuitGame(Guid playerId)
+        public async Task QuitGame(Guid playerId)
         {
             throw new NotImplementedException();
         }
