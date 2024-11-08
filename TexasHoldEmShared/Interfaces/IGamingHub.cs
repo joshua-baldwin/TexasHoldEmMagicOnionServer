@@ -10,7 +10,7 @@ namespace THE.MagicOnion.Shared.Interfaces
         Task<PlayerEntity> JoinRoomAsync(string name);
         Task<PlayerEntity> LeaveRoomAsync();
         Task<PlayerEntity[]> GetAllPlayers();
-        Task StartGame(Guid playerId);
+        Task<bool> StartGame(Guid playerId);
         Task CancelStart(Guid playerId);
         Task QuitGame(Guid playerId);
     }

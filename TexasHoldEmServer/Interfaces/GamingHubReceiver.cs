@@ -60,10 +60,10 @@ namespace TexasHoldEmServer.Interfaces
             return storage.AllValues.ToArray();
         }
 
-        public async Task StartGame(Guid playerId)
+        public async Task<bool> StartGame(Guid playerId)
         {
             if (room == null)
-                return;
+                return false;
             
             var players = storage.AllValues.ToList();
             var currentPlayer = players.FirstOrDefault(player => player.Id == playerId);
@@ -71,11 +71,12 @@ namespace TexasHoldEmServer.Interfaces
                 currentPlayer.IsReady = true;
             
             if (players.Any(player => !player.IsReady))
-                return;
+                return false;
             
             SetRoles(players);
             SetCards(players);
             Broadcast(room).OnGameStart(storage.AllValues.ToArray());
+            return true;
         }
 
         public async Task CancelStart(Guid playerId)
