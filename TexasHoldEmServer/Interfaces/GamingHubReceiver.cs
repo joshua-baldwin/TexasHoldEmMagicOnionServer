@@ -1,5 +1,6 @@
 using MagicOnion.Server.Hubs;
 using TexasHoldEmServer.ServerManager;
+using TexasHoldEmShared.Enums;
 using THE.MagicOnion.Shared.Entities;
 using THE.MagicOnion.Shared.Interfaces;
 using THE.Utilities;
@@ -18,7 +19,7 @@ namespace TexasHoldEmServer.Interfaces
             if (serverManager == null)
                 serverManager = Context.ServiceProvider.GetService<IServerManager>();
 
-            self = new PlayerEntity(userName, Guid.NewGuid(), PlayerRoleEnum.None);
+            self = new PlayerEntity(userName, Guid.NewGuid(), Enums.PlayerRoleEnum.None);
             var group = serverManager.GetNonFullRoomEntity();
             if (group == null)
             {
@@ -104,8 +105,8 @@ namespace TexasHoldEmServer.Interfaces
             first.CardPool = CreateDeck();
 
             var shuffled = players.Shuffle();
-            shuffled[0].PlayerRole = PlayerRoleEnum.SmallBlind;
-            shuffled[1].PlayerRole = PlayerRoleEnum.BigBlind;
+            shuffled[0].PlayerRole = Enums.PlayerRoleEnum.SmallBlind;
+            shuffled[1].PlayerRole = Enums.PlayerRoleEnum.BigBlind;
         }
 
         private void SetCards(List<PlayerEntity> players)
@@ -137,8 +138,8 @@ namespace TexasHoldEmServer.Interfaces
         
         private List<CardEntity> CreateDeck()
         {
-            var suits = Enum.GetValues<CardSuitEnum>();
-            var ranks = Enum.GetValues<CardRankEnum>();
+            var suits = Enum.GetValues<Enums.CardSuitEnum>();
+            var ranks = Enum.GetValues<Enums.CardRankEnum>();
             var deck = new List<CardEntity>();
             foreach (var suit in suits)
             {

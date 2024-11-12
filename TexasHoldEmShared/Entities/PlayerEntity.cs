@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using MessagePack;
+using TexasHoldEmShared.Enums;
 
 namespace THE.MagicOnion.Shared.Entities
 {
@@ -14,7 +15,7 @@ namespace THE.MagicOnion.Shared.Entities
         public Guid Id { get; private set; }
         
         [Key(2)]
-        public PlayerRoleEnum PlayerRole { get; set; }
+        public Enums.PlayerRoleEnum PlayerRole { get; set; }
         
         [Key(3)]
         public Guid RoomId { get; set; }
@@ -34,7 +35,7 @@ namespace THE.MagicOnion.Shared.Entities
         [Key(8)]
         public List<ChipEntity> Chips { get; set; }
         
-        public PlayerEntity(string name, Guid id, PlayerRoleEnum role)
+        public PlayerEntity(string name, Guid id, Enums.PlayerRoleEnum role)
         {
             Name = name;
             Id = id;
