@@ -21,6 +21,8 @@ builder.Services.AddCors(options =>
 });
 builder.Services.AddMagicOnion(); // Add this line(MagicOnion.Server)
 builder.Services.AddSingleton<IServerManager>(new ServerManager());
+builder.WebHost
+    .UseUrls("http://0.0.0.0:5137");
 
 var app = builder.Build();
 app.UseDefaultFiles();
