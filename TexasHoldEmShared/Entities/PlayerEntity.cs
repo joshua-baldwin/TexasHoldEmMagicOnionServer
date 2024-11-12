@@ -31,6 +31,9 @@ namespace THE.MagicOnion.Shared.Entities
         [Key(7)]
         public bool IsReady { get; set; }
         
+        [Key(8)]
+        public List<ChipEntity> Chips { get; set; }
+        
         public PlayerEntity(string name, Guid id, PlayerRoleEnum role)
         {
             Name = name;
