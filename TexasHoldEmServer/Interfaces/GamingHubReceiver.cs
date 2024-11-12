@@ -4,7 +4,10 @@ using TexasHoldEmServer.ServerManager;
 using TexasHoldEmShared.Enums;
 using THE.MagicOnion.Shared.Entities;
 using THE.MagicOnion.Shared.Interfaces;
-using THE.Utilities;
+
+#pragma warning disable CS8604 // Possible null reference argument.
+#pragma warning disable CS8603 // Possible null reference return.
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
 
 namespace TexasHoldEmServer.Interfaces
 {
@@ -14,12 +17,15 @@ namespace TexasHoldEmServer.Interfaces
         private PlayerEntity? self;
         private IInMemoryStorage<PlayerEntity>? storage;
         private IServerManager? serverManager;
-        private GameLogicManager gameLogicManager = new();
+        private GameLogicManager? gameLogicManager;
         
         public async Task<PlayerEntity> JoinRoomAsync(string userName)
         {
             if (serverManager == null)
                 serverManager = Context.ServiceProvider.GetService<IServerManager>();
+            
+            if (gameLogicManager == null)
+                gameLogicManager = Context.ServiceProvider.GetService<GameLogicManager>();
 
             self = new PlayerEntity(userName, Guid.NewGuid(), Enums.PlayerRoleEnum.None);
             var group = serverManager.GetNonFullRoomEntity();
@@ -78,7 +84,7 @@ namespace TexasHoldEmServer.Interfaces
             
             gameLogicManager.SetupGame(players);
 
-            Broadcast(room).OnGameStart(storage.AllValues.ToArray(), gameLogicManager.GetCurrentPlayer());
+            Broadcast(room).OnGameStart(storage.AllValues.ToArray(), gameLogicManager.CurrentPlayer);
             return true;
         }
 
@@ -100,9 +106,13 @@ namespace TexasHoldEmServer.Interfaces
             throw new NotImplementedException();
         }
 
-        public async Task DoAction(Enums.CommandTypeEnum commandType)
+        public async Task DoAction(Enums.CommandTypeEnum commandType, int betAmount)
         {
-            
+            if (room == null)
+                return;
+
+            gameLogicManager.DoAction(commandType, betAmount, out var actionMessage);
+            Broadcast(room).OnDoAction(commandType, gameLogicManager.CurrentPlayer, actionMessage);
         }
 
         protected override ValueTask OnDisconnected()

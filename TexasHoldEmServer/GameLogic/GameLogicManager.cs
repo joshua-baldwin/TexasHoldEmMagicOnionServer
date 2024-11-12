@@ -6,9 +6,14 @@ namespace TexasHoldEmServer.GameLogic
 {
     public class GameLogicManager
     {
-        private Queue<PlayerEntity> playerQueue = new Queue<PlayerEntity>();
-        private PlayerEntity currentPlayer;
-        public PlayerEntity GetCurrentPlayer() => currentPlayer;
+        private Queue<PlayerEntity> playerQueue = new();
+        
+        public Enums.CommandTypeEnum PreviousCommandType { get; private set; }
+        public PlayerEntity CurrentPlayer { get; private set; }
+        public List<CardEntity> CardPool { get; set; }
+        public int Pot;
+        public List<CardEntity> CommunityCards = new List<CardEntity>();
+
         public void SetupGame(List<PlayerEntity> players)
         {
             SetRoles(players);
@@ -16,12 +21,47 @@ namespace TexasHoldEmServer.GameLogic
             SetChips(players);
             CreateQueue(players);
         }
+
+        public void DoAction(Enums.CommandTypeEnum commandType, int betAmount, out string actionMessage)
+        {
+            switch (commandType)
+            {
+                case Enums.CommandTypeEnum.Check:
+                    if (PreviousCommandType is Enums.CommandTypeEnum.Bet or Enums.CommandTypeEnum.Call or Enums.CommandTypeEnum.Raise)
+                    {
+                        actionMessage = "You can't check because a bet has been placed.";
+                        return;
+                    }
+                    break;
+                case Enums.CommandTypeEnum.Bet:
+                    actionMessage = $"{CurrentPlayer.Name} bet {betAmount}.";
+                    Pot += betAmount;
+                    break;
+                case Enums.CommandTypeEnum.Fold:
+                    actionMessage = $"{CurrentPlayer.Name} folded.";
+                    break;
+                case Enums.CommandTypeEnum.Call:
+                    actionMessage = $"{CurrentPlayer.Name} called.";
+                    Pot += betAmount;
+                    break;
+                case Enums.CommandTypeEnum.Raise:
+                    actionMessage = $"{CurrentPlayer.Name} raised {betAmount}.";
+                    Pot += betAmount;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(commandType), commandType, null);
+            }
+            PreviousCommandType = commandType;
+            playerQueue.Enqueue(CurrentPlayer);
+            CurrentPlayer = playerQueue.Dequeue();
+            actionMessage = "";
+        }
         
         private void SetRoles(List<PlayerEntity> players)
         {
             var first = players.GetRandomElement();
             first.IsDealer = true;
-            first.CardPool = CreateDeck();
+            CardPool = CreateDeck();
 
             var shuffled = players.Shuffle();
             shuffled[0].PlayerRole = Enums.PlayerRoleEnum.SmallBlind;
@@ -31,7 +71,7 @@ namespace TexasHoldEmServer.GameLogic
         private void SetCards(List<PlayerEntity> players)
         {
             var dealer = players.First(x => x.IsDealer);
-            var deck = dealer.CardPool;
+            var deck = CardPool;
             var shuffled = deck.Shuffle();
             //give to dealer last
             var dealerIndex = players.IndexOf(dealer);
@@ -52,7 +92,7 @@ namespace TexasHoldEmServer.GameLogic
                     startIndex++;
             }
 
-            dealer.CardPool = shuffled;
+            CardPool = shuffled;
         }
         
         private void SetChips(List<PlayerEntity> players)
@@ -100,7 +140,7 @@ namespace TexasHoldEmServer.GameLogic
                     index++;
             }
             
-            currentPlayer = playerQueue.Dequeue();
+            CurrentPlayer = playerQueue.Dequeue();
         }
     }
 }

@@ -26,16 +26,14 @@ namespace THE.MagicOnion.Shared.Entities
         [Key(5)]
         public CardEntity[] CardHand { get; set; }
         
-        [Key(6)]
-        public List<CardEntity> CardPool { get; set; }
         
-        [Key(7)]
+        [Key(6)]
         public bool IsReady { get; set; }
         
-        [Key(8)]
+        [Key(7)]
         public List<ChipEntity> Chips { get; set; }
         
-        [Key(9)]
+        [Key(8)]
         public int CurrentBet { get; set; }
         
         public PlayerEntity(string name, Guid id, Enums.PlayerRoleEnum role)
