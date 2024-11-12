@@ -35,6 +35,9 @@ namespace THE.MagicOnion.Shared.Entities
         [Key(8)]
         public List<ChipEntity> Chips { get; set; }
         
+        [Key(9)]
+        public int CurrentBet { get; set; }
+        
         public PlayerEntity(string name, Guid id, Enums.PlayerRoleEnum role)
         {
             Name = name;

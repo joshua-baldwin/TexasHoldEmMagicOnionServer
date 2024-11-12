@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using MagicOnion;
+using TexasHoldEmShared.Enums;
 using THE.MagicOnion.Shared.Entities;
 
 namespace THE.MagicOnion.Shared.Interfaces
@@ -13,5 +14,6 @@ namespace THE.MagicOnion.Shared.Interfaces
         Task<bool> StartGame(Guid playerId);
         Task CancelStart(Guid playerId);
         Task QuitGame(Guid playerId);
+        Task DoAction(Enums.CommandTypeEnum commandType);
     }
 }

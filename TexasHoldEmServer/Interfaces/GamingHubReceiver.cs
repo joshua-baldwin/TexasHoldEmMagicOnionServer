@@ -1,4 +1,5 @@
 using MagicOnion.Server.Hubs;
+using TexasHoldEmServer.GameLogic;
 using TexasHoldEmServer.ServerManager;
 using TexasHoldEmShared.Enums;
 using THE.MagicOnion.Shared.Entities;
@@ -13,6 +14,7 @@ namespace TexasHoldEmServer.Interfaces
         private PlayerEntity? self;
         private IInMemoryStorage<PlayerEntity>? storage;
         private IServerManager? serverManager;
+        private GameLogicManager gameLogicManager = new();
         
         public async Task<PlayerEntity> JoinRoomAsync(string userName)
         {
@@ -74,9 +76,9 @@ namespace TexasHoldEmServer.Interfaces
             if (players.Any(player => !player.IsReady))
                 return false;
             
-            SetRoles(players);
-            SetCards(players);
-            Broadcast(room).OnGameStart(storage.AllValues.ToArray());
+            gameLogicManager.SetupGame(players);
+
+            Broadcast(room).OnGameStart(storage.AllValues.ToArray(), gameLogicManager.GetCurrentPlayer());
             return true;
         }
 
@@ -98,55 +100,9 @@ namespace TexasHoldEmServer.Interfaces
             throw new NotImplementedException();
         }
 
-        private void SetRoles(List<PlayerEntity> players)
+        public async Task DoAction(Enums.CommandTypeEnum commandType)
         {
-            var first = players.GetRandomElement();
-            first.IsDealer = true;
-            first.CardPool = CreateDeck();
-
-            var shuffled = players.Shuffle();
-            shuffled[0].PlayerRole = Enums.PlayerRoleEnum.SmallBlind;
-            shuffled[1].PlayerRole = Enums.PlayerRoleEnum.BigBlind;
-        }
-
-        private void SetCards(List<PlayerEntity> players)
-        {
-            var dealer = players.First(x => x.IsDealer);
-            var deck = dealer.CardPool;
-            var shuffled = deck.Shuffle();
-            //give to dealer last
-            var dealerIndex = players.IndexOf(dealer);
-            var startIndex = dealerIndex + 1 >= players.Count ? 0 : dealerIndex + 1;
-            var dealt = 0;
-            while (dealt < players.Count)
-            {
-                var card1 = shuffled.GetRandomElement();
-                shuffled.Remove(card1);
-                var card2 = shuffled.GetRandomElement();
-                shuffled.Remove(card2);
-                players[startIndex].CardHand[0] = card1;
-                players[startIndex].CardHand[1] = card2;
-                dealt++;
-                if (startIndex + 1 >= players.Count)
-                    startIndex = 0;
-                else
-                    startIndex++;
-            }
-
-            dealer.CardPool = shuffled;
-        }
-        
-        private List<CardEntity> CreateDeck()
-        {
-            var suits = Enum.GetValues<Enums.CardSuitEnum>();
-            var ranks = Enum.GetValues<Enums.CardRankEnum>();
-            var deck = new List<CardEntity>();
-            foreach (var suit in suits)
-            {
-                deck.AddRange(ranks.Select(rank => new CardEntity(suit, rank)));
-            }
-
-            return deck;
+            
         }
 
         protected override ValueTask OnDisconnected()
