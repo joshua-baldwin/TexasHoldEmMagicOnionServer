@@ -9,9 +9,10 @@ namespace TexasHoldEmServer.GameLogic
         private Queue<PlayerEntity> playerQueue = new();
         
         public Enums.CommandTypeEnum PreviousCommandType { get; private set; }
+        public int PreviousBetAmount { get; private set; }
         public PlayerEntity CurrentPlayer { get; private set; }
+        public int Pot { get; private set; }
         public List<CardEntity> CardPool { get; set; }
-        public int Pot;
         public List<CardEntity> CommunityCards = new List<CardEntity>();
 
         public void SetupGame(List<PlayerEntity> players)
@@ -35,18 +36,35 @@ namespace TexasHoldEmServer.GameLogic
                     break;
                 case Enums.CommandTypeEnum.Bet:
                     actionMessage = $"{CurrentPlayer.Name} bet {betAmount}.";
+                    PreviousBetAmount = betAmount;
                     Pot += betAmount;
+                    CurrentPlayer.CurrentBet += betAmount;
                     break;
                 case Enums.CommandTypeEnum.Fold:
                     actionMessage = $"{CurrentPlayer.Name} folded.";
                     break;
                 case Enums.CommandTypeEnum.Call:
                     actionMessage = $"{CurrentPlayer.Name} called.";
-                    Pot += betAmount;
+                    Pot += PreviousBetAmount;
+                    CurrentPlayer.CurrentBet += betAmount;
                     break;
                 case Enums.CommandTypeEnum.Raise:
+                    if (betAmount < PreviousBetAmount)
+                    {
+                        actionMessage = "The bet must be greater than the previous bet.";
+                        return;
+                    }
                     actionMessage = $"{CurrentPlayer.Name} raised {betAmount}.";
                     Pot += betAmount;
+                    CurrentPlayer.CurrentBet += betAmount;
+                    break;
+                case Enums.CommandTypeEnum.SmallBlindBet:
+                    PreviousBetAmount = betAmount;
+                    CurrentPlayer.CurrentBet += betAmount;
+                    break;
+                case Enums.CommandTypeEnum.BigBlindBet:
+                    PreviousBetAmount = betAmount;
+                    CurrentPlayer.CurrentBet += betAmount;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(commandType), commandType, null);
@@ -63,9 +81,11 @@ namespace TexasHoldEmServer.GameLogic
             first.IsDealer = true;
             CardPool = CreateDeck();
 
-            var shuffled = players.Shuffle();
-            shuffled[0].PlayerRole = Enums.PlayerRoleEnum.SmallBlind;
-            shuffled[1].PlayerRole = Enums.PlayerRoleEnum.BigBlind;
+            var index = players.IndexOf(first);
+            index = index + 1 >= players.Count ? 0 : index + 1;
+            players[index].PlayerRole = Enums.PlayerRoleEnum.SmallBlind;
+            index = index + 1 >= players.Count ? 0 : index + 1;
+            players[index].PlayerRole = Enums.PlayerRoleEnum.BigBlind;
         }
 
         private void SetCards(List<PlayerEntity> players)
@@ -130,7 +150,7 @@ namespace TexasHoldEmServer.GameLogic
         
         private void CreateQueue(List<PlayerEntity> players)
         {
-            var index = players.FindIndex(player => player.PlayerRole == Enums.PlayerRoleEnum.BigBlind);
+            var index = players.FindIndex(player => player.PlayerRole == Enums.PlayerRoleEnum.SmallBlind);
             while (playerQueue.Count < players.Count)
             {
                 playerQueue.Enqueue(players[index]);

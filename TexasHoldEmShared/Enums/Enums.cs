@@ -55,7 +55,9 @@ namespace TexasHoldEmShared.Enums
             Bet,
             Fold,
             Call,
-            Raise
+            Raise,
+            SmallBlindBet,
+            BigBlindBet
         }
         
         public enum ChipTypeEnum

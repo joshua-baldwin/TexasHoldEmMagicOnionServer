@@ -11,6 +11,6 @@ namespace THE.MagicOnion.Shared.Interfaces
         void OnGameStart(PlayerEntity[] playerEntities, PlayerEntity currentPlayer);
         void OnCancelGameStart();
         void OnQuitGame();
-        void OnDoAction(Enums.CommandTypeEnum commandType, PlayerEntity currentPlayer, string actionMessage);
+        void OnDoAction(Enums.CommandTypeEnum commandType, PlayerEntity currentPlayer, int currentPot, string actionMessage);
     }
 }

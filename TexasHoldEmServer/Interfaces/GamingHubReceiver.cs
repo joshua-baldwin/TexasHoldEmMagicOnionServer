@@ -112,7 +112,7 @@ namespace TexasHoldEmServer.Interfaces
                 return;
 
             gameLogicManager.DoAction(commandType, betAmount, out var actionMessage);
-            Broadcast(room).OnDoAction(commandType, gameLogicManager.CurrentPlayer, actionMessage);
+            Broadcast(room).OnDoAction(commandType, gameLogicManager.CurrentPlayer, gameLogicManager.Pot, actionMessage);
         }
 
         protected override ValueTask OnDisconnected()
