@@ -15,14 +15,13 @@ namespace TexasHoldEmServer.GameLogic
         public PlayerEntity CurrentPlayer { get; private set; }
         public int Pot { get; private set; }
         public List<CardEntity> CardPool { get; set; }
-        public List<CardEntity> CommunityCards { get; set; } = new List<CardEntity>();
+        public CardEntity[] CommunityCards { get; set; } = new CardEntity[5];
         
         public Enums.GameStateEnum GameState { get; private set; }
 
         public void SetupGame(List<PlayerEntity> players)
         {
             SetRoles(players);
-            //SetCards(players);
             SetChips(players);
             CreateQueue(players);
         }
@@ -91,7 +90,7 @@ namespace TexasHoldEmServer.GameLogic
                     if (smallBlindBetDone && bigBlindBetDone)
                     {
                         GameState = Enums.GameStateEnum.PreFlop;
-                        SetCards(playerQueue.ToList());
+                        SetCards(playerQueue.Concat([CurrentPlayer]).ToList());
                     }
                     break;
                 }
@@ -125,7 +124,8 @@ namespace TexasHoldEmServer.GameLogic
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-            
+
+            CurrentPlayer.HasTakenAction = false;
             foreach (var player in playerQueue)
                 player.HasTakenAction = false;
         }
@@ -220,17 +220,30 @@ namespace TexasHoldEmServer.GameLogic
         
         private void SetTheFlop()
         {
+            var card1 = CardPool.GetRandomElement();
+            CardPool.Remove(card1);
+            var card2 = CardPool.GetRandomElement();
+            CardPool.Remove(card2);
+            var card3 = CardPool.GetRandomElement();
+            CardPool.Remove(card3);
             
+            CommunityCards[0] = card1;
+            CommunityCards[1] = card2;
+            CommunityCards[2] = card3;
         }
         
         private void SetTheTurn()
         {
-            
+            var card4 = CardPool.GetRandomElement();
+            CardPool.Remove(card4);
+            CommunityCards[3] = card4;
         }
 
         private void SetTheRiver()
         {
-            
+            var card5 = CardPool.GetRandomElement();
+            CardPool.Remove(card5);
+            CommunityCards[4] = card5;
         }
     }
 }

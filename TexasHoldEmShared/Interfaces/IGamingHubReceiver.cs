@@ -1,3 +1,4 @@
+using System;
 using TexasHoldEmShared.Enums;
 using THE.MagicOnion.Shared.Entities;
 
@@ -11,6 +12,6 @@ namespace THE.MagicOnion.Shared.Interfaces
         void OnGameStart(PlayerEntity[] playerEntities, PlayerEntity currentPlayer, Enums.GameStateEnum gameState);
         void OnCancelGameStart();
         void OnQuitGame();
-        void OnDoAction(Enums.CommandTypeEnum commandType, PlayerEntity currentPlayer, int currentPot, Enums.GameStateEnum gameState, string actionMessage);
+        void OnDoAction(Enums.CommandTypeEnum commandType, PlayerEntity[] playerEntities, Guid previousPlayerId, Guid currentPlayerId, int currentPot, CardEntity[] communityCards, Enums.GameStateEnum gameState, string actionMessage);
     }
 }
