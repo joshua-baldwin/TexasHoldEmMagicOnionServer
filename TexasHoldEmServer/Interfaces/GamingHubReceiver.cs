@@ -32,7 +32,7 @@ namespace TexasHoldEmServer.Interfaces
             if (group == null)
             {
                 var roomId = Guid.NewGuid();
-                self.SetRoomId(roomId);
+                self.RoomId = roomId;
                 (room, storage) = await Group.AddAsync(roomId.ToString(), self);
                 serverManager.AddGroup(roomId, new RoomEntity(roomId, room, storage));
             }
@@ -41,7 +41,7 @@ namespace TexasHoldEmServer.Interfaces
                 (room, storage) = await Group.AddAsync(group.Id.ToString(), self);
             }
 
-            self.SetRoomId(Guid.Parse(room.GroupName));
+            self.RoomId = Guid.Parse(room.GroupName);
             Broadcast(room).OnJoinRoom(self, storage.AllValues.Count);
             
             Console.WriteLine($"{userName} joined");

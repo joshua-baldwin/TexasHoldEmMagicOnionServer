@@ -18,7 +18,7 @@ namespace THE.MagicOnion.Shared.Entities
         public Enums.PlayerRoleEnum PlayerRole { get; set; }
         
         [Key(3)]
-        public Guid RoomId { get; private set; }
+        public Guid RoomId { get; set; }
         
         [Key(4)]
         public bool IsDealer { get; set; }
@@ -48,11 +48,6 @@ namespace THE.MagicOnion.Shared.Entities
             Id = id;
             PlayerRole = role;
             HoleCards = new CardEntity[2];
-        }
-
-        public void SetRoomId(Guid roomId)
-        {
-            RoomId = roomId;
         }
     }
 }
