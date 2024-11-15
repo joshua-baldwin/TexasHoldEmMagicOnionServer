@@ -112,8 +112,8 @@ namespace TexasHoldEmServer.Interfaces
                 return;
 
             var previousPlayer = gameLogicManager.CurrentPlayer;
-            gameLogicManager.DoAction(commandType, betAmount, out var actionMessage);
-            Broadcast(room).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, gameLogicManager.Pot, gameLogicManager.CommunityCards, gameLogicManager.GameState, actionMessage);
+            gameLogicManager.DoAction(commandType, betAmount, out bool isError, out string actionMessage);
+            Broadcast(room).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, gameLogicManager.Pot, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage);
         }
 
         protected override ValueTask OnDisconnected()

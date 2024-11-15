@@ -14,8 +14,9 @@ namespace TexasHoldEmServer.GameLogic
         public int PreviousBetAmount { get; private set; }
         public PlayerEntity CurrentPlayer { get; private set; }
         public int Pot { get; private set; }
+        public int TotalBetForTurn { get; private set; }
         public List<CardEntity> CardPool { get; set; }
-        public CardEntity[] CommunityCards { get; set; } = new CardEntity[5];
+        public CardEntity[] CommunityCards { get; } = new CardEntity[5];
         
         public Enums.GameStateEnum GameState { get; private set; }
 
@@ -26,18 +27,38 @@ namespace TexasHoldEmServer.GameLogic
             CreateQueue(players);
         }
 
-        public void DoAction(Enums.CommandTypeEnum commandType, int betAmount, out string actionMessage)
+        public void DoAction(Enums.CommandTypeEnum commandType, int betAmount, out bool isError, out string actionMessage)
         {
             switch (commandType)
             {
                 case Enums.CommandTypeEnum.SmallBlindBet:
+                    if (!CanPlaceBet(betAmount, out var message))
+                    {
+                        actionMessage = message;
+                        isError = true;
+                        return;
+                    }
                     actionMessage = $"{CurrentPlayer.Name} bet {betAmount}.";
+                    TotalBetForTurn += betAmount;
                     PreviousBetAmount = betAmount;
                     CurrentPlayer.CurrentBet += betAmount;
                     smallBlindBetDone = true;
                     break;
                 case Enums.CommandTypeEnum.BigBlindBet:
+                    if (!CanPlaceBet(betAmount, out message))
+                    {
+                        actionMessage = message;
+                        isError = true;
+                        return;
+                    }
+                    if (betAmount > CurrentPlayer.Chips.Sum(x => (int)x.ChipType))
+                    {
+                        actionMessage = "Not enough chips.";
+                        isError = true;
+                        return;
+                    }
                     actionMessage = $"{CurrentPlayer.Name} bet {betAmount}.";
+                    TotalBetForTurn += betAmount;
                     PreviousBetAmount = betAmount;
                     CurrentPlayer.CurrentBet += betAmount;
                     bigBlindBetDone = true;
@@ -46,6 +67,7 @@ namespace TexasHoldEmServer.GameLogic
                     if (PreviousCommandType is Enums.CommandTypeEnum.Call or Enums.CommandTypeEnum.Raise)
                     {
                         actionMessage = "You can't check because a bet has been placed.";
+                        isError = true;
                         return;
                     }
                     CurrentPlayer.HasTakenAction = true;
@@ -56,18 +78,19 @@ namespace TexasHoldEmServer.GameLogic
                     break;
                 case Enums.CommandTypeEnum.Call:
                     actionMessage = $"{CurrentPlayer.Name} called.";
-                    Pot += PreviousBetAmount;
-                    CurrentPlayer.CurrentBet += betAmount;
+                    TotalBetForTurn += PreviousBetAmount;
+                    CurrentPlayer.CurrentBet += PreviousBetAmount;
                     CurrentPlayer.HasTakenAction = true;
                     break;
                 case Enums.CommandTypeEnum.Raise:
-                    if (betAmount < PreviousBetAmount)
+                    if (!CanPlaceBet(betAmount, out message))
                     {
-                        actionMessage = "The bet must be greater than the previous bet.";
+                        actionMessage = message;
+                        isError = true;
                         return;
                     }
                     actionMessage = $"{CurrentPlayer.Name} raised {betAmount}.";
-                    Pot += betAmount;
+                    TotalBetForTurn += betAmount;
                     CurrentPlayer.CurrentBet += betAmount;
                     CurrentPlayer.HasTakenAction = true;
                     break;
@@ -75,14 +98,17 @@ namespace TexasHoldEmServer.GameLogic
                     throw new ArgumentOutOfRangeException(nameof(commandType), commandType, null);
             }
             PreviousCommandType = commandType;
+            playerQueue.Dequeue();
             playerQueue.Enqueue(CurrentPlayer);
-            CurrentPlayer = playerQueue.Dequeue();
+            CurrentPlayer = playerQueue.Peek();
             UpdateGameState();
             actionMessage = "";
+            isError = false;
         }
 
         private void UpdateGameState()
         {
+            var gameStateChanged = false;
             switch (GameState)
             {
                 case Enums.GameStateEnum.BlindBet:
@@ -90,34 +116,41 @@ namespace TexasHoldEmServer.GameLogic
                     if (smallBlindBetDone && bigBlindBetDone)
                     {
                         GameState = Enums.GameStateEnum.PreFlop;
-                        SetCards(playerQueue.Concat([CurrentPlayer]).ToList());
+                        SetCards(playerQueue.ToList());
+                        gameStateChanged = true;
                     }
                     break;
                 }
                 case Enums.GameStateEnum.PreFlop:
                 {
-                    if (!playerQueue.Any(x => !x.HasTakenAction))
+                    if (playerQueue.All(x => x.HasTakenAction))
                     {
                         GameState = Enums.GameStateEnum.TheFlop;
                         SetTheFlop();
+                        gameStateChanged = true;
+                        UpdatePot();
                     }
                     break;
                 }
                 case Enums.GameStateEnum.TheFlop:
                 {
-                    if (!playerQueue.Any(x => !x.HasTakenAction))
+                    if (playerQueue.All(x => x.HasTakenAction))
                     {
                         GameState = Enums.GameStateEnum.TheTurn;
                         SetTheTurn();
+                        gameStateChanged = true;
+                        UpdatePot();
                     }
                     break;
                 }
                 case Enums.GameStateEnum.TheTurn:
                 {
-                    if (!playerQueue.Any(x => !x.HasTakenAction))
+                    if (playerQueue.All(x => x.HasTakenAction))
                     {
                         GameState = Enums.GameStateEnum.TheRiver;
                         SetTheRiver();
+                        gameStateChanged = true;
+                        UpdatePot();
                     }
                     break;
                 }
@@ -125,6 +158,9 @@ namespace TexasHoldEmServer.GameLogic
                     throw new ArgumentOutOfRangeException();
             }
 
+            if (!gameStateChanged)
+                return;
+            
             CurrentPlayer.HasTakenAction = false;
             foreach (var player in playerQueue)
                 player.HasTakenAction = false;
@@ -215,7 +251,7 @@ namespace TexasHoldEmServer.GameLogic
                     index++;
             }
             
-            CurrentPlayer = playerQueue.Dequeue();
+            CurrentPlayer = playerQueue.Peek();
         }
         
         private void SetTheFlop()
@@ -244,6 +280,36 @@ namespace TexasHoldEmServer.GameLogic
             var card5 = CardPool.GetRandomElement();
             CardPool.Remove(card5);
             CommunityCards[4] = card5;
+        }
+        
+        private bool CanPlaceBet(int betAmount, out string message)
+        {
+            if (betAmount <= 0)
+            {
+                message = "The bet must be greater than 0.";
+                return false;
+            }
+            
+            if (PreviousBetAmount != 0 && betAmount <= PreviousBetAmount)
+            {
+                message = "The bet must be greater than the previous bet.";
+                return false;
+            }
+
+            if (betAmount > CurrentPlayer.Chips.Sum(x => (int)x.ChipType))
+            {
+                message = "Not enough chips.";
+                return false;
+            }
+
+            message = "";
+            return true;
+        }
+        
+        private void UpdatePot()
+        {
+            Pot = TotalBetForTurn;
+            TotalBetForTurn = 0;
         }
     }
 }
