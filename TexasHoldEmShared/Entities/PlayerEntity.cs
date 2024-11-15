@@ -18,13 +18,13 @@ namespace THE.MagicOnion.Shared.Entities
         public Enums.PlayerRoleEnum PlayerRole { get; set; }
         
         [Key(3)]
-        public Guid RoomId { get; set; }
+        public Guid RoomId { get; private set; }
         
         [Key(4)]
         public bool IsDealer { get; set; }
         
         [Key(5)]
-        public CardEntity[] CardHand { get; set; }
+        public CardEntity[] HoleCards { get; set; }
         
         
         [Key(6)]
@@ -36,12 +36,23 @@ namespace THE.MagicOnion.Shared.Entities
         [Key(8)]
         public int CurrentBet { get; set; }
         
+        [Key(9)]
+        public bool HasTakenAction { get; set; }
+        
+        [Key(10)]
+        public bool HasFolded { get; set; }
+        
         public PlayerEntity(string name, Guid id, Enums.PlayerRoleEnum role)
         {
             Name = name;
             Id = id;
             PlayerRole = role;
-            CardHand = new CardEntity[2];
+            HoleCards = new CardEntity[2];
+        }
+
+        public void SetRoomId(Guid roomId)
+        {
+            RoomId = roomId;
         }
     }
 }

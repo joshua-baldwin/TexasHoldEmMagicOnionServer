@@ -8,9 +8,9 @@ namespace THE.MagicOnion.Shared.Interfaces
         void OnJoinRoom(PlayerEntity player, int playerCount);
         void OnLeaveRoom(PlayerEntity player, int playerCount);
         void OnGetAllPlayers(PlayerEntity[] playerEntities);
-        void OnGameStart(PlayerEntity[] playerEntities, PlayerEntity currentPlayer);
+        void OnGameStart(PlayerEntity[] playerEntities, PlayerEntity currentPlayer, Enums.GameStateEnum gameState);
         void OnCancelGameStart();
         void OnQuitGame();
-        void OnDoAction(Enums.CommandTypeEnum commandType, PlayerEntity currentPlayer, int currentPot, string actionMessage);
+        void OnDoAction(Enums.CommandTypeEnum commandType, PlayerEntity currentPlayer, int currentPot, Enums.GameStateEnum gameState, string actionMessage);
     }
 }

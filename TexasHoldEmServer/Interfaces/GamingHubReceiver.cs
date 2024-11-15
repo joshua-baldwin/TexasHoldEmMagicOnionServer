@@ -31,17 +31,17 @@ namespace TexasHoldEmServer.Interfaces
             var group = serverManager.GetNonFullRoomEntity();
             if (group == null)
             {
-                var guid = Guid.NewGuid();
-                self.RoomId = guid;
-                (room, storage) = await Group.AddAsync(guid.ToString(), self);
-                serverManager.AddGroup(guid, new RoomEntity(guid, room, storage));
+                var roomId = Guid.NewGuid();
+                self.SetRoomId(roomId);
+                (room, storage) = await Group.AddAsync(roomId.ToString(), self);
+                serverManager.AddGroup(roomId, new RoomEntity(roomId, room, storage));
             }
             else
             {
                 (room, storage) = await Group.AddAsync(group.Id.ToString(), self);
             }
 
-            self.RoomId = Guid.Parse(room.GroupName);
+            self.SetRoomId(Guid.Parse(room.GroupName));
             Broadcast(room).OnJoinRoom(self, storage.AllValues.Count);
             
             Console.WriteLine($"{userName} joined");
@@ -84,7 +84,7 @@ namespace TexasHoldEmServer.Interfaces
             
             gameLogicManager.SetupGame(players);
 
-            Broadcast(room).OnGameStart(storage.AllValues.ToArray(), gameLogicManager.CurrentPlayer);
+            Broadcast(room).OnGameStart(storage.AllValues.ToArray(), gameLogicManager.CurrentPlayer, gameLogicManager.GameState);
             return true;
         }
 
@@ -112,7 +112,7 @@ namespace TexasHoldEmServer.Interfaces
                 return;
 
             gameLogicManager.DoAction(commandType, betAmount, out var actionMessage);
-            Broadcast(room).OnDoAction(commandType, gameLogicManager.CurrentPlayer, gameLogicManager.Pot, actionMessage);
+            Broadcast(room).OnDoAction(commandType, gameLogicManager.CurrentPlayer, gameLogicManager.Pot, gameLogicManager.GameState, actionMessage);
         }
 
         protected override ValueTask OnDisconnected()

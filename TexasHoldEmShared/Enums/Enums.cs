@@ -51,13 +51,12 @@ namespace TexasHoldEmShared.Enums
         
         public enum CommandTypeEnum
         {
+            SmallBlindBet,
+            BigBlindBet,
             Check,
-            Bet,
             Fold,
             Call,
-            Raise,
-            SmallBlindBet,
-            BigBlindBet
+            Raise
         }
         
         public enum ChipTypeEnum
@@ -67,6 +66,15 @@ namespace TexasHoldEmShared.Enums
             Blue = 10,
             Green = 25,
             Black = 100
+        }
+        
+        public enum GameStateEnum
+        {
+            BlindBet,
+            PreFlop,
+            TheFlop,
+            TheTurn,
+            TheRiver
         }
     }
 }
