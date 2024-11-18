@@ -10,6 +10,7 @@ namespace TexasHoldEmServer.GameLogic
         private Queue<PlayerEntity> playerQueue = new();
         private bool smallBlindBetDone;
         private bool bigBlindBetDone;
+        private readonly Dictionary<Guid, CardEntity[]> playerHands = new();
         
         public Enums.CommandTypeEnum PreviousCommandType { get; private set; }
         public int PreviousBetAmount { get; private set; }
@@ -92,6 +93,7 @@ namespace TexasHoldEmServer.GameLogic
                     }
                     actionMessage = $"{CurrentPlayer.Name} raised {betAmount}.";
                     TotalBetForTurn += betAmount;
+                    PreviousBetAmount = betAmount;
                     CurrentPlayer.CurrentBet += betAmount;
                     CurrentPlayer.HasTakenAction = true;
                     break;
@@ -113,7 +115,6 @@ namespace TexasHoldEmServer.GameLogic
             switch (GameState)
             {
                 case Enums.GameStateEnum.BlindBet:
-                {
                     if (smallBlindBetDone && bigBlindBetDone)
                     {
                         GameState = Enums.GameStateEnum.PreFlop;
@@ -121,9 +122,7 @@ namespace TexasHoldEmServer.GameLogic
                         gameStateChanged = true;
                     }
                     break;
-                }
                 case Enums.GameStateEnum.PreFlop:
-                {
                     if (playerQueue.All(x => x.HasTakenAction))
                     {
                         GameState = Enums.GameStateEnum.TheFlop;
@@ -132,29 +131,35 @@ namespace TexasHoldEmServer.GameLogic
                         UpdatePot();
                     }
                     break;
-                }
                 case Enums.GameStateEnum.TheFlop:
-                {
                     if (playerQueue.All(x => x.HasTakenAction))
                     {
                         GameState = Enums.GameStateEnum.TheTurn;
                         SetTheTurn();
                         gameStateChanged = true;
                         UpdatePot();
+                        ResetBets();
                     }
                     break;
-                }
                 case Enums.GameStateEnum.TheTurn:
-                {
                     if (playerQueue.All(x => x.HasTakenAction))
                     {
                         GameState = Enums.GameStateEnum.TheRiver;
                         SetTheRiver();
                         gameStateChanged = true;
                         UpdatePot();
+                        ResetBets();
                     }
                     break;
-                }
+                case Enums.GameStateEnum.TheRiver:
+                    if (playerQueue.All(x => x.HasTakenAction))
+                    {
+                        GameState = Enums.GameStateEnum.Showdown;
+                        gameStateChanged = true;
+                        UpdatePot();
+                        ResetBets();
+                    }
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -167,6 +172,8 @@ namespace TexasHoldEmServer.GameLogic
                 player.HasTakenAction = false;
         }
 
+        #region Setup
+        
         private void SetRoles(List<PlayerEntity> players)
         {
             var first = players.GetRandomElement();
@@ -255,6 +262,10 @@ namespace TexasHoldEmServer.GameLogic
             CurrentPlayer = playerQueue.Peek();
         }
         
+        #endregion
+        
+        #region Setting community cards
+        
         private void SetTheFlop()
         {
             var card1 = CardPool.GetRandomElement();
@@ -281,6 +292,23 @@ namespace TexasHoldEmServer.GameLogic
             var card5 = CardPool.GetRandomElement();
             CardPool.Remove(card5);
             CommunityCards[4] = card5;
+        }
+        
+        #endregion
+
+        public void SetPlayerHand(Guid playerId, CardEntity[] showdownCards)
+        {
+            playerHands.Add(playerId, showdownCards);
+        }
+        
+        public Guid GetWinner(CardEntity[] showdownCards)
+        {
+            var winnerId = Guid.Empty;
+            foreach (var hand in playerHands)
+            {
+                
+            }
+            return winnerId;
         }
         
         private bool CanPlaceBet(int betAmount, out string message)
@@ -311,6 +339,12 @@ namespace TexasHoldEmServer.GameLogic
         {
             Pot = TotalBetForTurn;
             TotalBetForTurn = 0;
+        }
+
+        private void ResetBets()
+        {
+            foreach (var player in playerQueue)
+                player.CurrentBet = 0;
         }
     }
 }

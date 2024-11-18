@@ -108,7 +108,7 @@ namespace TexasHoldEmServer.Interfaces
             throw new NotImplementedException();
         }
 
-        public async Task DoAction(Enums.CommandTypeEnum commandType, int betAmount)
+        public async Task DoAction(Enums.CommandTypeEnum commandType, int betAmount, Guid targetPlayerId)
         {
             if (group == null)
                 return;
@@ -116,9 +116,29 @@ namespace TexasHoldEmServer.Interfaces
             var previousPlayer = gameLogicManager.CurrentPlayer;
             gameLogicManager.DoAction(commandType, betAmount, out bool isError, out string actionMessage);
             if (isError)
-                BroadcastTo(group, ConnectionId).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, gameLogicManager.Pot, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage);
+                BroadcastTo(group, ConnectionId).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pot, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage);
             else
-                Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, gameLogicManager.Pot, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage);
+                Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pot, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage);
+        }
+
+        public async Task<bool> ChooseHand(Guid playerId, CardEntity[] showdownCards)
+        {
+            if (group == null)
+                return false;
+            
+            var players = storage.AllValues.ToList();
+            var currentPlayer = players.FirstOrDefault(player => player.Id == playerId);
+            if (currentPlayer != null)
+                currentPlayer.HasTakenAction = true;
+            
+            gameLogicManager.SetPlayerHand(playerId, showdownCards);
+            if (players.Any(player => !player.HasTakenAction))
+                return false;
+            
+            var winnerId = gameLogicManager.GetWinner(showdownCards);
+
+            Broadcast(group).OnChooseHand(winnerId, storage.AllValues.ToArray());
+            return true;
         }
 
         protected override ValueTask OnDisconnected()

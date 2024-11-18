@@ -14,6 +14,7 @@ namespace THE.MagicOnion.Shared.Interfaces
         Task<bool> StartGame(Guid playerId);
         Task CancelStart(Guid playerId);
         Task QuitGame(Guid playerId);
-        Task DoAction(Enums.CommandTypeEnum commandType, int betAmount);
+        Task DoAction(Enums.CommandTypeEnum commandType, int betAmount, Guid targetPlayerId);
+        Task<bool> ChooseHand(Guid playerId, CardEntity[] showdownCards);
     }
 }

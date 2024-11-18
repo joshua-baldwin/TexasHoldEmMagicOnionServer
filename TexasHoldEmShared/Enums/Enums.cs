@@ -74,7 +74,8 @@ namespace TexasHoldEmShared.Enums
             PreFlop,
             TheFlop,
             TheTurn,
-            TheRiver
+            TheRiver,
+            Showdown
         }
     }
 }
