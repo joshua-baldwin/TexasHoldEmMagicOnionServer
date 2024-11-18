@@ -6,6 +6,7 @@ namespace TexasHoldEmServer.GameLogic
 {
     public class GameLogicManager
     {
+        public static int MaxPlayers = 10;
         private Queue<PlayerEntity> playerQueue = new();
         private bool smallBlindBetDone;
         private bool bigBlindBetDone;

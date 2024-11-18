@@ -1,6 +1,6 @@
 using MagicOnion.Server.Hubs;
 using TexasHoldEmServer.GameLogic;
-using TexasHoldEmServer.ServerManager;
+using TexasHoldEmServer.Managers;
 using TexasHoldEmShared.Enums;
 using THE.MagicOnion.Shared.Entities;
 using THE.MagicOnion.Shared.Interfaces;
@@ -13,36 +13,37 @@ namespace TexasHoldEmServer.Interfaces
 {
     public class GamingHubReceiver : StreamingHubBase<IGamingHub, IGamingHubReceiver>, IGamingHub
     {
-        private IGroup? room;
+        private IGroup? group;
         private PlayerEntity? self;
         private IInMemoryStorage<PlayerEntity>? storage;
-        private IServerManager? serverManager;
+        private IRoomManager? roomManager;
         private GameLogicManager? gameLogicManager;
         
         public async Task<PlayerEntity> JoinRoomAsync(string userName)
         {
-            if (serverManager == null)
-                serverManager = Context.ServiceProvider.GetService<IServerManager>();
+            if (roomManager == null)
+                roomManager = Context.ServiceProvider.GetService<IRoomManager>();
             
             if (gameLogicManager == null)
                 gameLogicManager = Context.ServiceProvider.GetService<GameLogicManager>();
 
             self = new PlayerEntity(userName, Guid.NewGuid(), Enums.PlayerRoleEnum.None);
-            var group = serverManager.GetNonFullRoomEntity();
-            if (group == null)
+            var existingRoom = roomManager.GetNonFullRoomEntity();
+            if (existingRoom == null)
             {
                 var roomId = Guid.NewGuid();
                 self.RoomId = roomId;
-                (room, storage) = await Group.AddAsync(roomId.ToString(), self);
-                serverManager.AddGroup(roomId, new RoomEntity(roomId, room, storage));
+                (group, storage) = await Group.AddAsync(roomId.ToString(), self);
+                roomManager.AddRoomAndConnection(roomId, group, storage, self.Id, ConnectionId);
             }
             else
             {
-                (room, storage) = await Group.AddAsync(group.Id.ToString(), self);
+                (group, storage) = await Group.AddAsync(existingRoom.Id.ToString(), self);
+                roomManager.AddConnection(existingRoom.Id, self.Id, ConnectionId);
             }
 
-            self.RoomId = Guid.Parse(room.GroupName);
-            Broadcast(room).OnJoinRoom(self, storage.AllValues.Count);
+            self.RoomId = Guid.Parse(group.GroupName);
+            Broadcast(group).OnJoinRoom(self, storage.AllValues.Count);
             
             Console.WriteLine($"{userName} joined");
             return self;
@@ -50,11 +51,12 @@ namespace TexasHoldEmServer.Interfaces
 
         public async Task<PlayerEntity> LeaveRoomAsync()
         {
-            if (room == null)
+            if (group == null)
                 return null;
             
-            await room.RemoveAsync(Context);
-            Broadcast(room).OnLeaveRoom(self, storage.AllValues.Count);
+            await group.RemoveAsync(Context);
+            Broadcast(group).OnLeaveRoom(self, storage.AllValues.Count);
+            roomManager.RemoveConnection(self.RoomId, self.Id);
             
             Console.WriteLine($"{self.Name} left");
             return self;
@@ -62,16 +64,16 @@ namespace TexasHoldEmServer.Interfaces
 
         public async Task<PlayerEntity[]> GetAllPlayers()
         {
-            if (room == null)
+            if (group == null)
                 return null;
             
-            Broadcast(room).OnGetAllPlayers(storage.AllValues.ToArray());
+            Broadcast(group).OnGetAllPlayers(storage.AllValues.ToArray());
             return storage.AllValues.ToArray();
         }
 
         public async Task<bool> StartGame(Guid playerId)
         {
-            if (room == null)
+            if (group == null)
                 return false;
             
             var players = storage.AllValues.ToList();
@@ -84,13 +86,13 @@ namespace TexasHoldEmServer.Interfaces
             
             gameLogicManager.SetupGame(players);
 
-            Broadcast(room).OnGameStart(storage.AllValues.ToArray(), gameLogicManager.CurrentPlayer, gameLogicManager.GameState);
+            Broadcast(group).OnGameStart(storage.AllValues.ToArray(), gameLogicManager.CurrentPlayer, gameLogicManager.GameState);
             return true;
         }
 
         public async Task CancelStart(Guid playerId)
         {
-            if (room == null)
+            if (group == null)
                 return;
             
             var players = storage.AllValues.ToList();
@@ -98,7 +100,7 @@ namespace TexasHoldEmServer.Interfaces
             if (currentPlayer != null)
                 currentPlayer.IsReady = false;
             
-            Broadcast(room).OnCancelGameStart();
+            Broadcast(group).OnCancelGameStart();
         }
 
         public async Task QuitGame(Guid playerId)
@@ -108,16 +110,20 @@ namespace TexasHoldEmServer.Interfaces
 
         public async Task DoAction(Enums.CommandTypeEnum commandType, int betAmount)
         {
-            if (room == null)
+            if (group == null)
                 return;
 
             var previousPlayer = gameLogicManager.CurrentPlayer;
             gameLogicManager.DoAction(commandType, betAmount, out bool isError, out string actionMessage);
-            Broadcast(room).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, gameLogicManager.Pot, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage);
+            if (isError)
+                BroadcastTo(group, ConnectionId).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, gameLogicManager.Pot, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage);
+            else
+                Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, gameLogicManager.Pot, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage);
         }
 
         protected override ValueTask OnDisconnected()
         {
+            roomManager?.RemoveConnection(self.Id, self.RoomId);
             return ValueTask.CompletedTask;
         }
     }

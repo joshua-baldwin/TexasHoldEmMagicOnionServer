@@ -1,7 +1,7 @@
 using MagicOnion;
 using MagicOnion.Server;
 using TexasHoldEmServer.GameLogic;
-using TexasHoldEmServer.ServerManager;
+using TexasHoldEmServer.Managers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,7 +21,7 @@ builder.Services.AddCors(options =>
     });
 });
 builder.Services.AddMagicOnion(); // Add this line(MagicOnion.Server)
-builder.Services.AddSingleton<IServerManager>(new ServerManager());
+builder.Services.AddSingleton<IRoomManager>(new RoomManager());
 builder.Services.AddSingleton(new GameLogicManager());
 builder.WebHost
     .UseUrls("http://0.0.0.0:5137");

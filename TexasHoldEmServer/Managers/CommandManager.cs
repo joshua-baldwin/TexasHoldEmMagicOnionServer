@@ -1,7 +1,7 @@
 using TexasHoldEmShared.Enums;
 using THE.MagicOnion.Shared.Entities;
 
-namespace TexasHoldEmServer.Command
+namespace TexasHoldEmServer.Managers
 {
     public interface ICommandManager
     {
