@@ -6,21 +6,20 @@ namespace TexasHoldEmServer.GameLogic
 {
     public class GameLogicManager
     {
-        public static int MaxPlayers = 10;
-        private Queue<PlayerEntity> playerQueue = new();
+        public const int MaxPlayers = 10;
+        private readonly Queue<PlayerEntity> playerQueue = new();
         private bool smallBlindBetDone;
         private bool bigBlindBetDone;
+        private Enums.CommandTypeEnum previousCommandType;
+        private int previousBetAmount;
+        private int totalBetForTurn;
+        private List<CardEntity> cardPool;
         private readonly Dictionary<Guid, CardEntity[]> playerHands = new();
         private bool isTie;
         
-        public Enums.CommandTypeEnum PreviousCommandType { get; private set; }
-        public int PreviousBetAmount { get; private set; }
         public PlayerEntity CurrentPlayer { get; private set; }
         public int Pot { get; private set; }
-        public int TotalBetForTurn { get; private set; }
-        public List<CardEntity> CardPool { get; set; }
         public CardEntity[] CommunityCards { get; } = new CardEntity[5];
-        
         public Enums.GameStateEnum GameState { get; private set; }
 
         public void SetupGame(List<PlayerEntity> players)
@@ -42,8 +41,8 @@ namespace TexasHoldEmServer.GameLogic
                         return;
                     }
                     actionMessage = $"{CurrentPlayer.Name} bet {betAmount}.";
-                    TotalBetForTurn += betAmount;
-                    PreviousBetAmount = betAmount;
+                    totalBetForTurn += betAmount;
+                    previousBetAmount = betAmount;
                     CurrentPlayer.CurrentBet += betAmount;
                     smallBlindBetDone = true;
                     break;
@@ -61,13 +60,13 @@ namespace TexasHoldEmServer.GameLogic
                         return;
                     }
                     actionMessage = $"{CurrentPlayer.Name} bet {betAmount}.";
-                    TotalBetForTurn += betAmount;
-                    PreviousBetAmount = betAmount;
+                    totalBetForTurn += betAmount;
+                    previousBetAmount = betAmount;
                     CurrentPlayer.CurrentBet += betAmount;
                     bigBlindBetDone = true;
                     break;
                 case Enums.CommandTypeEnum.Check:
-                    if (PreviousCommandType is Enums.CommandTypeEnum.Call or Enums.CommandTypeEnum.Raise)
+                    if (previousCommandType is Enums.CommandTypeEnum.Call or Enums.CommandTypeEnum.Raise)
                     {
                         actionMessage = "You can't check because a bet has been placed.";
                         isError = true;
@@ -81,8 +80,8 @@ namespace TexasHoldEmServer.GameLogic
                     break;
                 case Enums.CommandTypeEnum.Call:
                     actionMessage = $"{CurrentPlayer.Name} called.";
-                    TotalBetForTurn += PreviousBetAmount;
-                    CurrentPlayer.CurrentBet += PreviousBetAmount;
+                    totalBetForTurn += previousBetAmount;
+                    CurrentPlayer.CurrentBet += previousBetAmount;
                     CurrentPlayer.HasTakenAction = true;
                     break;
                 case Enums.CommandTypeEnum.Raise:
@@ -93,15 +92,15 @@ namespace TexasHoldEmServer.GameLogic
                         return;
                     }
                     actionMessage = $"{CurrentPlayer.Name} raised {betAmount}.";
-                    TotalBetForTurn += betAmount;
-                    PreviousBetAmount = betAmount;
+                    totalBetForTurn += betAmount;
+                    previousBetAmount = betAmount;
                     CurrentPlayer.CurrentBet += betAmount;
                     CurrentPlayer.HasTakenAction = true;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(commandType), commandType, null);
             }
-            PreviousCommandType = commandType;
+            previousCommandType = commandType;
             playerQueue.Dequeue();
             playerQueue.Enqueue(CurrentPlayer);
             CurrentPlayer = playerQueue.Peek();
@@ -179,7 +178,7 @@ namespace TexasHoldEmServer.GameLogic
         {
             var first = players.GetRandomElement();
             first.IsDealer = true;
-            CardPool = CreateDeck();
+            cardPool = CreateDeck();
 
             var index = players.IndexOf(first);
             index = index + 1 >= players.Count ? 0 : index + 1;
@@ -191,7 +190,7 @@ namespace TexasHoldEmServer.GameLogic
         private void SetCards(List<PlayerEntity> players)
         {
             var dealer = players.First(x => x.IsDealer);
-            var deck = CardPool;
+            var deck = cardPool;
             var shuffled = deck.Shuffle();
             //give to dealer last
             var dealerIndex = players.IndexOf(dealer);
@@ -212,7 +211,7 @@ namespace TexasHoldEmServer.GameLogic
                     startIndex++;
             }
 
-            CardPool = shuffled;
+            cardPool = shuffled;
         }
         
         private void SetChips(List<PlayerEntity> players)
@@ -269,12 +268,12 @@ namespace TexasHoldEmServer.GameLogic
         
         private void SetTheFlop()
         {
-            var card1 = CardPool.GetRandomElement();
-            CardPool.Remove(card1);
-            var card2 = CardPool.GetRandomElement();
-            CardPool.Remove(card2);
-            var card3 = CardPool.GetRandomElement();
-            CardPool.Remove(card3);
+            var card1 = cardPool.GetRandomElement();
+            cardPool.Remove(card1);
+            var card2 = cardPool.GetRandomElement();
+            cardPool.Remove(card2);
+            var card3 = cardPool.GetRandomElement();
+            cardPool.Remove(card3);
             
             CommunityCards[0] = card1;
             CommunityCards[1] = card2;
@@ -283,15 +282,15 @@ namespace TexasHoldEmServer.GameLogic
         
         private void SetTheTurn()
         {
-            var card4 = CardPool.GetRandomElement();
-            CardPool.Remove(card4);
+            var card4 = cardPool.GetRandomElement();
+            cardPool.Remove(card4);
             CommunityCards[3] = card4;
         }
 
         private void SetTheRiver()
         {
-            var card5 = CardPool.GetRandomElement();
-            CardPool.Remove(card5);
+            var card5 = cardPool.GetRandomElement();
+            cardPool.Remove(card5);
             CommunityCards[4] = card5;
         }
         
@@ -338,7 +337,7 @@ namespace TexasHoldEmServer.GameLogic
                 return false;
             }
             
-            if (PreviousBetAmount != 0 && betAmount <= PreviousBetAmount)
+            if (previousBetAmount != 0 && betAmount <= previousBetAmount)
             {
                 message = "The bet must be greater than the previous bet.";
                 return false;
@@ -356,8 +355,8 @@ namespace TexasHoldEmServer.GameLogic
         
         private void UpdatePot()
         {
-            Pot = TotalBetForTurn;
-            TotalBetForTurn = 0;
+            Pot = totalBetForTurn;
+            totalBetForTurn = 0;
         }
 
         private void ResetBets()
