@@ -135,7 +135,7 @@ namespace TexasHoldEmServer.Interfaces
             if (players.Any(player => !player.HasTakenAction))
                 return false;
             
-            var winnerId = gameLogicManager.GetWinner(showdownCards);
+            var winnerId = gameLogicManager.GetWinner();
 
             Broadcast(group).OnChooseHand(winnerId, storage.AllValues.ToArray());
             return true;

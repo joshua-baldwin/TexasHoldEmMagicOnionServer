@@ -77,5 +77,20 @@ namespace TexasHoldEmShared.Enums
             TheRiver,
             Showdown
         }
+        
+        public enum HandRankingType
+        {
+            RoyalFlush = 1,
+            StraightFlush,
+            FourOfAKind,
+            FullHouse,
+            Flush,
+            Straight,
+            ThreeOfAKind,
+            TwoPair,
+            Pair,
+            HighCard,
+            Nothing
+        }
     }
 }

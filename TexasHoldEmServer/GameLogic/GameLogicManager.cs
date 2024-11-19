@@ -11,6 +11,7 @@ namespace TexasHoldEmServer.GameLogic
         private bool smallBlindBetDone;
         private bool bigBlindBetDone;
         private readonly Dictionary<Guid, CardEntity[]> playerHands = new();
+        private bool isTie;
         
         public Enums.CommandTypeEnum PreviousCommandType { get; private set; }
         public int PreviousBetAmount { get; private set; }
@@ -301,14 +302,32 @@ namespace TexasHoldEmServer.GameLogic
             playerHands.Add(playerId, showdownCards);
         }
         
-        public Guid GetWinner(CardEntity[] showdownCards)
+        public Guid GetWinner()
         {
-            var winnerId = Guid.Empty;
+            var currentRanking = Enums.HandRankingType.Nothing;
+            (Guid PlayerId, CardEntity[] Hand) currentPlayer = (Guid.Empty, []);
             foreach (var hand in playerHands)
             {
-                
+                var ranking = HandRankingLogic.GetHandRanking(hand.Value);
+                if ((int)ranking < (int)currentRanking)
+                {
+                    currentRanking = ranking;
+                    currentPlayer = (hand.Key, hand.Value);
+                    isTie = false;
+                }
+                else if (ranking == currentRanking)
+                {
+                    var guid = HandRankingLogic.CompareHands(currentPlayer, (hand.Key, hand.Value), ranking);
+                    if (guid == Guid.Empty)
+                        isTie = true;
+                    else
+                    {
+                        isTie = false;
+                        currentPlayer = currentPlayer.PlayerId == guid ? currentPlayer : (hand.Key, hand.Value);
+                    }
+                }
             }
-            return winnerId;
+            return isTie ? Guid.Empty : currentPlayer.PlayerId;
         }
         
         private bool CanPlaceBet(int betAmount, out string message)
