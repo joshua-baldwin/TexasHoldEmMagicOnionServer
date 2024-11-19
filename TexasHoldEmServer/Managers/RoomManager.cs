@@ -12,6 +12,7 @@ namespace TexasHoldEmServer.Managers
         void RemoveConnection(Guid roomId, Guid playerId);
         RoomEntity GetRoomEntity(Guid roomId);
         RoomEntity GetNonFullRoomEntity();
+        void ClearRooms();
     }
     
     public class RoomManager : IRoomManager
@@ -52,6 +53,11 @@ namespace TexasHoldEmServer.Managers
             }
 
             return null;
+        }
+
+        public void ClearRooms()
+        {
+            roomDictionary.Clear();
         }
     }
 }

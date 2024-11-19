@@ -57,6 +57,11 @@ namespace TexasHoldEmServer.Interfaces
             await group.RemoveAsync(Context);
             Broadcast(group).OnLeaveRoom(self, storage.AllValues.Count);
             roomManager.RemoveConnection(self.RoomId, self.Id);
+            if (storage.AllValues.Count == 0)
+            {
+                roomManager.ClearRooms();
+                gameLogicManager.Reset();
+            }
             
             Console.WriteLine($"{self.Name} left");
             return self;
@@ -144,6 +149,11 @@ namespace TexasHoldEmServer.Interfaces
         protected override ValueTask OnDisconnected()
         {
             roomManager?.RemoveConnection(self.Id, self.RoomId);
+            if (storage.AllValues.Count == 0)
+            {
+                roomManager.ClearRooms();
+                gameLogicManager.Reset();
+            }
             return ValueTask.CompletedTask;
         }
     }

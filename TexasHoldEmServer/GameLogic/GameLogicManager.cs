@@ -22,6 +22,23 @@ namespace TexasHoldEmServer.GameLogic
         public CardEntity[] CommunityCards { get; } = new CardEntity[5];
         public Enums.GameStateEnum GameState { get; private set; }
 
+        public void Reset()
+        {
+            playerQueue.Clear();
+            smallBlindBetDone = false;
+            bigBlindBetDone = false;
+            previousCommandType = 0;
+            previousBetAmount = 0;
+            totalBetForTurn = 0;
+            cardPool.Clear();
+            playerHands.Clear();
+            isTie = false;
+            CurrentPlayer = null;
+            Pot = 0;
+            for (var i = 0; i < CommunityCards.Length; i++)
+                CommunityCards[i] = null;
+            GameState = Enums.GameStateEnum.BlindBet;
+        }
         public void SetupGame(List<PlayerEntity> players)
         {
             SetRoles(players);
