@@ -1,8 +1,9 @@
-using System.Collections;
-using TexasHoldEmShared.Enums;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using THE.MagicOnion.Shared.Entities;
 
-namespace THE.Utilities
+namespace THE.MagicOnion.Shared.Utilities
 {
     public static class ExtensionMethods
     {
@@ -19,6 +20,16 @@ namespace THE.Utilities
             var sourceArray = source.ToArray();
             rand.Shuffle(sourceArray);
             return sourceArray.ToList();
+        }
+        
+        public static void Shuffle<T>(this Random rng, T[] array)
+        {
+            var n = array.Length;
+            while (n > 1) 
+            {
+                var k = rng.Next(n--);
+                (array[n], array[k]) = (array[k], array[n]);
+            }
         }
 
         public static void AddChips(this List<ChipEntity> chips, List<ChipEntity> newChips)

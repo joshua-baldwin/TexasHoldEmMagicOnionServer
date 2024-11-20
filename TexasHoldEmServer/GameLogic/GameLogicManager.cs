@@ -1,6 +1,6 @@
 using TexasHoldEmShared.Enums;
 using THE.MagicOnion.Shared.Entities;
-using THE.Utilities;
+using THE.MagicOnion.Shared.Utilities;
 
 namespace TexasHoldEmServer.GameLogic
 {
