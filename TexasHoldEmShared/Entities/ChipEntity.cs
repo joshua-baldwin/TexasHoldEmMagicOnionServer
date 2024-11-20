@@ -8,10 +8,14 @@ namespace THE.MagicOnion.Shared.Entities
     {
         [Key(0)]
         public Enums.ChipTypeEnum ChipType { get; private set; }
+        
+        [Key(1)]
+        public int ChipCount { get; set; }
 
-        public ChipEntity(Enums.ChipTypeEnum chipType)
+        public ChipEntity(Enums.ChipTypeEnum chipType, int chipCount)
         {
             ChipType = chipType;
+            ChipCount = chipCount;
         }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using TexasHoldEmShared.Enums;
 using THE.MagicOnion.Shared.Entities;
 
@@ -12,7 +13,7 @@ namespace THE.MagicOnion.Shared.Interfaces
         void OnGameStart(PlayerEntity[] playerEntities, PlayerEntity currentPlayer, Enums.GameStateEnum gameState);
         void OnCancelGameStart();
         void OnQuitGame();
-        void OnDoAction(Enums.CommandTypeEnum commandType, PlayerEntity[] playerEntities, Guid previousPlayerId, Guid currentPlayerId, Guid targetPlayerId, int currentPot, CardEntity[] communityCards, Enums.GameStateEnum gameState, bool isError, string actionMessage);
+        void OnDoAction(Enums.CommandTypeEnum commandType, PlayerEntity[] playerEntities, Guid previousPlayerId, Guid currentPlayerId, Guid targetPlayerId, List<ChipEntity> currentPot, CardEntity[] communityCards, Enums.GameStateEnum gameState, bool isError, string actionMessage);
         void OnChooseHand(Guid winnerId, PlayerEntity[] playerEntities);
     }
 }

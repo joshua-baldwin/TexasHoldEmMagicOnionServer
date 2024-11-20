@@ -24,8 +24,7 @@ namespace THE.MagicOnion.Shared.Entities
         public bool IsDealer { get; set; }
         
         [Key(5)]
-        public CardEntity[] HoleCards { get; set; }
-        
+        public List<CardEntity> HoleCards { get; set; }
         
         [Key(6)]
         public bool IsReady { get; set; }
@@ -47,7 +46,7 @@ namespace THE.MagicOnion.Shared.Entities
             Name = name;
             Id = id;
             PlayerRole = role;
-            HoleCards = new CardEntity[2];
+            Chips = new List<ChipEntity>();
         }
     }
 }

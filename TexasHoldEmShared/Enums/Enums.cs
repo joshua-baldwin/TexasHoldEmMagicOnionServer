@@ -16,11 +16,14 @@ namespace TexasHoldEmShared.Enums
             Heart,
             Spade,
             Diamond,
-            Club
+            Club,
+            None
         }
         
         public enum CardRankEnum
         {
+            [Description("JK")]
+            Joker = 0,
             [Description("2")]
             Two = 2,
             [Description("3")]
