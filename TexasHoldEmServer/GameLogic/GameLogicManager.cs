@@ -12,7 +12,7 @@ namespace TexasHoldEmServer.GameLogic
         private bool smallBlindBetDone;
         private bool bigBlindBetDone;
         private Enums.CommandTypeEnum previousCommandType;
-        private int previousBetAmount;
+        private List<ChipEntity> previousBet;
         private List<ChipEntity> totalChipsForTurn = new();
         private List<CardEntity> cardPool;
         private readonly Dictionary<Guid, CardEntity[]> playerHands = new();
@@ -29,7 +29,7 @@ namespace TexasHoldEmServer.GameLogic
             smallBlindBetDone = false;
             bigBlindBetDone = false;
             previousCommandType = 0;
-            previousBetAmount = 0;
+            previousBet = new List<ChipEntity>();
             totalChipsForTurn = new List<ChipEntity>();
             cardPool.Clear();
             playerHands.Clear();
@@ -50,7 +50,6 @@ namespace TexasHoldEmServer.GameLogic
 
         public void DoAction(Enums.CommandTypeEnum commandType, List<ChipEntity> chipsBet, out bool isError, out string actionMessage)
         {
-            var betAmount = chipsBet.Sum(chip => (int)chip.ChipType * chip.ChipCount);
             switch (commandType)
             {
                 case Enums.CommandTypeEnum.SmallBlindBet:
@@ -62,8 +61,8 @@ namespace TexasHoldEmServer.GameLogic
                     }
                     actionMessage = $"{CurrentPlayer.Name} bet {chipsBet}.";
                     totalChipsForTurn.AddChips(chipsBet);
-                    previousBetAmount = betAmount;
-                    CurrentPlayer.CurrentBet += betAmount;
+                    previousBet = chipsBet;
+                    CurrentPlayer.CurrentBet.AddChips(chipsBet);
                     CurrentPlayer.Chips.RemoveChips(chipsBet);
                     smallBlindBetDone = true;
                     break;
@@ -76,8 +75,8 @@ namespace TexasHoldEmServer.GameLogic
                     }
                     actionMessage = $"{CurrentPlayer.Name} bet {chipsBet}.";
                     totalChipsForTurn.AddChips(chipsBet);
-                    previousBetAmount = betAmount;
-                    CurrentPlayer.CurrentBet += betAmount;
+                    previousBet = chipsBet;
+                    CurrentPlayer.CurrentBet.AddChips(chipsBet);
                     CurrentPlayer.Chips.RemoveChips(chipsBet);
                     bigBlindBetDone = true;
                     break;
@@ -97,7 +96,7 @@ namespace TexasHoldEmServer.GameLogic
                 case Enums.CommandTypeEnum.Call:
                     actionMessage = $"{CurrentPlayer.Name} called.";
                     totalChipsForTurn.AddChips(chipsBet);
-                    CurrentPlayer.CurrentBet += previousBetAmount;
+                    CurrentPlayer.CurrentBet.AddChips(previousBet);
                     CurrentPlayer.Chips.RemoveChips(chipsBet);
                     CurrentPlayer.HasTakenAction = true;
                     break;
@@ -110,8 +109,8 @@ namespace TexasHoldEmServer.GameLogic
                     }
                     actionMessage = $"{CurrentPlayer.Name} raised {chipsBet}.";
                     totalChipsForTurn.AddChips(chipsBet);
-                    previousBetAmount = betAmount;
-                    CurrentPlayer.CurrentBet += betAmount;
+                    previousBet = chipsBet;
+                    CurrentPlayer.CurrentBet.AddChips(chipsBet);
                     CurrentPlayer.Chips.RemoveChips(chipsBet);
                     CurrentPlayer.HasTakenAction = true;
                     break;
@@ -356,7 +355,8 @@ namespace TexasHoldEmServer.GameLogic
                 message = "The bet must be greater than 0.";
                 return false;
             }
-            
+
+            var previousBetAmount = previousBet.GetTotalChipValue();
             if (previousBetAmount != 0 && betAmount <= previousBetAmount)
             {
                 message = "The bet must be greater than the previous bet.";
@@ -382,7 +382,7 @@ namespace TexasHoldEmServer.GameLogic
         private void ResetBets()
         {
             foreach (var player in playerQueue)
-                player.CurrentBet = 0;
+                player.CurrentBet = new List<ChipEntity>();
         }
     }
 }
