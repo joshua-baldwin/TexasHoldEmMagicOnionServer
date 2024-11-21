@@ -48,8 +48,9 @@ namespace TexasHoldEmServer.GameLogic
             CreateQueue(players);
         }
 
-        public void DoAction(Enums.CommandTypeEnum commandType, List<ChipEntity> chipsBet, out bool isError, out string actionMessage)
+        public void DoAction(Enums.CommandTypeEnum commandType, List<ChipEntity> chipsBet, out bool isGameOver, out bool isError, out string actionMessage)
         {
+            isGameOver = false;
             switch (commandType)
             {
                 case Enums.CommandTypeEnum.SmallBlindBet:
@@ -92,6 +93,14 @@ namespace TexasHoldEmServer.GameLogic
                 case Enums.CommandTypeEnum.Fold:
                     actionMessage = $"{CurrentPlayer.Name} folded.";
                     CurrentPlayer.HasFolded = true;
+                    if (playerQueue.Count(x => x.HasFolded) == playerQueue.Count - 1)
+                    {
+                        //TODO build this out
+                        playerQueue.First(x => !x.HasFolded).Chips.AddChips(Pot);
+                        isGameOver = true;
+                        isError = false;
+                        return;
+                    }
                     break;
                 case Enums.CommandTypeEnum.Call:
                     if (!CanPlaceBet(previousBet, out message, true))
@@ -355,6 +364,8 @@ namespace TexasHoldEmServer.GameLogic
         
         private bool CanPlaceBet(List<ChipEntity> chipsBet, out string message, bool isCall = false)
         {
+            message = string.Empty;
+            return true;
             var betAmount = chipsBet.Sum(x => (int)x.ChipType * x.ChipCount);
             if (betAmount <= 0)
             {

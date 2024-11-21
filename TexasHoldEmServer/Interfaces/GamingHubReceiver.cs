@@ -119,9 +119,11 @@ namespace TexasHoldEmServer.Interfaces
                 return;
 
             var previousPlayer = gameLogicManager.CurrentPlayer;
-            gameLogicManager.DoAction(commandType, chipsBet, out bool isError, out string actionMessage);
+            gameLogicManager.DoAction(commandType, chipsBet, out bool isGameOver, out bool isError, out string actionMessage);
             if (isError)
                 BroadcastTo(group, ConnectionId).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pot, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage);
+            else if (isGameOver)
+                Broadcast(group).OnGameOver(storage.AllValues.First(x => !x.HasFolded).Id, storage.AllValues.ToArray());
             else
                 Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pot, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage);
         }
