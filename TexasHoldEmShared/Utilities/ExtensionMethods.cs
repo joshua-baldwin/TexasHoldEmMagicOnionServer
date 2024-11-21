@@ -37,7 +37,7 @@ namespace THE.MagicOnion.Shared.Utilities
             foreach (var chip in newChips)
             {
                 if (chips.FirstOrDefault(x => x.ChipType == chip.ChipType) == null)
-                    chips.Add(chip);
+                    chips.Add(new ChipEntity(chip.ChipType, chip.ChipCount));
                 else
                     chips.First(x => x.ChipType == chip.ChipType).ChipCount += chip.ChipCount;
             }

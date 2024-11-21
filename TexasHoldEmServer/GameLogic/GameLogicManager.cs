@@ -12,7 +12,7 @@ namespace TexasHoldEmServer.GameLogic
         private bool smallBlindBetDone;
         private bool bigBlindBetDone;
         private Enums.CommandTypeEnum previousCommandType;
-        private List<ChipEntity> previousBet;
+        private List<ChipEntity> previousBet = new();
         private List<ChipEntity> totalChipsForTurn = new();
         private List<CardEntity> cardPool;
         private readonly Dictionary<Guid, CardEntity[]> playerHands = new();
@@ -94,10 +94,16 @@ namespace TexasHoldEmServer.GameLogic
                     CurrentPlayer.HasFolded = true;
                     break;
                 case Enums.CommandTypeEnum.Call:
+                    if (!CanPlaceBet(previousBet, out message, true))
+                    {
+                        actionMessage = message;
+                        isError = true;
+                        return;
+                    }
                     actionMessage = $"{CurrentPlayer.Name} called.";
-                    totalChipsForTurn.AddChips(chipsBet);
+                    totalChipsForTurn.AddChips(previousBet);
                     CurrentPlayer.CurrentBet.AddChips(previousBet);
-                    CurrentPlayer.Chips.RemoveChips(chipsBet);
+                    CurrentPlayer.Chips.RemoveChips(previousBet);
                     CurrentPlayer.HasTakenAction = true;
                     break;
                 case Enums.CommandTypeEnum.Raise:
@@ -347,7 +353,7 @@ namespace TexasHoldEmServer.GameLogic
             return isTie ? Guid.Empty : currentPlayer.PlayerId;
         }
         
-        private bool CanPlaceBet(List<ChipEntity> chipsBet, out string message)
+        private bool CanPlaceBet(List<ChipEntity> chipsBet, out string message, bool isCall = false)
         {
             var betAmount = chipsBet.Sum(x => (int)x.ChipType * x.ChipCount);
             if (betAmount <= 0)
@@ -357,7 +363,7 @@ namespace TexasHoldEmServer.GameLogic
             }
 
             var previousBetAmount = previousBet.GetTotalChipValue();
-            if (previousBetAmount != 0 && betAmount <= previousBetAmount)
+            if (previousBetAmount != 0 && betAmount <= previousBetAmount && !isCall)
             {
                 message = "The bet must be greater than the previous bet.";
                 return false;
