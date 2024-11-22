@@ -8,18 +8,19 @@ namespace TexasHoldEmServer.GameLogic
     {
         public const int MaxPlayers = 10;
         public const int MaxHoleCards = 2;
+        public const int StartingChips = 50;
         private readonly Queue<PlayerEntity> playerQueue = new();
         private bool smallBlindBetDone;
         private bool bigBlindBetDone;
         private Enums.CommandTypeEnum previousCommandType;
         private int previousBet;
-        private List<ChipEntity> totalChipsForTurn = new();
+        private int totalChipsForTurn;
         private List<CardEntity> cardPool;
         private readonly Dictionary<Guid, CardEntity[]> playerHands = new();
         private bool isTie;
         
         public PlayerEntity CurrentPlayer { get; private set; }
-        public List<ChipEntity> Pot { get; private set; } = new();
+        public int Pot { get; private set; }
         public CardEntity[] CommunityCards { get; } = new CardEntity[5];
         public Enums.GameStateEnum GameState { get; private set; }
 
@@ -30,12 +31,12 @@ namespace TexasHoldEmServer.GameLogic
             bigBlindBetDone = false;
             previousCommandType = 0;
             previousBet = 0;
-            totalChipsForTurn = new List<ChipEntity>();
+            totalChipsForTurn = 0;
             cardPool.Clear();
             playerHands.Clear();
             isTie = false;
             CurrentPlayer = null;
-            Pot = new List<ChipEntity>();
+            Pot = 0;
             for (var i = 0; i < CommunityCards.Length; i++)
                 CommunityCards[i] = null;
             GameState = Enums.GameStateEnum.BlindBet;
@@ -43,8 +44,8 @@ namespace TexasHoldEmServer.GameLogic
         public void SetupGame(List<PlayerEntity> players)
         {
             cardPool = CreateDeck();
+            players.ForEach(player => player.Chips = StartingChips);
             SetRoles(players);
-            SetChips(players);
             CreateQueue(players);
         }
 
@@ -61,10 +62,10 @@ namespace TexasHoldEmServer.GameLogic
                         return;
                     }
                     actionMessage = $"{CurrentPlayer.Name} bet {chipsBet}.";
-                    totalChipsForTurn.AddChips(chipsBet);
+                    totalChipsForTurn += chipsBet;
                     previousBet = chipsBet;
-                    CurrentPlayer.CurrentBet.AddChips(chipsBet);
-                    CurrentPlayer.Chips.RemoveChips(chipsBet);
+                    CurrentPlayer.CurrentBet += chipsBet;
+                    CurrentPlayer.Chips -= chipsBet;
                     smallBlindBetDone = true;
                     break;
                 case Enums.CommandTypeEnum.BigBlindBet:
@@ -75,10 +76,10 @@ namespace TexasHoldEmServer.GameLogic
                         return;
                     }
                     actionMessage = $"{CurrentPlayer.Name} bet {chipsBet}.";
-                    totalChipsForTurn.AddChips(chipsBet);
+                    totalChipsForTurn += chipsBet;
                     previousBet = chipsBet;
-                    CurrentPlayer.CurrentBet.AddChips(chipsBet);
-                    CurrentPlayer.Chips.RemoveChips(chipsBet);
+                    CurrentPlayer.CurrentBet += chipsBet;
+                    CurrentPlayer.Chips -= chipsBet;
                     bigBlindBetDone = true;
                     break;
                 case Enums.CommandTypeEnum.Check:
@@ -95,8 +96,7 @@ namespace TexasHoldEmServer.GameLogic
                     CurrentPlayer.HasFolded = true;
                     if (playerQueue.Count(x => x.HasFolded) == playerQueue.Count - 1)
                     {
-                        //TODO build this out
-                        playerQueue.First(x => !x.HasFolded).Chips.AddChips(Pot);
+                        playerQueue.First(x => !x.HasFolded).Chips += Pot;
                         isGameOver = true;
                         isError = false;
                         return;
@@ -110,9 +110,9 @@ namespace TexasHoldEmServer.GameLogic
                         return;
                     }
                     actionMessage = $"{CurrentPlayer.Name} called.";
-                    totalChipsForTurn.AddChips(previousBet);
-                    CurrentPlayer.CurrentBet.AddChips(previousBet);
-                    CurrentPlayer.Chips.RemoveChips(previousBet);
+                    totalChipsForTurn += previousBet;
+                    CurrentPlayer.CurrentBet += previousBet;
+                    CurrentPlayer.Chips -= previousBet;
                     CurrentPlayer.HasTakenAction = true;
                     break;
                 case Enums.CommandTypeEnum.Raise:
@@ -123,10 +123,10 @@ namespace TexasHoldEmServer.GameLogic
                         return;
                     }
                     actionMessage = $"{CurrentPlayer.Name} raised {chipsBet}.";
-                    totalChipsForTurn.AddChips(chipsBet);
+                    totalChipsForTurn += chipsBet;
                     previousBet = chipsBet;
-                    CurrentPlayer.CurrentBet.AddChips(chipsBet);
-                    CurrentPlayer.Chips.RemoveChips(chipsBet);
+                    CurrentPlayer.CurrentBet += chipsBet;
+                    CurrentPlayer.Chips -= chipsBet;
                     CurrentPlayer.HasTakenAction = true;
                     break;
                 default:
@@ -247,20 +247,6 @@ namespace TexasHoldEmServer.GameLogic
             cardPool = shuffled;
         }
         
-        private void SetChips(List<PlayerEntity> players)
-        {
-            //start with 50 chips
-            //25 + 10 + 5 + 5 + 1 + 1 + 1 + 1 + 1
-            foreach (var player in players)
-            {
-                player.Chips.Add(new ChipEntity(Enums.ChipTypeEnum.White, 5));
-                player.Chips.Add(new ChipEntity(Enums.ChipTypeEnum.Red, 2));
-                player.Chips.Add(new ChipEntity(Enums.ChipTypeEnum.Blue, 1));
-                player.Chips.Add(new ChipEntity(Enums.ChipTypeEnum.Green, 1));
-                player.Chips.Add(new ChipEntity(Enums.ChipTypeEnum.Black, 0));
-            }
-        }
-        
         private List<CardEntity> CreateDeck(bool useJokers = false)
         {
             var suits = Enum.GetValues<Enums.CardSuitEnum>();
@@ -376,7 +362,7 @@ namespace TexasHoldEmServer.GameLogic
                 return false;
             }
             
-            if (chipsBet > CurrentPlayer.Chips.GetTotalChipValue())
+            if (chipsBet > CurrentPlayer.Chips)
             {
                 message = "Not enough chips.";
                 return false;
@@ -388,14 +374,14 @@ namespace TexasHoldEmServer.GameLogic
         
         private void UpdatePot()
         {
-            Pot.AddChips(totalChipsForTurn);
-            totalChipsForTurn.Clear();
+            Pot += totalChipsForTurn;
+            totalChipsForTurn = 0;
         }
 
         private void ResetBets()
         {
             foreach (var player in playerQueue)
-                player.CurrentBet = new List<ChipEntity>();
+                player.CurrentBet = 0;
         }
     }
 }

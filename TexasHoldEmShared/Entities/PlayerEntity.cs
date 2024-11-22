@@ -30,10 +30,10 @@ namespace THE.MagicOnion.Shared.Entities
         public bool IsReady { get; set; }
         
         [Key(7)]
-        public List<ChipEntity> Chips { get; set; }
+        public int Chips { get; set; }
         
         [Key(8)]
-        public List<ChipEntity> CurrentBet { get; set; }
+        public int CurrentBet { get; set; }
         
         [Key(9)]
         public bool HasTakenAction { get; set; }
@@ -46,8 +46,6 @@ namespace THE.MagicOnion.Shared.Entities
             Name = name;
             Id = id;
             PlayerRole = role;
-            Chips = new List<ChipEntity>();
-            CurrentBet = new List<ChipEntity>();
         }
     }
 }
