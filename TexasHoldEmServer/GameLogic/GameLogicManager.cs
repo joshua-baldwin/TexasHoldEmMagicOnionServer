@@ -41,12 +41,12 @@ namespace TexasHoldEmServer.GameLogic
                 CommunityCards[i] = null;
             GameState = Enums.GameStateEnum.BlindBet;
         }
-        public void SetupGame(List<PlayerEntity> players)
+        public void SetupGame(ref List<PlayerEntity> players)
         {
             cardPool = CreateDeck();
             players.ForEach(player => player.Chips = StartingChips);
             SetRoles(players);
-            CreateQueue(players);
+            CreateQueue(ref players);
         }
 
         public void DoAction(Enums.CommandTypeEnum commandType, int chipsBet, out bool isGameOver, out bool isError, out string actionMessage)
@@ -170,7 +170,6 @@ namespace TexasHoldEmServer.GameLogic
                         SetTheTurn();
                         gameStateChanged = true;
                         UpdatePot();
-                        ResetBets();
                     }
                     break;
                 case Enums.GameStateEnum.TheTurn:
@@ -180,7 +179,6 @@ namespace TexasHoldEmServer.GameLogic
                         SetTheRiver();
                         gameStateChanged = true;
                         UpdatePot();
-                        ResetBets();
                     }
                     break;
                 case Enums.GameStateEnum.TheRiver:
@@ -189,7 +187,6 @@ namespace TexasHoldEmServer.GameLogic
                         GameState = Enums.GameStateEnum.Showdown;
                         gameStateChanged = true;
                         UpdatePot();
-                        ResetBets();
                     }
                     break;
                 default:
@@ -266,13 +263,14 @@ namespace TexasHoldEmServer.GameLogic
             return deck;
         }
         
-        private void CreateQueue(List<PlayerEntity> players)
+        private void CreateQueue(ref List<PlayerEntity> players)
         {
-            var sortedList = players.OrderByDescending(x => x.IsDealer)
-                                    .ThenByDescending(x => x.PlayerRole == Enums.PlayerRoleEnum.SmallBlind)
-                                    .ThenByDescending(x => x.PlayerRole == Enums.PlayerRoleEnum.BigBlind);
-            foreach (var player in sortedList)
-                playerQueue.Enqueue(player);
+            players = players.OrderByDescending(x => x.IsDealer)
+                .ThenByDescending(x => x.PlayerRole == Enums.PlayerRoleEnum.SmallBlind)
+                .ThenByDescending(x => x.PlayerRole == Enums.PlayerRoleEnum.BigBlind).ToList();
+            for (var i = 1; i < players.Count; i++)
+                playerQueue.Enqueue(players[i]);
+            playerQueue.Enqueue(players[0]);
             
             CurrentPlayer = playerQueue.Peek();
         }
@@ -372,10 +370,6 @@ namespace TexasHoldEmServer.GameLogic
         {
             Pot += totalChipsForTurn;
             totalChipsForTurn = 0;
-        }
-
-        private void ResetBets()
-        {
             foreach (var player in playerQueue)
                 player.CurrentBet = 0;
         }

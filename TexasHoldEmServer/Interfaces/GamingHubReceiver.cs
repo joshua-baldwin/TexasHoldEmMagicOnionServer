@@ -89,7 +89,7 @@ namespace TexasHoldEmServer.Interfaces
             if (players.Any(player => !player.IsReady))
                 return false;
             
-            gameLogicManager.SetupGame(players);
+            gameLogicManager.SetupGame(ref players);
 
             Broadcast(group).OnGameStart(players.ToArray(), gameLogicManager.CurrentPlayer, gameLogicManager.GameState);
             return true;
