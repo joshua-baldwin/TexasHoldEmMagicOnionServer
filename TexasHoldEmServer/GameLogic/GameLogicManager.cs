@@ -268,15 +268,11 @@ namespace TexasHoldEmServer.GameLogic
         
         private void CreateQueue(List<PlayerEntity> players)
         {
-            var index = players.FindIndex(player => player.PlayerRole == Enums.PlayerRoleEnum.SmallBlind);
-            while (playerQueue.Count < players.Count)
-            {
-                playerQueue.Enqueue(players[index]);
-                if (index + 1 >= players.Count)
-                    index = 0;
-                else
-                    index++;
-            }
+            var sortedList = players.OrderByDescending(x => x.IsDealer)
+                                    .ThenByDescending(x => x.PlayerRole == Enums.PlayerRoleEnum.SmallBlind)
+                                    .ThenByDescending(x => x.PlayerRole == Enums.PlayerRoleEnum.BigBlind);
+            foreach (var player in sortedList)
+                playerQueue.Enqueue(player);
             
             CurrentPlayer = playerQueue.Peek();
         }

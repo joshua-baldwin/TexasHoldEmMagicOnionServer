@@ -91,7 +91,7 @@ namespace TexasHoldEmServer.Interfaces
             
             gameLogicManager.SetupGame(players);
 
-            Broadcast(group).OnGameStart(storage.AllValues.ToArray(), gameLogicManager.CurrentPlayer, gameLogicManager.GameState);
+            Broadcast(group).OnGameStart(players.ToArray(), gameLogicManager.CurrentPlayer, gameLogicManager.GameState);
             return true;
         }
 
