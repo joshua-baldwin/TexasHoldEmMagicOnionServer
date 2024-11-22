@@ -94,13 +94,6 @@ namespace TexasHoldEmServer.GameLogic
                 case Enums.CommandTypeEnum.Fold:
                     actionMessage = $"{CurrentPlayer.Name} folded.";
                     CurrentPlayer.HasFolded = true;
-                    if (playerQueue.Count(x => x.HasFolded) == playerQueue.Count - 1)
-                    {
-                        playerQueue.First(x => !x.HasFolded).Chips += Pot;
-                        isGameOver = true;
-                        isError = false;
-                        return;
-                    }
                     break;
                 case Enums.CommandTypeEnum.Call:
                     if (!CanPlaceBet(previousBet, out message, true))
@@ -134,7 +127,18 @@ namespace TexasHoldEmServer.GameLogic
             }
             previousCommandType = commandType;
             playerQueue.Dequeue();
-            playerQueue.Enqueue(CurrentPlayer);
+            if (playerQueue.Count == 1)
+            {
+                playerQueue.First().Chips += Pot;
+                Pot = 0;
+                totalChipsForTurn = 0;
+                isGameOver = true;
+                isError = false;
+                actionMessage = "";
+                return;
+            }
+            if (!CurrentPlayer.HasFolded)
+                playerQueue.Enqueue(CurrentPlayer);
             CurrentPlayer = playerQueue.Peek();
             UpdateGameState();
             actionMessage = "";
@@ -251,7 +255,7 @@ namespace TexasHoldEmServer.GameLogic
             var deck = new List<CardEntity>();
             foreach (var suit in suits)
             {
-                deck.AddRange(ranks.Select(rank => new CardEntity(suit, rank)));
+                deck.AddRange(ranks.Where(rank => rank != Enums.CardRankEnum.Joker).Select(rank => new CardEntity(suit, rank)));
             }
 
             if (useJokers)
