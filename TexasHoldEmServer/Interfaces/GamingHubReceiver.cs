@@ -113,13 +113,13 @@ namespace TexasHoldEmServer.Interfaces
             throw new NotImplementedException();
         }
 
-        public async Task DoAction(Enums.CommandTypeEnum commandType, List<ChipEntity> chipsBet, Guid targetPlayerId)
+        public async Task DoAction(Enums.CommandTypeEnum commandType, int betAmount, Guid targetPlayerId)
         {
             if (group == null)
                 return;
 
             var previousPlayer = gameLogicManager.CurrentPlayer;
-            gameLogicManager.DoAction(commandType, chipsBet, out bool isGameOver, out bool isError, out string actionMessage);
+            gameLogicManager.DoAction(commandType, betAmount, out bool isGameOver, out bool isError, out string actionMessage);
             if (isError)
                 BroadcastTo(group, ConnectionId).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pot, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage);
             else if (isGameOver)

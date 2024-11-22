@@ -12,7 +12,7 @@ namespace TexasHoldEmServer.GameLogic
         private bool smallBlindBetDone;
         private bool bigBlindBetDone;
         private Enums.CommandTypeEnum previousCommandType;
-        private List<ChipEntity> previousBet = new();
+        private int previousBet;
         private List<ChipEntity> totalChipsForTurn = new();
         private List<CardEntity> cardPool;
         private readonly Dictionary<Guid, CardEntity[]> playerHands = new();
@@ -29,7 +29,7 @@ namespace TexasHoldEmServer.GameLogic
             smallBlindBetDone = false;
             bigBlindBetDone = false;
             previousCommandType = 0;
-            previousBet = new List<ChipEntity>();
+            previousBet = 0;
             totalChipsForTurn = new List<ChipEntity>();
             cardPool.Clear();
             playerHands.Clear();
@@ -48,7 +48,7 @@ namespace TexasHoldEmServer.GameLogic
             CreateQueue(players);
         }
 
-        public void DoAction(Enums.CommandTypeEnum commandType, List<ChipEntity> chipsBet, out bool isGameOver, out bool isError, out string actionMessage)
+        public void DoAction(Enums.CommandTypeEnum commandType, int chipsBet, out bool isGameOver, out bool isError, out string actionMessage)
         {
             isGameOver = false;
             switch (commandType)
@@ -362,25 +362,21 @@ namespace TexasHoldEmServer.GameLogic
             return isTie ? Guid.Empty : currentPlayer.PlayerId;
         }
         
-        private bool CanPlaceBet(List<ChipEntity> chipsBet, out string message, bool isCall = false)
+        private bool CanPlaceBet(int chipsBet, out string message, bool isCall = false)
         {
-            message = string.Empty;
-            return true;
-            var betAmount = chipsBet.Sum(x => (int)x.ChipType * x.ChipCount);
-            if (betAmount <= 0)
+            if (chipsBet <= 0)
             {
                 message = "The bet must be greater than 0.";
                 return false;
             }
-
-            var previousBetAmount = previousBet.GetTotalChipValue();
-            if (previousBetAmount != 0 && betAmount <= previousBetAmount && !isCall)
+            
+            if (previousBet != 0 && chipsBet <= previousBet && !isCall)
             {
                 message = "The bet must be greater than the previous bet.";
                 return false;
             }
             
-            if (betAmount > CurrentPlayer.Chips.GetTotalChipValue())
+            if (chipsBet > CurrentPlayer.Chips.GetTotalChipValue())
             {
                 message = "Not enough chips.";
                 return false;
