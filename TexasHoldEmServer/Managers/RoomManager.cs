@@ -13,10 +13,12 @@ namespace TexasHoldEmServer.Managers
         RoomEntity GetRoomEntity(Guid roomId);
         RoomEntity GetNonFullRoomEntity();
         void ClearRooms();
+        int GetRoomCount();
     }
     
     public class RoomManager : IRoomManager
     {
+        public const int MaxRoomCount = 10;
         private Dictionary<Guid, RoomEntity> roomDictionary = new();
 
         public void AddRoomAndConnection(Guid roomId, IGroup? group, IInMemoryStorage<PlayerEntity> storage, Guid playerId, Guid connectionId)
@@ -59,5 +61,7 @@ namespace TexasHoldEmServer.Managers
         {
             roomDictionary.Clear();
         }
+        
+        public int GetRoomCount() => roomDictionary.Count;
     }
 }

@@ -19,7 +19,7 @@ namespace TexasHoldEmServer.Interfaces
         private IRoomManager? roomManager;
         private GameLogicManager? gameLogicManager;
         
-        public async Task<PlayerEntity> JoinRoomAsync(string userName)
+        public async Task JoinRoomAsync(string userName)
         {
             if (roomManager == null)
                 roomManager = Context.ServiceProvider.GetService<IRoomManager>();
@@ -31,6 +31,11 @@ namespace TexasHoldEmServer.Interfaces
             var existingRoom = roomManager.GetNonFullRoomEntity();
             if (existingRoom == null)
             {
+                if (roomManager.GetRoomCount() >= RoomManager.MaxRoomCount)
+                {
+                    //TODO tell client no room available
+                    return;
+                }
                 var roomId = Guid.NewGuid();
                 self.RoomId = roomId;
                 (group, storage) = await Group.AddAsync(roomId.ToString(), self);
@@ -46,7 +51,6 @@ namespace TexasHoldEmServer.Interfaces
             Broadcast(group).OnJoinRoom(self, storage.AllValues.Count);
             
             Console.WriteLine($"{userName} joined");
-            return self;
         }
 
         public async Task<PlayerEntity> LeaveRoomAsync()
