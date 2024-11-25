@@ -110,8 +110,21 @@ namespace TexasHoldEmServer.GameLogic
 
         private static bool IsStraight(CardEntity[] cards)
         {
-            var ranks = cards.Select(card => card.Rank).Order().ToList();
-            return ranks.Zip(ranks.Skip(1), (a, b) => (a + 1) == b).All(x => x);
+            //7枚の中5枚が連続かをチェック
+            var orderedCards = cards.Select(card => card.Rank).Order().ToList();
+            var count = 1;
+            for (var i = 0; i < orderedCards.Count - 1; i++)
+            {
+                if (orderedCards[i] == orderedCards[i + 1])
+                    continue;
+                
+                if (orderedCards[i] + 1 == orderedCards[i + 1])
+                    count++;
+                else
+                    count = 1;
+            }
+            
+            return count == 5;
         }
 
         private static bool IsThreeOfAKind(CardEntity[] cards)
