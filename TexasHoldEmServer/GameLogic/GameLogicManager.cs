@@ -334,24 +334,24 @@ namespace TexasHoldEmServer.GameLogic
         {
             var currentRanking = Enums.HandRankingType.Nothing;
             (Guid PlayerId, CardEntity[] Hand) currentPlayer = (Guid.Empty, []);
-            foreach (var hand in playerHands)
+            foreach (var (playerId, hand) in playerHands)
             {
-                var ranking = HandRankingLogic.GetHandRanking(hand.Value);
+                var ranking = HandRankingLogic.GetHandRanking(hand);
                 if ((int)ranking < (int)currentRanking)
                 {
                     currentRanking = ranking;
-                    currentPlayer = (hand.Key, hand.Value);
+                    currentPlayer = (playerId, hand);
                     isTie = false;
                 }
                 else if (ranking == currentRanking)
                 {
-                    var guid = HandRankingLogic.CompareHands(currentPlayer, (hand.Key, hand.Value), ranking);
+                    var guid = HandRankingLogic.CompareHands(currentPlayer, (playerId, hand), ranking);
                     if (guid == Guid.Empty)
                         isTie = true;
                     else
                     {
                         isTie = false;
-                        currentPlayer = currentPlayer.PlayerId == guid ? currentPlayer : (hand.Key, hand.Value);
+                        currentPlayer = currentPlayer.PlayerId == guid ? currentPlayer : (playerId, hand);
                     }
                 }
             }
