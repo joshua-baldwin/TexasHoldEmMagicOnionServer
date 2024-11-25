@@ -106,17 +106,12 @@ namespace TexasHoldEmServer.GameLogic
         private static bool IsStraight(CardEntity[] cards)
         {
             //7枚の中5枚が連続かをチェック
-            var orderedCards = cards.Select(card => card.Rank).Order().ToList();
+            var orderedCards = cards.OrderBy(x => x.Rank).ToList();
             var count = 1;
             for (var i = 0; i < orderedCards.Count - 1; i++)
             {
-                if (orderedCards[i] == orderedCards[i + 1])
-                    continue;
-                
-                if (orderedCards[i] + 1 == orderedCards[i + 1])
+                if (orderedCards[i].Rank + 1 == orderedCards[i + 1].Rank)
                     count++;
-                else
-                    count = 1;
             }
             
             return count == 5;
