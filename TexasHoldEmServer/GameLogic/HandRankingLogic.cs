@@ -76,7 +76,9 @@ namespace TexasHoldEmServer.GameLogic
 
         private static bool IsStraightFlush(CardEntity[] cards)
         {
-            return IsStraight(cards) && IsFlush(cards);
+            //フラッシュがあった場合そのカードをチェックする
+            var flush = cards.GroupBy(x => x.Suit).FirstOrDefault(x => x.Count() == 5);
+            return flush != null && IsStraight(flush.Select(x => x).ToArray());
         }
 
         private static bool IsFourOfAKind(CardEntity[] cards)
