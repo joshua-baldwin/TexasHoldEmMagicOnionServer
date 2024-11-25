@@ -103,8 +103,8 @@ namespace TexasHoldEmServer.GameLogic
 
         private static bool IsFlush(CardEntity[] cards)
         {
-            var suits = cards.Select(c => c.Suit).Distinct().ToList();
-            return suits.Count == 1;
+            //7枚の中5枚が同じスーツかをチェック
+            return cards.GroupBy(x => x.Suit).Any(x => x.Count() == 5);
         }
 
         private static bool IsStraight(CardEntity[] cards)
