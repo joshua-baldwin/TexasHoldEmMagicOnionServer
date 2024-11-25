@@ -94,9 +94,10 @@ namespace TexasHoldEmServer.GameLogic
 
         private static bool IsFullHouse(CardEntity[] cards)
         {
+            //ペアか
             if (!IsPair(cards))
                 return false;
-            
+            //ペア除いて3 of a kindがあるか
             var pair = cards.Select(x => x.Rank).GroupBy(x => x).First(x => x.Count() == 2);
             return IsThreeOfAKind(cards.Where(card => card.Rank != pair.Key).ToArray());
         }
@@ -115,12 +116,14 @@ namespace TexasHoldEmServer.GameLogic
 
         private static bool IsThreeOfAKind(CardEntity[] cards)
         {
+            //同じランクが3枚あるか
             var ranks = cards.Select(card => card.Rank).ToList();
             return ranks.GroupBy(x => x).Any(group => group.Count() == 3);
         }
 
         private static bool IsTwoPair(CardEntity[] cards)
         {
+            //ペアが2つあるか
             var ranks = cards.Select(card => card.Rank).ToList();
             var groups = ranks.GroupBy(x => x);
             return groups.Count(group => group.Count() == 2) == 2;
@@ -148,7 +151,7 @@ namespace TexasHoldEmServer.GameLogic
         
         private static Guid CompareRoyalFlushes((Guid, CardEntity[]) playerHand1, (Guid, CardEntity[]) playerHand2)
         {
-            //ranks are always the same so its a tie
+            //両方royal flush持ってたら引き分け
             return Guid.Empty;
         }
         
@@ -161,7 +164,8 @@ namespace TexasHoldEmServer.GameLogic
         {
             var hand1 = playerHand1.Item2.GroupBy(x => x.Rank).Where(x => x.Count() == 4).ToArray();
             var hand2 = playerHand2.Item2.GroupBy(x => x.Rank).Where(x => x.Count() == 4).ToArray();
-
+            
+            //同じランクだった場合、high cardをチェックする
             Guid betterHand;
             if (hand1[0].Key == hand2[0].Key)
             {
@@ -179,6 +183,7 @@ namespace TexasHoldEmServer.GameLogic
         
         private static Guid CompareFullHouses((Guid, CardEntity[]) playerHand1, (Guid, CardEntity[]) playerHand2)
         {
+            //3 of a kindが同じだった場合ペアをチェックする
             var betterHand = CompareThreeOfAKinds(playerHand1, playerHand2);
             return betterHand == Guid.Empty
                 ? ComparePairs(playerHand1, playerHand2)
@@ -195,6 +200,7 @@ namespace TexasHoldEmServer.GameLogic
             var hand1 = playerHand1.Item2.OrderByDescending(x => x.Rank).ToArray();
             var hand2 = playerHand2.Item2.OrderByDescending(x => x.Rank).ToArray();
 
+            //一番高いランクが同じだった場合引き分け
             if (hand1[0].Rank == hand2[0].Rank)
                 return Guid.Empty;
             
@@ -206,6 +212,7 @@ namespace TexasHoldEmServer.GameLogic
             var hand1 = playerHand1.Item2.GroupBy(x => x.Rank).Where(x => x.Count() == 3).ToArray();
             var hand2 = playerHand2.Item2.GroupBy(x => x.Rank).Where(x => x.Count() == 3).ToArray();
 
+            //同じランクだった場合、high cardをチェックする
             Guid betterHand;
             if (hand1[0].Key == hand2[0].Key)
             {
@@ -231,6 +238,8 @@ namespace TexasHoldEmServer.GameLogic
             var hand1 = playerHand1.Item2.GroupBy(x => x.Rank).ToArray();
             var hand2 = playerHand2.Item2.GroupBy(x => x.Rank).ToArray();
 
+            //高いランクのペアが勝ち
+            //全部同じだった場合引き分け
             var betterHand = Guid.Empty;
             for (var i = 0; i < hand1.Length; i++)
             {
@@ -240,7 +249,6 @@ namespace TexasHoldEmServer.GameLogic
                 betterHand = hand1[i].Key > hand2[i].Key ? playerHand1.Item1 : playerHand2.Item1;
             }
             
-            //if empty its a tie
             return betterHand;
         }
         
@@ -249,6 +257,8 @@ namespace TexasHoldEmServer.GameLogic
             var hand1 = playerHand1.Item2.OrderByDescending(x => x.Rank).ToArray();
             var hand2 = playerHand2.Item2.OrderByDescending(x => x.Rank).ToArray();
 
+            //一番高いランクが勝ち
+            //全部同じだった場合引き分け
             var betterHand = Guid.Empty;
             for (int i = 0; i < hand1.Length; i++)
             {
@@ -259,7 +269,7 @@ namespace TexasHoldEmServer.GameLogic
                     ? playerHand1.Item1
                     : playerHand2.Item1;
             }
-            //if empty its a tie
+            
             return betterHand;
         }
         
