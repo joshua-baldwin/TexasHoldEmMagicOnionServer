@@ -83,8 +83,7 @@ namespace TexasHoldEmServer.GameLogic
 
         private static bool IsFourOfAKind(CardEntity[] cards)
         {
-            var ranks = cards.Select(card => card.Rank).ToList();
-            return ranks.GroupBy(x => x).Any(group => group.Count() == 4);
+            return cards.GroupBy(x => x.Rank).Any(group => group.Count() == 4);
         }
 
         private static bool IsFullHouse(CardEntity[] cards)
@@ -93,7 +92,7 @@ namespace TexasHoldEmServer.GameLogic
             if (!IsPair(cards))
                 return false;
             //ペア除いて3 of a kindがあるか
-            var pair = cards.Select(x => x.Rank).GroupBy(x => x).First(x => x.Count() == 2);
+            var pair = cards.GroupBy(x => x.Rank).First(x => x.Count() == 2);
             return IsThreeOfAKind(cards.Where(card => card.Rank != pair.Key).ToArray());
         }
 
@@ -120,32 +119,36 @@ namespace TexasHoldEmServer.GameLogic
         private static bool IsThreeOfAKind(CardEntity[] cards)
         {
             //同じランクが3枚あるか
-            var ranks = cards.Select(card => card.Rank).ToList();
-            return ranks.GroupBy(x => x).Any(group => group.Count() == 3);
+            return cards.GroupBy(x => x.Rank).Any(group => group.Count() == 3);
         }
 
         private static bool IsTwoPair(CardEntity[] cards)
         {
             //ペアが2つあるか
-            var ranks = cards.Select(card => card.Rank).ToList();
-            var groups = ranks.GroupBy(x => x);
-            return groups.Count(group => group.Count() == 2) == 2;
+            return cards.GroupBy(x => x.Rank).Count(group => group.Count() == 2) == 2;
         }
 
         private static bool IsPair(CardEntity[] cards)
         {
-            var ranks = cards.Select(card => card.Rank).ToList();
-            return ranks.GroupBy(x => x).Any(group => group.Count() == 2);
+            return cards.GroupBy(x => x.Rank).Any(group => group.Count() == 2);
         }
 
         private static bool IsHighCard(CardEntity[] cards)
         {
-            var ranks = cards.Select(card => card.Rank).ToList();
-            return ranks.Contains(Enums.CardRankEnum.Ace) ||
-                   ranks.Contains(Enums.CardRankEnum.King) ||
-                   ranks.Contains(Enums.CardRankEnum.Queen) ||
-                   ranks.Contains(Enums.CardRankEnum.Jack) ||
-                   ranks.Contains(Enums.CardRankEnum.Ten);
+            foreach (var card in cards)
+            {
+                if (card.Rank is
+                    Enums.CardRankEnum.Ace or
+                    Enums.CardRankEnum.King or
+                    Enums.CardRankEnum.Queen or
+                    Enums.CardRankEnum.Jack or
+                    Enums.CardRankEnum.Ten)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
         
         #endregion
