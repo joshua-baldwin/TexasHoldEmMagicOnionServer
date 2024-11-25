@@ -68,7 +68,10 @@ namespace TexasHoldEmServer.GameLogic
             foreach (var card in cards)
             {
                 if (royalFlushCards.Contains(card.Rank))
+                {
+                    card.IsFinalHand = true;
                     royalFlushCards.Remove(card.Rank);
+                }
             }
 
             return royalFlushCards.Count == 0;
@@ -78,12 +81,27 @@ namespace TexasHoldEmServer.GameLogic
         {
             //フラッシュがあった場合そのカードをチェックする
             var flush = cards.GroupBy(x => x.Suit).FirstOrDefault(x => x.Count() == 5);
-            return flush != null && IsStraight(flush.Select(x => x).ToArray());
+            if (flush == null || !IsStraight(flush.Select(x => x).ToArray()))
+                return false;
+            
+            foreach (var card in flush)
+                card.IsFinalHand = true;
+                
+            return true;
         }
 
         private static bool IsFourOfAKind(CardEntity[] cards)
         {
-            return cards.GroupBy(x => x.Rank).Any(group => group.Count() == 4);
+            return cards.GroupBy(x => x.Rank).Any(group =>
+            {
+                if (group.Count() != 4)
+                    return false;
+                
+                foreach (var card in group)
+                    card.IsFinalHand = true;
+                
+                return true;
+            });
         }
 
         private static bool IsFullHouse(CardEntity[] cards)
@@ -99,7 +117,16 @@ namespace TexasHoldEmServer.GameLogic
         private static bool IsFlush(CardEntity[] cards)
         {
             //7枚の中5枚が同じスーツかをチェック
-            return cards.GroupBy(x => x.Suit).Any(x => x.Count() == 5);
+            return cards.GroupBy(x => x.Suit).Any(group =>
+            {
+                if (group.Count() != 5)
+                    return false;
+                
+                foreach (var card in group)
+                    card.IsFinalHand = true;
+                
+                return true;
+            });
         }
 
         private static bool IsStraight(CardEntity[] cards)
@@ -110,7 +137,10 @@ namespace TexasHoldEmServer.GameLogic
             for (var i = 0; i < orderedCards.Count - 1; i++)
             {
                 if (orderedCards[i].Rank + 1 == orderedCards[i + 1].Rank)
+                {
+                    orderedCards[i].IsFinalHand = true;
                     count++;
+                }
             }
             
             return count == 5;
@@ -119,18 +149,45 @@ namespace TexasHoldEmServer.GameLogic
         private static bool IsThreeOfAKind(CardEntity[] cards)
         {
             //同じランクが3枚あるか
-            return cards.GroupBy(x => x.Rank).Any(group => group.Count() == 3);
+            return cards.GroupBy(x => x.Rank).Any(group =>
+            {
+                if (group.Count() != 3)
+                    return false;
+                
+                foreach (var card in group)
+                    card.IsFinalHand = true;
+                
+                return true;
+            });
         }
 
         private static bool IsTwoPair(CardEntity[] cards)
         {
             //ペアが2つあるか
-            return cards.GroupBy(x => x.Rank).Count(group => group.Count() == 2) == 2;
+            return cards.GroupBy(x => x.Rank).Count(group =>
+            {
+                if (group.Count() != 2)
+                    return false;
+                
+                foreach (var card in group)
+                    card.IsFinalHand = true;
+                
+                return true;
+            }) == 2;
         }
 
         private static bool IsPair(CardEntity[] cards)
         {
-            return cards.GroupBy(x => x.Rank).Any(group => group.Count() == 2);
+            return cards.GroupBy(x => x.Rank).Any(group =>
+            {
+                if (group.Count() != 2)
+                    return false;
+                
+                foreach (var card in group)
+                    card.IsFinalHand = true;
+                
+                return true;
+            });
         }
 
         private static bool IsHighCard(CardEntity[] cards)
@@ -138,14 +195,15 @@ namespace TexasHoldEmServer.GameLogic
             foreach (var card in cards)
             {
                 if (card.Rank is
-                    Enums.CardRankEnum.Ace or
+                    not (Enums.CardRankEnum.Ace or
                     Enums.CardRankEnum.King or
                     Enums.CardRankEnum.Queen or
                     Enums.CardRankEnum.Jack or
-                    Enums.CardRankEnum.Ten)
-                {
-                    return true;
-                }
+                    Enums.CardRankEnum.Ten))
+                    continue;
+                
+                card.IsFinalHand = true;
+                return true;
             }
 
             return false;

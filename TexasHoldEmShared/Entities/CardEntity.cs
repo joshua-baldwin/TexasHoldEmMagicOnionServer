@@ -11,6 +11,9 @@ namespace THE.MagicOnion.Shared.Entities
         
         [Key(1)]
         public Enums.CardRankEnum Rank { get; private set; }
+        
+        [Key(2)]
+        public bool IsFinalHand { get; set; }
 
         public CardEntity(Enums.CardSuitEnum suit, Enums.CardRankEnum rank)
         {
