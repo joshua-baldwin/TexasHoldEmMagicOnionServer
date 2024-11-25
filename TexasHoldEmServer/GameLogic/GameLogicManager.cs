@@ -173,7 +173,7 @@ namespace TexasHoldEmServer.GameLogic
                     }
                     break;
                 case Enums.GameStateEnum.TheFlop:
-                    if (playerQueue.All(x => x.HasTakenAction))
+                    if (playerQueue.All(x => x.HasTakenAction) || playerQueue.All(x => x.HasChecked))
                     {
                         GameState = Enums.GameStateEnum.TheTurn;
                         SetTheTurn();
@@ -183,7 +183,7 @@ namespace TexasHoldEmServer.GameLogic
                     }
                     break;
                 case Enums.GameStateEnum.TheTurn:
-                    if (playerQueue.All(x => x.HasTakenAction))
+                    if (playerQueue.All(x => x.HasTakenAction) || playerQueue.All(x => x.HasChecked))
                     {
                         GameState = Enums.GameStateEnum.TheRiver;
                         SetTheRiver();
@@ -193,7 +193,7 @@ namespace TexasHoldEmServer.GameLogic
                     }
                     break;
                 case Enums.GameStateEnum.TheRiver:
-                    if (playerQueue.All(x => x.HasTakenAction))
+                    if (playerQueue.All(x => x.HasTakenAction) || playerQueue.All(x => x.HasChecked))
                     {
                         GameState = Enums.GameStateEnum.Showdown;
                         gameStateChanged = true;
@@ -210,10 +210,10 @@ namespace TexasHoldEmServer.GameLogic
             
             //TODO refactor CreateQueue method
             //reset queue if people checked
-            playerQueue.Clear();
             var players = playerQueue.OrderByDescending(x => x.IsDealer)
                 .ThenByDescending(x => x.PlayerRole == Enums.PlayerRoleEnum.SmallBlind)
                 .ThenByDescending(x => x.PlayerRole == Enums.PlayerRoleEnum.BigBlind).ToList();
+            playerQueue.Clear();
             for (var i = 1; i < players.Count; i++)
                 playerQueue.Enqueue(players[i]);
             playerQueue.Enqueue(players[0]);

@@ -31,6 +31,7 @@ namespace TexasHoldEmServer.GameLogic
             return Enums.HandRankingType.Nothing;
         }
 
+        //TODO compare all 7 cards or only 5?
         public static Guid CompareHands((Guid, CardEntity[]) playerHand1, (Guid, CardEntity[]) playerHand2, Enums.HandRankingType handRanking)
         {
             switch (handRanking)
