@@ -129,27 +129,15 @@ namespace TexasHoldEmServer.Interfaces
             else if (isGameOver)
                 Broadcast(group).OnGameOver(storage.AllValues.First(x => !x.HasFolded).Id, storage.AllValues.ToArray());
             else
-                Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pot, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage);
-        }
-
-        public async Task<bool> ChooseHand(Guid playerId, CardEntity[] showdownCards)
-        {
-            if (group == null)
-                return false;
-            
-            var players = storage.AllValues.ToList();
-            var currentPlayer = players.FirstOrDefault(player => player.Id == playerId);
-            if (currentPlayer != null)
-                currentPlayer.HasTakenAction = true;
-            
-            gameLogicManager.SetPlayerHand(playerId, showdownCards);
-            if (players.Any(player => !player.HasTakenAction))
-                return false;
-            
-            var winnerId = gameLogicManager.GetWinner();
-
-            Broadcast(group).OnChooseHand(winnerId, storage.AllValues.ToArray());
-            return true;
+            {
+                if (gameLogicManager.GameState == Enums.GameStateEnum.Showdown)
+                {
+                    var winnerId = gameLogicManager.GetWinner(out var winningHand);
+                    Broadcast(group).OnChooseHand(winnerId, winningHand, storage.AllValues.ToArray());
+                }
+                else
+                    Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pot, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage);
+            }
         }
 
         protected override ValueTask OnDisconnected()

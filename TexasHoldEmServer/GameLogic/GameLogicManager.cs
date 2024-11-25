@@ -16,7 +16,6 @@ namespace TexasHoldEmServer.GameLogic
         private int previousBet;
         private int totalChipsForTurn;
         private List<CardEntity> cardPool;
-        private readonly Dictionary<Guid, CardEntity[]> playerHands = new();
         private bool isTie;
         
         public PlayerEntity CurrentPlayer { get; private set; }
@@ -33,7 +32,6 @@ namespace TexasHoldEmServer.GameLogic
             previousBet = 0;
             totalChipsForTurn = 0;
             cardPool.Clear();
-            playerHands.Clear();
             isTie = false;
             CurrentPlayer = null;
             Pot = 0;
@@ -324,34 +322,30 @@ namespace TexasHoldEmServer.GameLogic
         }
         
         #endregion
-
-        public void SetPlayerHand(Guid playerId, CardEntity[] showdownCards)
-        {
-            playerHands.Add(playerId, showdownCards);
-        }
         
-        public Guid GetWinner()
+        public Guid GetWinner(out Enums.HandRankingType winningHand)
         {
-            var currentRanking = Enums.HandRankingType.Nothing;
+            winningHand = Enums.HandRankingType.Nothing;
             (Guid PlayerId, CardEntity[] Hand) currentPlayer = (Guid.Empty, []);
-            foreach (var (playerId, hand) in playerHands)
+            foreach (var player in playerQueue)
             {
+                var hand = player.HoleCards.Concat(CommunityCards).ToArray();
                 var ranking = HandRankingLogic.GetHandRanking(hand);
-                if ((int)ranking < (int)currentRanking)
+                if ((int)ranking < (int)winningHand)
                 {
-                    currentRanking = ranking;
-                    currentPlayer = (playerId, hand);
+                    winningHand = ranking;
+                    currentPlayer = (player.Id, hand);
                     isTie = false;
                 }
-                else if (ranking == currentRanking)
+                else if (ranking == winningHand)
                 {
-                    var guid = HandRankingLogic.CompareHands(currentPlayer, (playerId, hand), ranking);
+                    var guid = HandRankingLogic.CompareHands(currentPlayer, (player.Id, hand), ranking);
                     if (guid == Guid.Empty)
                         isTie = true;
                     else
                     {
                         isTie = false;
-                        currentPlayer = currentPlayer.PlayerId == guid ? currentPlayer : (playerId, hand);
+                        currentPlayer = currentPlayer.PlayerId == guid ? currentPlayer : (player.Id, hand);
                     }
                 }
             }
