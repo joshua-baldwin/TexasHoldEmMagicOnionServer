@@ -207,6 +207,17 @@ namespace TexasHoldEmServer.GameLogic
 
             if (!gameStateChanged)
                 return;
+            
+            //reset queue if people checked
+            playerQueue.Clear();
+            var players = playerQueue.OrderByDescending(x => x.IsDealer)
+                .ThenByDescending(x => x.PlayerRole == Enums.PlayerRoleEnum.SmallBlind)
+                .ThenByDescending(x => x.PlayerRole == Enums.PlayerRoleEnum.BigBlind).ToList();
+            for (var i = 1; i < players.Count; i++)
+                playerQueue.Enqueue(players[i]);
+            playerQueue.Enqueue(players[0]);
+            
+            CurrentPlayer = playerQueue.Peek();
 
             foreach (var player in playerQueue)
             {
