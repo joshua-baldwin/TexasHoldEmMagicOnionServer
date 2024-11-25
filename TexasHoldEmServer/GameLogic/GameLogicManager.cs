@@ -208,6 +208,7 @@ namespace TexasHoldEmServer.GameLogic
             if (!gameStateChanged)
                 return;
             
+            //TODO refactor CreateQueue method
             //reset queue if people checked
             playerQueue.Clear();
             var players = playerQueue.OrderByDescending(x => x.IsDealer)
