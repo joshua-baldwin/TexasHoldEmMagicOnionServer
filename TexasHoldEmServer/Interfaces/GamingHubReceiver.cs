@@ -58,8 +58,8 @@ namespace TexasHoldEmServer.Interfaces
             if (group == null)
                 return null;
             
-            await group.RemoveAsync(Context);
             Broadcast(group).OnLeaveRoom(self, storage.AllValues.Count);
+            await group.RemoveAsync(Context);
             roomManager.RemoveConnection(self.RoomId, self.Id);
             if (storage.AllValues.Count == 0)
             {
@@ -110,11 +110,6 @@ namespace TexasHoldEmServer.Interfaces
                 currentPlayer.IsReady = false;
             
             Broadcast(group).OnCancelGameStart();
-        }
-
-        public async Task QuitGame(Guid playerId)
-        {
-            throw new NotImplementedException();
         }
 
         public async Task DoAction(Enums.CommandTypeEnum commandType, int betAmount, Guid targetPlayerId)
