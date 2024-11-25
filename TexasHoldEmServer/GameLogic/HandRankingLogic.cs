@@ -64,21 +64,14 @@ namespace TexasHoldEmServer.GameLogic
         
         private static bool IsRoyalFlush(CardEntity[] cards)
         {
-            var possible = new List<Enums.CardRankEnum> { Enums.CardRankEnum.Ace, Enums.CardRankEnum.King, Enums.CardRankEnum.Queen, Enums.CardRankEnum.Jack, Enums.CardRankEnum.Ten };
-            var valid = true;
+            var royalFlushCards = new List<Enums.CardRankEnum> { Enums.CardRankEnum.Ace, Enums.CardRankEnum.King, Enums.CardRankEnum.Queen, Enums.CardRankEnum.Jack, Enums.CardRankEnum.Ten };
             foreach (var card in cards)
             {
-                if (possible.Contains(card.Rank))
-                {
-                    possible.Remove(card.Rank);
-                    continue;
-                }
-
-                valid = false;
-                break;
+                if (royalFlushCards.Contains(card.Rank))
+                    royalFlushCards.Remove(card.Rank);
             }
 
-            return valid;
+            return royalFlushCards.Count == 0;
         }
 
         private static bool IsStraightFlush(CardEntity[] cards)
