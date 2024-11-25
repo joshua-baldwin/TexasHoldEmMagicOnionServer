@@ -54,6 +54,42 @@ public class Tests
         Enums.CardSuitEnum.Club, Enums.CardRankEnum.Ten,
         Enums.CardSuitEnum.Club, Enums.CardRankEnum.Jack,
         Enums.HandRankingType.StraightFlush)]
+    [TestCase(
+        Enums.CardSuitEnum.Club, Enums.CardRankEnum.Seven,
+        Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Queen,
+        Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Seven,
+        Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Eight,
+        Enums.CardSuitEnum.Spade, Enums.CardRankEnum.Seven,
+        Enums.CardSuitEnum.Club, Enums.CardRankEnum.Ten,
+        Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Seven,
+        Enums.HandRankingType.FourOfAKind)]
+    [TestCase(
+        Enums.CardSuitEnum.Club, Enums.CardRankEnum.Six,
+        Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Eight,
+        Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Seven,
+        Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Eight,
+        Enums.CardSuitEnum.Spade, Enums.CardRankEnum.Eight,
+        Enums.CardSuitEnum.Club, Enums.CardRankEnum.Ten,
+        Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Six,
+        Enums.HandRankingType.FullHouse)]
+    [TestCase(
+        Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Seven,
+        Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Queen,
+        Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Eight,
+        Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Eight,
+        Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Two,
+        Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Three,
+        Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Seven,
+        Enums.HandRankingType.Flush)]
+    [TestCase(
+        Enums.CardSuitEnum.Club, Enums.CardRankEnum.Seven,
+        Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Four,
+        Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Six,
+        Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five,
+        Enums.CardSuitEnum.Spade, Enums.CardRankEnum.Seven,
+        Enums.CardSuitEnum.Club, Enums.CardRankEnum.Ten,
+        Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Eight,
+        Enums.HandRankingType.Straight)]
     public void HandIs(
         Enums.CardSuitEnum holeCard1Suit, Enums.CardRankEnum holeCard1Rank,
         Enums.CardSuitEnum holeCard2Suit, Enums.CardRankEnum holeCard2Rank,
