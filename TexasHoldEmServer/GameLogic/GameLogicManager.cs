@@ -343,21 +343,22 @@ namespace TexasHoldEmServer.GameLogic
             {
                 var hand = player.HoleCards.Concat(CommunityCards).ToArray();
                 var ranking = HandRankingLogic.GetHandRanking(hand);
+                var finalHand = hand.Where(x => x.IsFinalHand).ToArray();
                 if ((int)ranking < (int)winningHand)
                 {
                     winningHand = ranking;
-                    currentPlayer = (player.Id, hand);
+                    currentPlayer = (player.Id, finalHand);
                     isTie = false;
                 }
                 else if (ranking == winningHand)
                 {
-                    var guid = HandRankingLogic.CompareHands(currentPlayer, (player.Id, hand), ranking);
+                    var guid = HandRankingLogic.CompareHands(currentPlayer, (player.Id, finalHand), ranking);
                     if (guid == Guid.Empty)
                         isTie = true;
                     else
                     {
                         isTie = false;
-                        currentPlayer = currentPlayer.PlayerId == guid ? currentPlayer : (player.Id, hand);
+                        currentPlayer = currentPlayer.PlayerId == guid ? currentPlayer : (player.Id, finalHand);
                     }
                 }
             }

@@ -5,6 +5,11 @@ namespace TexasHoldEmServer.GameLogic
 {
     public static class HandRankingLogic
     {
+        /// <summary>
+        /// Looks at all 7 cards and gets the best 5
+        /// </summary>
+        /// <param name="hand"></param>
+        /// <returns></returns>
         public static Enums.HandRankingType GetHandRanking(CardEntity[] hand)
         {
             if (IsRoyalFlush(hand))
@@ -31,7 +36,14 @@ namespace TexasHoldEmServer.GameLogic
             return Enums.HandRankingType.Nothing;
         }
 
-        //TODO compare all 7 cards or only 5?
+        /// <summary>
+        /// Compares 2 players' 5-card hands
+        /// </summary>
+        /// <param name="playerHand1"></param>
+        /// <param name="playerHand2"></param>
+        /// <param name="handRanking"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         public static Guid CompareHands((Guid, CardEntity[]) playerHand1, (Guid, CardEntity[]) playerHand2, Enums.HandRankingType handRanking)
         {
             switch (handRanking)
@@ -75,7 +87,13 @@ namespace TexasHoldEmServer.GameLogic
                 }
             }
 
-            return royalFlushCards.Count == 0;
+            if (royalFlushCards.Count == 0)
+                return true;
+            
+            foreach (var card in cards)
+                card.IsFinalHand = false;
+            
+            return false;
         }
 
         private static bool IsStraightFlush(CardEntity[] cards)
@@ -84,16 +102,13 @@ namespace TexasHoldEmServer.GameLogic
             var flush = cards.GroupBy(x => x.Suit).FirstOrDefault(x => x.Count() == 5);
             if (flush == null || !IsStraight(flush.Select(x => x).ToArray()))
                 return false;
-            
-            foreach (var card in flush)
-                card.IsFinalHand = true;
                 
             return true;
         }
 
         private static bool IsFourOfAKind(CardEntity[] cards)
         {
-            return cards.GroupBy(x => x.Rank).Any(group =>
+            var isValid = cards.GroupBy(x => x.Rank).Any(group =>
             {
                 if (group.Count() != 4)
                     return false;
@@ -103,6 +118,12 @@ namespace TexasHoldEmServer.GameLogic
                 
                 return true;
             });
+            if (!isValid)
+            {
+                foreach (var card in cards)
+                    card.IsFinalHand = false;
+            }
+            return isValid;
         }
 
         private static bool IsFullHouse(CardEntity[] cards)
@@ -118,7 +139,7 @@ namespace TexasHoldEmServer.GameLogic
         private static bool IsFlush(CardEntity[] cards)
         {
             //7枚の中5枚が同じスーツかをチェック
-            return cards.GroupBy(x => x.Suit).Any(group =>
+            var isValid = cards.GroupBy(x => x.Suit).Any(group =>
             {
                 if (group.Count() != 5)
                     return false;
@@ -128,6 +149,14 @@ namespace TexasHoldEmServer.GameLogic
                 
                 return true;
             });
+            
+            if (!isValid)
+            {
+                foreach (var card in cards)
+                    card.IsFinalHand = false;
+            }
+            
+            return isValid;
         }
 
         private static bool IsStraight(CardEntity[] cards)
@@ -141,7 +170,15 @@ namespace TexasHoldEmServer.GameLogic
                 {
                     orderedCards[i].IsFinalHand = true;
                     count++;
+                    if (i + 1 == orderedCards.Count - 1)
+                        orderedCards[i + 1].IsFinalHand = true;
                 }
+            }
+            
+            if (count != 5)
+            {
+                foreach (var card in cards)
+                    card.IsFinalHand = false;
             }
             
             return count == 5;
@@ -150,7 +187,7 @@ namespace TexasHoldEmServer.GameLogic
         private static bool IsThreeOfAKind(CardEntity[] cards)
         {
             //同じランクが3枚あるか
-            return cards.GroupBy(x => x.Rank).Any(group =>
+            var isValid = cards.GroupBy(x => x.Rank).Any(group =>
             {
                 if (group.Count() != 3)
                     return false;
@@ -160,12 +197,20 @@ namespace TexasHoldEmServer.GameLogic
                 
                 return true;
             });
+
+            if (!isValid)
+            {
+                foreach (var card in cards)
+                    card.IsFinalHand = false;
+            }
+            
+            return isValid;
         }
 
         private static bool IsTwoPair(CardEntity[] cards)
         {
             //ペアが2つあるか
-            return cards.GroupBy(x => x.Rank).Count(group =>
+            var isValid = cards.GroupBy(x => x.Rank).Count(group =>
             {
                 if (group.Count() != 2)
                     return false;
@@ -175,11 +220,19 @@ namespace TexasHoldEmServer.GameLogic
                 
                 return true;
             }) == 2;
+            
+            if (!isValid)
+            {
+                foreach (var card in cards)
+                    card.IsFinalHand = false;
+            }
+            
+            return isValid;
         }
 
         private static bool IsPair(CardEntity[] cards)
         {
-            return cards.GroupBy(x => x.Rank).Any(group =>
+            var isValid = cards.GroupBy(x => x.Rank).Any(group =>
             {
                 if (group.Count() != 2)
                     return false;
@@ -189,6 +242,14 @@ namespace TexasHoldEmServer.GameLogic
                 
                 return true;
             });
+
+            if (!isValid)
+            {
+                foreach (var card in cards)
+                    card.IsFinalHand = false;
+            }
+            
+            return isValid;
         }
 
         private static bool IsHighCard(CardEntity[] cards)

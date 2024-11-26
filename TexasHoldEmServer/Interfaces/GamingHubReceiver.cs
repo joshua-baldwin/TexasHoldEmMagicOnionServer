@@ -116,7 +116,7 @@ namespace TexasHoldEmServer.Interfaces
         {
             if (group == null)
                 return;
-
+    
             var previousPlayer = gameLogicManager.CurrentPlayer;
             gameLogicManager.DoAction(commandType, betAmount, out bool isGameOver, out bool isError, out string actionMessage);
             if (isError)
