@@ -118,7 +118,7 @@ namespace TexasHoldEmServer.Interfaces
                 return;
     
             var previousPlayer = gameLogicManager.CurrentPlayer;
-            gameLogicManager.DoAction(commandType, betAmount, out bool isGameOver, out bool isError, out string actionMessage);
+            gameLogicManager.DoAction(commandType, betAmount, out bool isGameOver, out bool isError, out string actionMessage, out bool gameStateChanged);
             if (isError)
                 BroadcastTo(group, ConnectionId).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pot, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage);
             else if (isGameOver)
@@ -133,6 +133,8 @@ namespace TexasHoldEmServer.Interfaces
                 else
                     Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pot, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage);
             }
+            if (gameStateChanged)
+                gameLogicManager.ResetLastCommand();
         }
 
         protected override ValueTask OnDisconnected()

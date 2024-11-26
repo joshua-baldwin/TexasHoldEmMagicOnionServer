@@ -49,9 +49,10 @@ namespace TexasHoldEmServer.GameLogic
             CreateQueue(ref players);
         }
 
-        public void DoAction(Enums.CommandTypeEnum commandType, int chipsBet, out bool isGameOver, out bool isError, out string actionMessage)
+        public void DoAction(Enums.CommandTypeEnum commandType, int chipsBet, out bool isGameOver, out bool isError, out string actionMessage, out bool gameStateChanged)
         {
             isGameOver = false;
+            gameStateChanged = false;
             switch (commandType)
             {
                 case Enums.CommandTypeEnum.SmallBlindBet:
@@ -146,14 +147,14 @@ namespace TexasHoldEmServer.GameLogic
             if (!CurrentPlayer.HasFolded)
                 playerQueue.Enqueue(CurrentPlayer);
             CurrentPlayer = playerQueue.Peek();
-            UpdateGameState();
+            UpdateGameState(out gameStateChanged);
             actionMessage = "";
             isError = false;
         }
 
-        private void UpdateGameState()
+        private void UpdateGameState(out bool gameStateChanged)
         {
-            var gameStateChanged = false;
+            gameStateChanged = false;
             switch (GameState)
             {
                 case Enums.GameStateEnum.BlindBet:
@@ -170,7 +171,6 @@ namespace TexasHoldEmServer.GameLogic
                         GameState = Enums.GameStateEnum.TheFlop;
                         SetTheFlop();
                         gameStateChanged = true;
-                        PreviousPlayer.LastCommand = 0;
                         UpdatePot();
                     }
                     break;
@@ -180,7 +180,6 @@ namespace TexasHoldEmServer.GameLogic
                         GameState = Enums.GameStateEnum.TheTurn;
                         SetTheTurn();
                         gameStateChanged = true;
-                        PreviousPlayer.LastCommand = 0;
                         UpdatePot();
                     }
                     break;
@@ -190,7 +189,6 @@ namespace TexasHoldEmServer.GameLogic
                         GameState = Enums.GameStateEnum.TheRiver;
                         SetTheRiver();
                         gameStateChanged = true;
-                        PreviousPlayer.LastCommand = 0;
                         UpdatePot();
                     }
                     break;
@@ -199,7 +197,6 @@ namespace TexasHoldEmServer.GameLogic
                     {
                         GameState = Enums.GameStateEnum.Showdown;
                         gameStateChanged = true;
-                        PreviousPlayer.LastCommand = 0;
                         UpdatePot();
                     }
                     break;
@@ -362,6 +359,12 @@ namespace TexasHoldEmServer.GameLogic
                 }
             }
             return isTie ? Guid.Empty : currentPlayer.PlayerId;
+        }
+
+        public void ResetLastCommand()
+        {
+            foreach (var player in playerQueue)
+                player.LastCommand = 0;
         }
         
         private bool CanPlaceBet(int chipsBet, out string message, bool isCall = false, bool isRaise = false)
