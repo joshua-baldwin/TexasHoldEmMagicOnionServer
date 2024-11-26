@@ -9,6 +9,8 @@ namespace TexasHoldEmServer.GameLogic
         public const int MaxPlayers = 10;
         public const int MaxHoleCards = 2;
         public const int StartingChips = 50;
+        public const int SmallBlindBet = 1;
+        public const int BigBlindBet = 2;
         private readonly Queue<PlayerEntity> playerQueue = new();
         private bool smallBlindBetDone;
         private bool bigBlindBetDone;
@@ -53,31 +55,31 @@ namespace TexasHoldEmServer.GameLogic
             switch (commandType)
             {
                 case Enums.CommandTypeEnum.SmallBlindBet:
-                    if (!CanPlaceBet(chipsBet, out var message))
+                    if (!CanPlaceBet(SmallBlindBet, out var message))
                     {
                         actionMessage = message;
                         isError = true;
                         return;
                     }
-                    actionMessage = $"{CurrentPlayer.Name} bet {chipsBet}.";
-                    totalChipsForTurn += chipsBet;
-                    previousBet = chipsBet;
-                    CurrentPlayer.CurrentBet += chipsBet;
-                    CurrentPlayer.Chips -= chipsBet;
+                    actionMessage = $"{CurrentPlayer.Name} bet {SmallBlindBet}.";
+                    totalChipsForTurn += SmallBlindBet;
+                    previousBet = SmallBlindBet;
+                    CurrentPlayer.CurrentBet += SmallBlindBet;
+                    CurrentPlayer.Chips -= SmallBlindBet;
                     smallBlindBetDone = true;
                     break;
                 case Enums.CommandTypeEnum.BigBlindBet:
-                    if (!CanPlaceBet(chipsBet, out message))
+                    if (!CanPlaceBet(BigBlindBet, out message))
                     {
                         actionMessage = message;
                         isError = true;
                         return;
                     }
-                    actionMessage = $"{CurrentPlayer.Name} bet {chipsBet}.";
-                    totalChipsForTurn += chipsBet;
-                    previousBet = chipsBet;
-                    CurrentPlayer.CurrentBet += chipsBet;
-                    CurrentPlayer.Chips -= chipsBet;
+                    actionMessage = $"{CurrentPlayer.Name} bet {BigBlindBet}.";
+                    totalChipsForTurn += BigBlindBet;
+                    previousBet = BigBlindBet;
+                    CurrentPlayer.CurrentBet += BigBlindBet;
+                    CurrentPlayer.Chips -= BigBlindBet;
                     bigBlindBetDone = true;
                     break;
                 case Enums.CommandTypeEnum.Check:
