@@ -42,9 +42,6 @@ namespace THE.MagicOnion.Shared.Entities
         public bool HasFolded { get; set; }
         
         [Key(11)]
-        public bool HasChecked { get; set; }
-        
-        [Key(12)]
         public Enums.CommandTypeEnum LastCommand { get; set; }
         
         public PlayerEntity(string name, Guid id, Enums.PlayerRoleEnum role)

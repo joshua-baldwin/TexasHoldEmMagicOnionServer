@@ -83,20 +83,20 @@ namespace TexasHoldEmServer.GameLogic
                     bigBlindBetDone = true;
                     break;
                 case Enums.CommandTypeEnum.Check:
-                    if (PreviousPlayer.LastCommand is Enums.CommandTypeEnum.Call or Enums.CommandTypeEnum.Raise)
+                    var canCheck = (PreviousPlayer.LastCommand is not Enums.CommandTypeEnum.Call &&
+                                    CurrentPlayer.LastCommand is not Enums.CommandTypeEnum.Raise)
+                                   ||
+                                   (GameState == Enums.GameStateEnum.PreFlop &&
+                                    CurrentPlayer.PlayerRole == Enums.PlayerRoleEnum.BigBlind &&
+                                    playerQueue.All(x => x.LastCommand != Enums.CommandTypeEnum.Raise));
+                    if (!canCheck)
                     {
                         actionMessage = "You can't check because a bet has been placed.";
                         isError = true;
                         return;
                     }
-
-                    if (CurrentPlayer.HasChecked)
-                    {
-                        actionMessage = "You must place a bet.";
-                        isError = true;
-                        return;
-                    }
-                    CurrentPlayer.HasChecked = true;
+                    
+                    CurrentPlayer.HasTakenAction = true;
                     break;
                 case Enums.CommandTypeEnum.Fold:
                     actionMessage = $"{CurrentPlayer.Name} folded.";
@@ -175,7 +175,7 @@ namespace TexasHoldEmServer.GameLogic
                     }
                     break;
                 case Enums.GameStateEnum.TheFlop:
-                    if (playerQueue.All(x => x.HasTakenAction) || playerQueue.All(x => x.HasChecked))
+                    if (playerQueue.All(x => x.HasTakenAction))
                     {
                         GameState = Enums.GameStateEnum.TheTurn;
                         SetTheTurn();
@@ -185,7 +185,7 @@ namespace TexasHoldEmServer.GameLogic
                     }
                     break;
                 case Enums.GameStateEnum.TheTurn:
-                    if (playerQueue.All(x => x.HasTakenAction) || playerQueue.All(x => x.HasChecked))
+                    if (playerQueue.All(x => x.HasTakenAction))
                     {
                         GameState = Enums.GameStateEnum.TheRiver;
                         SetTheRiver();
@@ -195,7 +195,7 @@ namespace TexasHoldEmServer.GameLogic
                     }
                     break;
                 case Enums.GameStateEnum.TheRiver:
-                    if (playerQueue.All(x => x.HasTakenAction) || playerQueue.All(x => x.HasChecked))
+                    if (playerQueue.All(x => x.HasTakenAction))
                     {
                         GameState = Enums.GameStateEnum.Showdown;
                         gameStateChanged = true;
@@ -223,10 +223,7 @@ namespace TexasHoldEmServer.GameLogic
             CurrentPlayer = playerQueue.Peek();
 
             foreach (var player in playerQueue)
-            {
                 player.HasTakenAction = false;
-                player.HasChecked = false;
-            }
         }
 
         #region Setup
