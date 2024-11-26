@@ -123,8 +123,8 @@ namespace TexasHoldEmServer.GameLogic
                 foreach (var card in cards)
                     card.IsFinalHand = false;
             }
-
-            cards.Where(x => !x.IsFinalHand).MaxBy(x => x.Rank).IsFinalHand = true;
+            else
+                cards.Where(x => !x.IsFinalHand).MaxBy(x => x.Rank).IsFinalHand = true;
             return isValid;
         }
 
@@ -168,12 +168,20 @@ namespace TexasHoldEmServer.GameLogic
             var count = 1;
             for (var i = 0; i < orderedCards.Count - 1; i++)
             {
+                if (orderedCards[i].Rank == orderedCards[i + 1].Rank)
+                    continue;
+                
                 if (orderedCards[i].Rank + 1 == orderedCards[i + 1].Rank)
                 {
                     orderedCards[i].IsFinalHand = true;
                     count++;
                     if (i + 1 == orderedCards.Count - 1)
                         orderedCards[i + 1].IsFinalHand = true;
+                }
+                else if (orderedCards[i].Rank + 1 < orderedCards[i + 1].Rank && count != 5)
+                {
+                    count = 1;
+                    orderedCards.ForEach(card => card.IsFinalHand = false);
                 }
             }
             
@@ -206,7 +214,7 @@ namespace TexasHoldEmServer.GameLogic
                     card.IsFinalHand = false;
             }
 
-            if (chooseRemainingHand)
+            if (chooseRemainingHand && isValid)
             {
                 cards.Where(x => !x.IsFinalHand).MaxBy(x => x.Rank).IsFinalHand = true;
                 cards.Where(x => !x.IsFinalHand).MaxBy(x => x.Rank).IsFinalHand = true;
@@ -234,8 +242,8 @@ namespace TexasHoldEmServer.GameLogic
                 foreach (var card in cards)
                     card.IsFinalHand = false;
             }
-            
-            cards.Where(x => !x.IsFinalHand).MaxBy(x => x.Rank).IsFinalHand = true;
+            else
+                cards.Where(x => !x.IsFinalHand).MaxBy(x => x.Rank).IsFinalHand = true;
             
             return isValid;
         }
@@ -259,7 +267,7 @@ namespace TexasHoldEmServer.GameLogic
                     card.IsFinalHand = false;
             }
 
-            if (chooseRemainingHand)
+            if (chooseRemainingHand && isValid)
             {
                 cards.Where(x => !x.IsFinalHand).MaxBy(x => x.Rank).IsFinalHand = true;
                 cards.Where(x => !x.IsFinalHand).MaxBy(x => x.Rank).IsFinalHand = true;
