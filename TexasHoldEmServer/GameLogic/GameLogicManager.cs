@@ -125,7 +125,7 @@ namespace TexasHoldEmServer.GameLogic
                     CurrentPlayer.HasTakenAction = true;
                     break;
                 case Enums.CommandTypeEnum.Raise:
-                    if (!CanPlaceBet(chipsBet, out message))
+                    if (!CanPlaceBet(chipsBet, out message, isRaise: true))
                     {
                         actionMessage = message;
                         isError = true;
@@ -364,7 +364,7 @@ namespace TexasHoldEmServer.GameLogic
             return isTie ? Guid.Empty : currentPlayer.PlayerId;
         }
         
-        private bool CanPlaceBet(int chipsBet, out string message, bool isCall = false)
+        private bool CanPlaceBet(int chipsBet, out string message, bool isCall = false, bool isRaise = false)
         {
             if (chipsBet <= 0)
             {
@@ -375,6 +375,12 @@ namespace TexasHoldEmServer.GameLogic
             if (previousBet != 0 && chipsBet <= previousBet && !isCall)
             {
                 message = "The bet must be greater than the previous bet.";
+                return false;
+            }
+
+            if (isRaise && chipsBet < BigBlindBet)
+            {
+                message = $"The minimum bet is {BigBlindBet}.";
                 return false;
             }
             
