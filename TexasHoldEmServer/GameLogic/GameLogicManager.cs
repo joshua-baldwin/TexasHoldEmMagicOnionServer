@@ -271,7 +271,7 @@ namespace TexasHoldEmServer.GameLogic
             var suits = Enum.GetValues<Enums.CardSuitEnum>();
             var ranks = Enum.GetValues<Enums.CardRankEnum>();
             var deck = new List<CardEntity>();
-            foreach (var suit in suits)
+            foreach (var suit in suits.Where(x => x != Enums.CardSuitEnum.None))
             {
                 deck.AddRange(ranks.Where(rank => rank != Enums.CardRankEnum.Joker).Select(rank => new CardEntity(suit, rank)));
             }
