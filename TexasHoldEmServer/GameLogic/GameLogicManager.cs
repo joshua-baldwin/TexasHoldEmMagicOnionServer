@@ -14,12 +14,12 @@ namespace TexasHoldEmServer.GameLogic
         private readonly Queue<PlayerEntity> playerQueue = new();
         private bool smallBlindBetDone;
         private bool bigBlindBetDone;
-        private Enums.CommandTypeEnum previousCommandType;
         private int previousBet;
         private int totalChipsForTurn;
         private List<CardEntity> cardPool;
         private bool isTie;
         
+        public PlayerEntity PreviousPlayer { get; private set; }
         public PlayerEntity CurrentPlayer { get; private set; }
         public int Pot { get; private set; }
         public CardEntity[] CommunityCards { get; } = new CardEntity[5];
@@ -30,11 +30,11 @@ namespace TexasHoldEmServer.GameLogic
             playerQueue.Clear();
             smallBlindBetDone = false;
             bigBlindBetDone = false;
-            previousCommandType = 0;
             previousBet = 0;
             totalChipsForTurn = 0;
             cardPool.Clear();
             isTie = false;
+            PreviousPlayer = null;
             CurrentPlayer = null;
             Pot = 0;
             for (var i = 0; i < CommunityCards.Length; i++)
@@ -83,7 +83,7 @@ namespace TexasHoldEmServer.GameLogic
                     bigBlindBetDone = true;
                     break;
                 case Enums.CommandTypeEnum.Check:
-                    if (previousCommandType is Enums.CommandTypeEnum.Call or Enums.CommandTypeEnum.Raise)
+                    if (PreviousPlayer.LastCommand is Enums.CommandTypeEnum.Call or Enums.CommandTypeEnum.Raise)
                     {
                         actionMessage = "You can't check because a bet has been placed.";
                         isError = true;
@@ -141,8 +141,8 @@ namespace TexasHoldEmServer.GameLogic
                 default:
                     throw new ArgumentOutOfRangeException(nameof(commandType), commandType, null);
             }
-            previousCommandType = commandType;
-            playerQueue.Dequeue();
+            PreviousPlayer = playerQueue.Dequeue();
+            PreviousPlayer.LastCommand = commandType;
             if (!CurrentPlayer.HasFolded)
                 playerQueue.Enqueue(CurrentPlayer);
             CurrentPlayer = playerQueue.Peek();
@@ -170,7 +170,7 @@ namespace TexasHoldEmServer.GameLogic
                         GameState = Enums.GameStateEnum.TheFlop;
                         SetTheFlop();
                         gameStateChanged = true;
-                        previousCommandType = Enums.CommandTypeEnum.SmallBlindBet;
+                        PreviousPlayer.LastCommand = 0;
                         UpdatePot();
                     }
                     break;
@@ -180,7 +180,7 @@ namespace TexasHoldEmServer.GameLogic
                         GameState = Enums.GameStateEnum.TheTurn;
                         SetTheTurn();
                         gameStateChanged = true;
-                        previousCommandType = Enums.CommandTypeEnum.SmallBlindBet;
+                        PreviousPlayer.LastCommand = 0;
                         UpdatePot();
                     }
                     break;
@@ -190,7 +190,7 @@ namespace TexasHoldEmServer.GameLogic
                         GameState = Enums.GameStateEnum.TheRiver;
                         SetTheRiver();
                         gameStateChanged = true;
-                        previousCommandType = Enums.CommandTypeEnum.SmallBlindBet;
+                        PreviousPlayer.LastCommand = 0;
                         UpdatePot();
                     }
                     break;
@@ -199,7 +199,7 @@ namespace TexasHoldEmServer.GameLogic
                     {
                         GameState = Enums.GameStateEnum.Showdown;
                         gameStateChanged = true;
-                        previousCommandType = Enums.CommandTypeEnum.SmallBlindBet;
+                        PreviousPlayer.LastCommand = 0;
                         UpdatePot();
                     }
                     break;
@@ -395,6 +395,7 @@ namespace TexasHoldEmServer.GameLogic
         {
             Pot += totalChipsForTurn;
             totalChipsForTurn = 0;
+            previousBet = 0;
             foreach (var player in playerQueue)
                 player.CurrentBet = 0;
         }
