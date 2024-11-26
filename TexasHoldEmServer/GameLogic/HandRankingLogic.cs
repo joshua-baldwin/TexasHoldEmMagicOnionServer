@@ -24,11 +24,11 @@ namespace TexasHoldEmServer.GameLogic
                 return Enums.HandRankingType.Flush;
             if (IsStraight(hand))
                 return Enums.HandRankingType.Straight;
-            if (IsThreeOfAKind(hand))
+            if (IsThreeOfAKind(hand, true))
                 return Enums.HandRankingType.ThreeOfAKind;
             if (IsTwoPair(hand))
                 return Enums.HandRankingType.TwoPair;
-            if (IsPair(hand))
+            if (IsPair(hand, true))
                 return Enums.HandRankingType.Pair;
             if (IsHighCard(hand))
                 return Enums.HandRankingType.HighCard;
@@ -123,17 +123,19 @@ namespace TexasHoldEmServer.GameLogic
                 foreach (var card in cards)
                     card.IsFinalHand = false;
             }
+
+            cards.Where(x => !x.IsFinalHand).MaxBy(x => x.Rank).IsFinalHand = true;
             return isValid;
         }
 
         private static bool IsFullHouse(CardEntity[] cards)
         {
             //ペアか
-            if (!IsPair(cards))
+            if (!IsPair(cards, false))
                 return false;
             //ペア除いて3 of a kindがあるか
             var pair = cards.GroupBy(x => x.Rank).First(x => x.Count() == 2);
-            return IsThreeOfAKind(cards.Where(card => card.Rank != pair.Key).ToArray());
+            return IsThreeOfAKind(cards.Where(card => card.Rank != pair.Key).ToArray(), false);
         }
 
         private static bool IsFlush(CardEntity[] cards)
@@ -184,7 +186,7 @@ namespace TexasHoldEmServer.GameLogic
             return count == 5;
         }
 
-        private static bool IsThreeOfAKind(CardEntity[] cards)
+        private static bool IsThreeOfAKind(CardEntity[] cards, bool chooseRemainingHand)
         {
             //同じランクが3枚あるか
             var isValid = cards.GroupBy(x => x.Rank).Any(group =>
@@ -203,7 +205,13 @@ namespace TexasHoldEmServer.GameLogic
                 foreach (var card in cards)
                     card.IsFinalHand = false;
             }
-            
+
+            if (chooseRemainingHand)
+            {
+                cards.Where(x => !x.IsFinalHand).MaxBy(x => x.Rank).IsFinalHand = true;
+                cards.Where(x => !x.IsFinalHand).MaxBy(x => x.Rank).IsFinalHand = true;
+            }
+
             return isValid;
         }
 
@@ -227,10 +235,12 @@ namespace TexasHoldEmServer.GameLogic
                     card.IsFinalHand = false;
             }
             
+            cards.Where(x => !x.IsFinalHand).MaxBy(x => x.Rank).IsFinalHand = true;
+            
             return isValid;
         }
 
-        private static bool IsPair(CardEntity[] cards)
+        private static bool IsPair(CardEntity[] cards, bool chooseRemainingHand)
         {
             var isValid = cards.GroupBy(x => x.Rank).Any(group =>
             {
@@ -248,7 +258,14 @@ namespace TexasHoldEmServer.GameLogic
                 foreach (var card in cards)
                     card.IsFinalHand = false;
             }
-            
+
+            if (chooseRemainingHand)
+            {
+                cards.Where(x => !x.IsFinalHand).MaxBy(x => x.Rank).IsFinalHand = true;
+                cards.Where(x => !x.IsFinalHand).MaxBy(x => x.Rank).IsFinalHand = true;
+                cards.Where(x => !x.IsFinalHand).MaxBy(x => x.Rank).IsFinalHand = true;
+            }
+
             return isValid;
         }
 
@@ -265,6 +282,10 @@ namespace TexasHoldEmServer.GameLogic
                     continue;
                 
                 card.IsFinalHand = true;
+                cards.Where(x => !x.IsFinalHand).MaxBy(x => x.Rank).IsFinalHand = true;
+                cards.Where(x => !x.IsFinalHand).MaxBy(x => x.Rank).IsFinalHand = true;
+                cards.Where(x => !x.IsFinalHand).MaxBy(x => x.Rank).IsFinalHand = true;
+                cards.Where(x => !x.IsFinalHand).MaxBy(x => x.Rank).IsFinalHand = true;
                 return true;
             }
 

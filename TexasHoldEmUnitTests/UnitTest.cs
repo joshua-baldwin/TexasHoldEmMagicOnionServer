@@ -156,6 +156,32 @@ public class Tests
         Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Six,
         Enums.CardSuitEnum.Spade, Enums.CardRankEnum.Ten,
         Enums.HandRankingType.StraightFlush)]
+    public void CompareHandTest(Enums.CardSuitEnum player1HoleCard1Suit, Enums.CardRankEnum player1HoleCard1Rank,
+        Enums.CardSuitEnum player1HoleCard2Suit, Enums.CardRankEnum player1HoleCard2Rank,
+        Enums.CardSuitEnum player2HoleCard1Suit, Enums.CardRankEnum player2HoleCard1Rank,
+        Enums.CardSuitEnum player2HoleCard2Suit, Enums.CardRankEnum player2HoleCard2Rank,
+        Enums.CardSuitEnum communityCard1Suit, Enums.CardRankEnum communityCard1Rank,
+        Enums.CardSuitEnum communityCard2Suit, Enums.CardRankEnum communityCard2Rank,
+        Enums.CardSuitEnum communityCard3Suit, Enums.CardRankEnum communityCard3Rank,
+        Enums.CardSuitEnum communityCard4Suit, Enums.CardRankEnum communityCard4Rank,
+        Enums.CardSuitEnum communityCard5Suit, Enums.CardRankEnum communityCard5Rank,
+        Enums.HandRankingType handRankingType)
+    {
+        var sut = SetupTestHand(player1HoleCard1Suit, player1HoleCard1Rank, player1HoleCard2Suit, player1HoleCard2Rank, communityCard1Suit, communityCard1Rank, communityCard2Suit, communityCard2Rank, communityCard3Suit, communityCard3Rank, communityCard4Suit, communityCard4Rank, communityCard5Suit, communityCard5Rank);
+        var sut2 = SetupTestHand(player2HoleCard1Suit, player2HoleCard1Rank, player2HoleCard2Suit, player2HoleCard2Rank, communityCard1Suit, communityCard1Rank, communityCard2Suit, communityCard2Rank, communityCard3Suit, communityCard3Rank, communityCard4Suit, communityCard4Rank, communityCard5Suit, communityCard5Rank);
+        
+        var ranking1 = HandRankingLogic.GetHandRanking(sut.Hand);
+        var ranking2 = HandRankingLogic.GetHandRanking(sut2.Hand);
+        var winner = HandRankingLogic.CompareHands((sut.PlayerId, sut.Hand.Where(x => x.IsFinalHand).ToArray()), (sut2.PlayerId, sut2.Hand.Where(x => x.IsFinalHand).ToArray()), handRankingType);
+        
+        Assert.That(ranking1, Is.EqualTo(handRankingType));
+        Assert.That(ranking2, Is.EqualTo(handRankingType));
+        Assert.That(sut.Hand.Count(x => x.IsFinalHand), Is.EqualTo(5));
+        Assert.That(sut2.Hand.Count(x => x.IsFinalHand), Is.EqualTo(5));
+        Assert.That(sut2.PlayerId, Is.EqualTo(winner));
+    }
+    
+    [Test]
     [TestCase(Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Two,
         Enums.CardSuitEnum.Club, Enums.CardRankEnum.Two,
         
@@ -168,7 +194,45 @@ public class Tests
         Enums.CardSuitEnum.Spade, Enums.CardRankEnum.Three,
         Enums.CardSuitEnum.Spade, Enums.CardRankEnum.Ten,
         Enums.HandRankingType.FourOfAKind)]
-    public void CompareHandTest(Enums.CardSuitEnum player1HoleCard1Suit, Enums.CardRankEnum player1HoleCard1Rank,
+    public void CompareFourOfAKindTest(Enums.CardSuitEnum player1HoleCard1Suit, Enums.CardRankEnum player1HoleCard1Rank,
+        Enums.CardSuitEnum player1HoleCard2Suit, Enums.CardRankEnum player1HoleCard2Rank,
+        Enums.CardSuitEnum player2HoleCard1Suit, Enums.CardRankEnum player2HoleCard1Rank,
+        Enums.CardSuitEnum player2HoleCard2Suit, Enums.CardRankEnum player2HoleCard2Rank,
+        Enums.CardSuitEnum communityCard1Suit, Enums.CardRankEnum communityCard1Rank,
+        Enums.CardSuitEnum communityCard2Suit, Enums.CardRankEnum communityCard2Rank,
+        Enums.CardSuitEnum communityCard3Suit, Enums.CardRankEnum communityCard3Rank,
+        Enums.CardSuitEnum communityCard4Suit, Enums.CardRankEnum communityCard4Rank,
+        Enums.CardSuitEnum communityCard5Suit, Enums.CardRankEnum communityCard5Rank,
+        Enums.HandRankingType handRankingType)
+    {
+        var sut = SetupTestHand(player1HoleCard1Suit, player1HoleCard1Rank, player1HoleCard2Suit, player1HoleCard2Rank, communityCard1Suit, communityCard1Rank, communityCard2Suit, communityCard2Rank, communityCard3Suit, communityCard3Rank, communityCard4Suit, communityCard4Rank, communityCard5Suit, communityCard5Rank);
+        var sut2 = SetupTestHand(player2HoleCard1Suit, player2HoleCard1Rank, player2HoleCard2Suit, player2HoleCard2Rank, communityCard1Suit, communityCard1Rank, communityCard2Suit, communityCard2Rank, communityCard3Suit, communityCard3Rank, communityCard4Suit, communityCard4Rank, communityCard5Suit, communityCard5Rank);
+        
+        var ranking1 = HandRankingLogic.GetHandRanking(sut.Hand);
+        var ranking2 = HandRankingLogic.GetHandRanking(sut2.Hand);
+        var winner = HandRankingLogic.CompareHands((sut.PlayerId, sut.Hand.Where(x => x.IsFinalHand).ToArray()), (sut2.PlayerId, sut2.Hand.Where(x => x.IsFinalHand).ToArray()), handRankingType);
+        
+        Assert.That(ranking1, Is.EqualTo(handRankingType));
+        Assert.That(ranking2, Is.EqualTo(handRankingType));
+        Assert.That(sut.Hand.Count(x => x.IsFinalHand), Is.EqualTo(5));
+        Assert.That(sut2.Hand.Count(x => x.IsFinalHand), Is.EqualTo(5));
+        Assert.That(sut2.PlayerId, Is.EqualTo(winner));
+    }
+    
+    [Test]
+    [TestCase(Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Two,
+        Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Three,
+        
+        Enums.CardSuitEnum.Club, Enums.CardRankEnum.Three,
+        Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Jack,
+        
+        Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Three,
+        Enums.CardSuitEnum.Spade, Enums.CardRankEnum.Three,
+        Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Four,
+        Enums.CardSuitEnum.Spade, Enums.CardRankEnum.Five,
+        Enums.CardSuitEnum.Spade, Enums.CardRankEnum.Ten,
+        Enums.HandRankingType.ThreeOfAKind)]
+    public void CompareThreeOfAKindTest(Enums.CardSuitEnum player1HoleCard1Suit, Enums.CardRankEnum player1HoleCard1Rank,
         Enums.CardSuitEnum player1HoleCard2Suit, Enums.CardRankEnum player1HoleCard2Rank,
         Enums.CardSuitEnum player2HoleCard1Suit, Enums.CardRankEnum player2HoleCard1Rank,
         Enums.CardSuitEnum player2HoleCard2Suit, Enums.CardRankEnum player2HoleCard2Rank,
