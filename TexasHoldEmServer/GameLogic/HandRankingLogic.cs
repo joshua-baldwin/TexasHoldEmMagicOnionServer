@@ -387,11 +387,11 @@ namespace TexasHoldEmServer.GameLogic
         {
             return ComparePairs(playerHand1, playerHand2);
         }
-        
+
         private static Guid ComparePairs((Guid, CardEntity[]) playerHand1, (Guid, CardEntity[]) playerHand2)
         {
-            var hand1 = playerHand1.Item2.GroupBy(x => x.Rank).ToArray();
-            var hand2 = playerHand2.Item2.GroupBy(x => x.Rank).ToArray();
+            var hand1 = playerHand1.Item2.GroupBy(x => x.Rank).Where(x => x.Count() == 2).OrderByDescending(x => x.Key).ToArray();
+            var hand2 = playerHand2.Item2.GroupBy(x => x.Rank).Where(x => x.Count() == 2).OrderByDescending(x => x.Key).ToArray();
 
             //高いランクのペアが勝ち
             //全部同じだった場合引き分け
@@ -400,13 +400,18 @@ namespace TexasHoldEmServer.GameLogic
             {
                 if (hand1[i].Key == hand2[i].Key)
                     continue;
-                
+
                 betterHand = hand1[i].Key > hand2[i].Key ? playerHand1.Item1 : playerHand2.Item1;
             }
-            
-            return betterHand;
+
+            if (betterHand != Guid.Empty)
+                return betterHand;
+
+            var others1 = playerHand1.Item2.Except(hand1.SelectMany(x => x)).ToArray();
+            var others2 = playerHand2.Item2.Except(hand2.SelectMany(x => x)).ToArray();
+            return CompareHighCards((playerHand1.Item1, others1), (playerHand2.Item1, others2));
         }
-        
+
         private static Guid CompareHighCards((Guid, CardEntity[]) playerHand1, (Guid, CardEntity[]) playerHand2)
         {
             var hand1 = playerHand1.Item2.OrderByDescending(x => x.Rank).ToArray();
