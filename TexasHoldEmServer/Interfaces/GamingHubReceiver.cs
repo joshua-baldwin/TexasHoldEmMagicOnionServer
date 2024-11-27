@@ -132,8 +132,6 @@ namespace TexasHoldEmServer.Interfaces
                 
                 Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pot, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, winnerIds, winningHand);
             }
-            if (gameStateChanged)
-                gameLogicManager.ResetLastCommand();
         }
 
         protected override ValueTask OnDisconnected()

@@ -92,7 +92,7 @@ namespace TexasHoldEmServer.GameLogic
                                     playerQueue.All(x => x.LastCommand != Enums.CommandTypeEnum.Raise));
                     if (!canCheck)
                     {
-                        actionMessage = "You can't check because a bet has been placed.";
+                        actionMessage = "You can't check because a bet has been placed.\n誰かが別途したのでチェックできない。";
                         isError = true;
                         return;
                     }
@@ -137,6 +137,8 @@ namespace TexasHoldEmServer.GameLogic
                     previousBet = chipsBet;
                     CurrentPlayer.CurrentBet += chipsBet;
                     CurrentPlayer.Chips -= chipsBet;
+                    foreach (var player in playerQueue)
+                        player.HasTakenAction = false;
                     CurrentPlayer.HasTakenAction = true;
                     break;
                 default:
@@ -220,7 +222,10 @@ namespace TexasHoldEmServer.GameLogic
             CurrentPlayer = playerQueue.Peek();
 
             foreach (var player in playerQueue)
+            {
                 player.HasTakenAction = false;
+                player.LastCommand = 0;
+            }
         }
 
         #region Setup
@@ -379,36 +384,35 @@ namespace TexasHoldEmServer.GameLogic
             Pot = 0;
             return [currentPlayer.PlayerId];
         }
-
-        public void ResetLastCommand()
-        {
-            foreach (var player in playerQueue)
-                player.LastCommand = 0;
-        }
         
         private bool CanPlaceBet(int chipsBet, out string message, bool isCall = false, bool isRaise = false)
         {
             if (chipsBet <= 0)
             {
-                message = "The bet must be greater than 0.";
+                message = "The bet must be greater than 0.\n0以上ベットしないといけない。";
                 return false;
             }
             
             if (previousBet != 0 && chipsBet <= previousBet && !isCall)
             {
-                message = "The bet must be greater than the previous bet.";
+                message = "The bet must be greater than the previous bet.\nさっきのベットより高いベットをしないといけない。";
                 return false;
             }
 
             if (isRaise && chipsBet < BigBlindBet)
             {
-                message = $"The minimum bet is {BigBlindBet}.";
+                message = $"The minimum bet is {BigBlindBet}.\n最低限のベットは{BigBlindBet}。";
                 return false;
+            }
+
+            if (isRaise && chipsBet <= previousBet * 2)
+            {
+                message = $"You must bet double the previous bet of {previousBet}.\nさっきの{previousBet}の倍をベットしないといけない。";
             }
             
             if (chipsBet > CurrentPlayer.Chips)
             {
-                message = "Not enough chips.";
+                message = "Not enough chips.\nチップが足りない。";
                 return false;
             }
 
