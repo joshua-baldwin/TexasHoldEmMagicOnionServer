@@ -77,14 +77,26 @@ namespace TexasHoldEmServer.GameLogic
         
         private static bool IsRoyalFlush(CardEntity[] cards)
         {
+            var groups = cards.GroupBy(x => x.Suit).Where(x => x.Count() >= 5).ToList();
+            if (groups.Count == 0)
+                return false;
+            
             var royalFlushCards = new List<Enums.CardRankEnum> { Enums.CardRankEnum.Ace, Enums.CardRankEnum.King, Enums.CardRankEnum.Queen, Enums.CardRankEnum.Jack, Enums.CardRankEnum.Ten };
-            foreach (var card in cards)
+            foreach (var group in groups)
             {
-                if (royalFlushCards.Contains(card.Rank))
+                foreach (var card in group)
                 {
-                    card.IsFinalHand = true;
-                    royalFlushCards.Remove(card.Rank);
+                    if (royalFlushCards.Contains(card.Rank))
+                    {
+                        card.IsFinalHand = true;
+                        royalFlushCards.Remove(card.Rank);
+                    }
                 }
+
+                if (royalFlushCards.Count == 0)
+                    break;
+                
+                royalFlushCards = new List<Enums.CardRankEnum> { Enums.CardRankEnum.Ace, Enums.CardRankEnum.King, Enums.CardRankEnum.Queen, Enums.CardRankEnum.Jack, Enums.CardRankEnum.Ten };
             }
 
             if (royalFlushCards.Count == 0)
@@ -135,7 +147,15 @@ namespace TexasHoldEmServer.GameLogic
                 return false;
             //ペア除いて3 of a kindがあるか
             var pair = cards.GroupBy(x => x.Rank).First(x => x.Count() == 2);
-            return IsThreeOfAKind(cards.Where(card => card.Rank != pair.Key).ToArray(), false);
+            var isValid = IsThreeOfAKind(cards.Where(card => card.Rank != pair.Key).ToArray(), false);
+            
+            if (!isValid)
+            {
+                foreach (var card in cards)
+                    card.IsFinalHand = false;
+            }
+            
+            return isValid;
         }
 
         private static bool IsFlush(CardEntity[] cards)
@@ -168,6 +188,9 @@ namespace TexasHoldEmServer.GameLogic
             var count = 1;
             for (var i = 0; i < orderedCards.Count - 1; i++)
             {
+                if (count == 5)
+                    break;
+                
                 if (orderedCards[i].Rank == orderedCards[i + 1].Rank)
                     continue;
                 
@@ -175,7 +198,7 @@ namespace TexasHoldEmServer.GameLogic
                 {
                     orderedCards[i].IsFinalHand = true;
                     count++;
-                    if (i + 1 == orderedCards.Count - 1)
+                    if (count == 5)
                         orderedCards[i + 1].IsFinalHand = true;
                 }
                 else if (orderedCards[i].Rank + 1 < orderedCards[i + 1].Rank && count != 5)
