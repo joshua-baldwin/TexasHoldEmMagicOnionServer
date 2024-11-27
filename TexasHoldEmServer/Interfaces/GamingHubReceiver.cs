@@ -120,9 +120,9 @@ namespace TexasHoldEmServer.Interfaces
             var previousPlayer = gameLogicManager.CurrentPlayer;
             gameLogicManager.DoAction(commandType, betAmount, out bool isGameOver, out bool isError, out string actionMessage, out bool gameStateChanged);
             if (isError)
-                BroadcastTo(group, ConnectionId).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pot, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage);
+                BroadcastTo(group, ConnectionId).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pot, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, Guid.Empty);
             else if (isGameOver)
-                Broadcast(group).OnGameOver(storage.AllValues.First(x => !x.HasFolded).Id, storage.AllValues.ToArray());
+                Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pot, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, storage.AllValues.First(x => !x.HasFolded).Id);
             else
             {
                 if (gameLogicManager.GameState == Enums.GameStateEnum.Showdown)
@@ -131,7 +131,7 @@ namespace TexasHoldEmServer.Interfaces
                     Broadcast(group).OnChooseHand(winnerId, winningHand, storage.AllValues.ToArray());
                 }
                 else
-                    Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pot, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage);
+                    Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pot, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, Guid.Empty);
             }
             if (gameStateChanged)
                 gameLogicManager.ResetLastCommand();

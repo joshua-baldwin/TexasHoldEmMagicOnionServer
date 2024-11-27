@@ -104,7 +104,7 @@ namespace TexasHoldEmServer.GameLogic
                     CurrentPlayer.HasFolded = true;
                     if (playerQueue.Count(x => x.HasFolded) == playerQueue.Count - 1)
                     {
-                        playerQueue.First().Chips += Pot;
+                        playerQueue.First(x => !x.HasFolded).Chips += Pot;
                         Pot = 0;
                         totalChipsForTurn = 0;
                         isGameOver = true;
@@ -330,7 +330,7 @@ namespace TexasHoldEmServer.GameLogic
         }
         
         #endregion
-        
+
         public Guid GetWinner(out Enums.HandRankingType winningHand)
         {
             winningHand = Enums.HandRankingType.Nothing;
@@ -358,7 +358,14 @@ namespace TexasHoldEmServer.GameLogic
                     }
                 }
             }
-            return isTie ? Guid.Empty : currentPlayer.PlayerId;
+
+            if (isTie)
+                return Guid.Empty;
+            
+            var winner = playerQueue.First(x => x.Id == currentPlayer.PlayerId);
+            winner.Chips += Pot;
+            Pot = 0;
+            return currentPlayer.PlayerId;
         }
 
         public void ResetLastCommand()
