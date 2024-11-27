@@ -331,8 +331,9 @@ namespace TexasHoldEmServer.GameLogic
         
         #endregion
 
-        public Guid GetWinner(out Enums.HandRankingType winningHand)
+        public List<Guid> GetWinner(out Enums.HandRankingType winningHand)
         {
+            var tieIds = new List<Guid>();
             winningHand = Enums.HandRankingType.Nothing;
             (Guid PlayerId, CardEntity[] Hand) currentPlayer = (Guid.Empty, []);
             foreach (var player in playerQueue)
@@ -350,7 +351,11 @@ namespace TexasHoldEmServer.GameLogic
                 {
                     var guid = HandRankingLogic.CompareHands(currentPlayer, (player.Id, finalHand), ranking);
                     if (guid == Guid.Empty)
+                    {
                         isTie = true;
+                        tieIds.Add(currentPlayer.PlayerId);
+                        tieIds.Add(player.Id);
+                    }
                     else
                     {
                         isTie = false;
@@ -360,12 +365,19 @@ namespace TexasHoldEmServer.GameLogic
             }
 
             if (isTie)
-                return Guid.Empty;
-            
+            {
+                //TODO figure out how to split evenly
+                var split = Pot / 2;
+                playerQueue.First(x => x.Id == tieIds[0]).Chips += split;
+                playerQueue.First(x => x.Id == tieIds[1]).Chips += split;
+                Pot = 0;
+                return tieIds;
+            }
+
             var winner = playerQueue.First(x => x.Id == currentPlayer.PlayerId);
             winner.Chips += Pot;
             Pot = 0;
-            return currentPlayer.PlayerId;
+            return [currentPlayer.PlayerId];
         }
 
         public void ResetLastCommand()
