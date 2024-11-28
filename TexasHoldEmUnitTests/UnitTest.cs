@@ -8,10 +8,16 @@ public class Tests
 {
     public class TestSystem
     {
-        public GameLogicManager GameLogicManager { get; set; }
+        public GameLogicManager GameLogicManager { get; set; } = new GameLogicManager();
         public List<PlayerEntity> Players { get; set; } = new();
         public List<CardEntity> CommunityCards { get; set; } = new();
 
+        public void Initialize()
+        {
+            GameLogicManager.SetupGame(Players);
+            GameLogicManager.CreateQueue(Players);
+        }
+        
         public List<CardEntity> GetHand(PlayerEntity player)
         {
             var newList = new List<CardEntity>();
@@ -465,8 +471,96 @@ public class Tests
     #endregion
 
     [Test]
-    public void ShowdownTest()
+    [TestCase(Enums.PlayerRoleEnum.SmallBlind, 50, Enums.PlayerRoleEnum.BigBlind, 20, Enums.PlayerRoleEnum.None, 20)]
+    public void GameStateTest(Enums.PlayerRoleEnum role1, int chip1, Enums.PlayerRoleEnum role2, int chip2, Enums.PlayerRoleEnum role3, int chip3)
     {
+        var sut = new TestSystem();
+        var p1 = SetupTestHand("1", Enums.PlayerRoleEnum.None, Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Eight, Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five);
+        var p2 = SetupTestHand("2", Enums.PlayerRoleEnum.None, Enums.CardSuitEnum.Club, Enums.CardRankEnum.Ten, Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Nine);
+        var p3 = SetupTestHand("3", Enums.PlayerRoleEnum.None, Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Ten, Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Nine);
+        sut.Players.Add(p1);
+        sut.Players.Add(p2);
+        sut.Players.Add(p3);
+        sut.CommunityCards =
+        [
+            new CardEntity(Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Five),
+            new CardEntity(Enums.CardSuitEnum.Spade, Enums.CardRankEnum.Eight),
+            new CardEntity(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Eight),
+            new CardEntity(Enums.CardSuitEnum.Spade, Enums.CardRankEnum.Nine),
+            new CardEntity(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Nine)
+        ];
         
+        sut.Initialize();
+        sut.Players.First(x => x.PlayerRole == role1).Chips = chip1;
+        sut.Players.First(x => x.PlayerRole == role2).Chips = chip2;
+        sut.Players.First(x => x.PlayerRole == role3).Chips = chip3;
+        
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _);
+        
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _);
+        
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 25, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out _, out _);
+        
+        Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.Showdown));
+    }
+    
+    [Test]
+    [TestCase(Enums.PlayerRoleEnum.SmallBlind, 50, Enums.PlayerRoleEnum.BigBlind, 20, Enums.PlayerRoleEnum.None, 10)]
+    public void ShowdownTest(Enums.PlayerRoleEnum role1, int chip1, Enums.PlayerRoleEnum role2, int chip2, Enums.PlayerRoleEnum role3, int chip3)
+    {
+        var sut = new TestSystem();
+        var p1 = SetupTestHand("1", Enums.PlayerRoleEnum.BigBlind, Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Eight, Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five);
+        var p2 = SetupTestHand("2", Enums.PlayerRoleEnum.SmallBlind, Enums.CardSuitEnum.Club, Enums.CardRankEnum.Ten, Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Nine);
+        var p3 = SetupTestHand("3", Enums.PlayerRoleEnum.None, Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Ten, Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Nine);
+        sut.Players.Add(p1);
+        sut.Players.Add(p2);
+        sut.Players.Add(p3);
+        sut.CommunityCards =
+        [
+            new CardEntity(Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Five),
+            new CardEntity(Enums.CardSuitEnum.Spade, Enums.CardRankEnum.Eight),
+            new CardEntity(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Eight),
+            new CardEntity(Enums.CardSuitEnum.Spade, Enums.CardRankEnum.Nine),
+            new CardEntity(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Nine)
+        ];
+        
+        //sut.Initialize();
+        sut.GameLogicManager.SetupGame(sut.Players);
+        var bb = sut.Players.First(x => x.Name == "1");
+        bb.PlayerRole = role1;
+        bb.Chips = chip1;
+        
+        var sb = sut.Players.First(x => x.Name == "2");
+        sb.PlayerRole = role2;
+        sb.Chips = chip2;
+        var none = sut.Players.First(x => x.Name == "3");
+        none.IsDealer = true;
+        none.PlayerRole = role3;
+        none.Chips = chip3;
+        
+        
+        sut.GameLogicManager.CreateQueue(sut.Players);
+        
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _);
+        
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _);
+        
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 25, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out _, out _);
+
+        var winners = sut.GameLogicManager.DoShowdown();
+        
+        Assert.That(winners.First().Item1.First(), Is.EqualTo(p2.Id));
+        Assert.That(winners.First().Item2, Is.EqualTo(Enums.HandRankingType.FullHouse));
+        Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.Showdown));
     }
 }

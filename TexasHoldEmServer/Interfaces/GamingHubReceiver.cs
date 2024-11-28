@@ -93,9 +93,10 @@ namespace TexasHoldEmServer.Interfaces
             if (players.Any(player => !player.IsReady))
                 return false;
             
-            gameLogicManager.SetupGame(ref players);
+            gameLogicManager.SetupGame(players);
+            gameLogicManager.CreateQueue(players);
 
-            Broadcast(group).OnGameStart(players.ToArray(), gameLogicManager.CurrentPlayer, gameLogicManager.GameState);
+            Broadcast(group).OnGameStart(gameLogicManager.PlayerQueue.ToArray(), gameLogicManager.CurrentPlayer, gameLogicManager.GameState);
             return true;
         }
 
@@ -120,17 +121,17 @@ namespace TexasHoldEmServer.Interfaces
             var previousPlayer = gameLogicManager.CurrentPlayer;
             gameLogicManager.DoAction(commandType, betAmount, out bool isGameOver, out bool isError, out string actionMessage);
             if (isError)
-                BroadcastTo(group, ConnectionId).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.MainPot, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, [], Enums.HandRankingType.Nothing);
+                BroadcastTo(group, ConnectionId).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pots, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, []);
             else if (isGameOver)
-                Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.MainPot, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, [storage.AllValues.First(x => !x.HasFolded).Id], Enums.HandRankingType.Nothing);
+                Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pots, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, [([storage.AllValues.First(x => !x.HasFolded).Id], Enums.HandRankingType.Nothing)]);
             else
             {
-                var winnerIds = new List<Guid>();
+                var winnerList = new List<(List<Guid>, Enums.HandRankingType)>();
                 var winningHand = Enums.HandRankingType.Nothing;
                 if (gameLogicManager.GameState == Enums.GameStateEnum.Showdown)
-                    (winnerIds, winningHand) = gameLogicManager.GetWinner();
+                    winnerList = gameLogicManager.DoShowdown();
                 
-                Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.MainPot, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, winnerIds, winningHand);
+                Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pots, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, winnerList);
             }
         }
 

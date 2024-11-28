@@ -44,6 +44,9 @@ namespace THE.MagicOnion.Shared.Entities
         [Key(11)]
         public Enums.CommandTypeEnum LastCommand { get; set; }
         
+        [Key(12)]
+        public bool IsAllIn { get; set; }
+        
         public PlayerEntity(string name, Guid id, Enums.PlayerRoleEnum role)
         {
             Name = name;

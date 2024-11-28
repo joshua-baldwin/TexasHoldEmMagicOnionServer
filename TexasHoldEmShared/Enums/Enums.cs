@@ -59,7 +59,8 @@ namespace TexasHoldEmShared.Enums
             Check,
             Fold,
             Call,
-            Raise
+            Raise,
+            AllIn
         }
         
         public enum GameStateEnum

@@ -16,15 +16,16 @@ namespace TexasHoldEmServer.GameLogic
         private bool smallBlindBetDone;
         private bool bigBlindBetDone;
         private int previousBet;
-        private int totalChipsForTurn;
         private List<CardEntity> cardPool;
         private bool isTie;
         
         public PlayerEntity PreviousPlayer { get; private set; }
         public PlayerEntity CurrentPlayer { get; private set; }
-        public int MainPot { get; private set; }
-        public CardEntity[] CommunityCards { get; } = new CardEntity[5];
+        public List<(Guid, int)> Pots { get; private set; } = new();
+        public List<CardEntity> CommunityCards { get; } = new();
         public Enums.GameStateEnum GameState { get; private set; }
+        
+        public Queue<PlayerEntity> PlayerQueue => playerQueue;
 
         public void Reset()
         {
@@ -32,22 +33,20 @@ namespace TexasHoldEmServer.GameLogic
             smallBlindBetDone = false;
             bigBlindBetDone = false;
             previousBet = 0;
-            totalChipsForTurn = 0;
             cardPool.Clear();
             isTie = false;
             PreviousPlayer = null;
             CurrentPlayer = null;
-            MainPot = 0;
-            for (var i = 0; i < CommunityCards.Length; i++)
+            Pots = [];
+            for (var i = 0; i < CommunityCards.Count; i++)
                 CommunityCards[i] = null;
             GameState = Enums.GameStateEnum.BlindBet;
         }
-        public void SetupGame(ref List<PlayerEntity> players)
+        public void SetupGame(List<PlayerEntity> players)
         {
             cardPool = CreateDeck();
             players.ForEach(player => player.Chips = StartingChips);
             SetRoles(players);
-            CreateQueue(ref players);
         }
 
         public void DoAction(Enums.CommandTypeEnum commandType, int chipsBet, out bool isGameOver, out bool isError, out string actionMessage)
@@ -63,9 +62,8 @@ namespace TexasHoldEmServer.GameLogic
                         return;
                     }
                     actionMessage = $"{CurrentPlayer.Name} bet {SmallBlindBet}.";
-                    totalChipsForTurn += SmallBlindBet;
                     previousBet = SmallBlindBet;
-                    CurrentPlayer.CurrentBet += SmallBlindBet;
+                    CurrentPlayer.CurrentBet = SmallBlindBet;
                     CurrentPlayer.Chips -= SmallBlindBet;
                     smallBlindBetDone = true;
                     break;
@@ -77,9 +75,8 @@ namespace TexasHoldEmServer.GameLogic
                         return;
                     }
                     actionMessage = $"{CurrentPlayer.Name} bet {BigBlindBet}.";
-                    totalChipsForTurn += BigBlindBet;
                     previousBet = BigBlindBet;
-                    CurrentPlayer.CurrentBet += BigBlindBet;
+                    CurrentPlayer.CurrentBet = BigBlindBet;
                     CurrentPlayer.Chips -= BigBlindBet;
                     bigBlindBetDone = true;
                     break;
@@ -104,9 +101,9 @@ namespace TexasHoldEmServer.GameLogic
                     CurrentPlayer.HasFolded = true;
                     if (playerQueue.Count(x => x.HasFolded) == playerQueue.Count - 1)
                     {
-                        playerQueue.First(x => !x.HasFolded).Chips += MainPot;
-                        MainPot = 0;
-                        totalChipsForTurn = 0;
+                        //TODO TODO TODO TODO
+                        //playerQueue.First(x => !x.HasFolded).Chips += Pots.Value;
+                        Pots = [];
                         isGameOver = true;
                         isError = false;
                         return;
@@ -120,8 +117,7 @@ namespace TexasHoldEmServer.GameLogic
                         return;
                     }
                     actionMessage = $"{CurrentPlayer.Name} called.";
-                    totalChipsForTurn += previousBet;
-                    CurrentPlayer.CurrentBet += previousBet;
+                    CurrentPlayer.CurrentBet = previousBet;
                     CurrentPlayer.Chips -= previousBet;
                     CurrentPlayer.HasTakenAction = true;
                     break;
@@ -133,12 +129,18 @@ namespace TexasHoldEmServer.GameLogic
                         return;
                     }
                     actionMessage = $"{CurrentPlayer.Name} raised {chipsBet}.";
-                    totalChipsForTurn += chipsBet;
                     previousBet = chipsBet;
-                    CurrentPlayer.CurrentBet += chipsBet;
+                    CurrentPlayer.CurrentBet = chipsBet;
                     CurrentPlayer.Chips -= chipsBet;
                     foreach (var player in playerQueue)
                         player.HasTakenAction = false;
+                    CurrentPlayer.HasTakenAction = true;
+                    break;
+                case Enums.CommandTypeEnum.AllIn:
+                    actionMessage = $"{CurrentPlayer.Name} went all in.";
+                    CurrentPlayer.CurrentBet = CurrentPlayer.Chips;
+                    CurrentPlayer.Chips = 0;
+                    CurrentPlayer.IsAllIn = true;
                     CurrentPlayer.HasTakenAction = true;
                     break;
                 default:
@@ -149,6 +151,12 @@ namespace TexasHoldEmServer.GameLogic
             if (!CurrentPlayer.HasFolded)
                 playerQueue.Enqueue(CurrentPlayer);
             CurrentPlayer = playerQueue.Peek();
+            while (CurrentPlayer.IsAllIn)
+            {
+                CurrentPlayer = playerQueue.Dequeue();
+                playerQueue.Enqueue(CurrentPlayer);
+                CurrentPlayer = playerQueue.Peek();
+            }
             UpdateGameState();
             actionMessage = "";
             isError = false;
@@ -157,56 +165,71 @@ namespace TexasHoldEmServer.GameLogic
         private void UpdateGameState()
         {
             var gameStateChanged = false;
-            switch (GameState)
+            if (playerQueue.Count(x => x.IsAllIn) == playerQueue.Count - 1)
             {
-                case Enums.GameStateEnum.BlindBet:
-                    if (smallBlindBetDone && bigBlindBetDone)
-                    {
-                        GameState = Enums.GameStateEnum.PreFlop;
-                        SetCards(playerQueue.ToList());
-                        gameStateChanged = true;
-                    }
-                    break;
-                case Enums.GameStateEnum.PreFlop:
-                    if (playerQueue.All(x => x.HasTakenAction))
-                    {
-                        GameState = Enums.GameStateEnum.TheFlop;
-                        SetTheFlop();
-                        gameStateChanged = true;
-                        UpdatePot();
-                    }
-                    break;
-                case Enums.GameStateEnum.TheFlop:
-                    if (playerQueue.All(x => x.HasTakenAction))
-                    {
-                        GameState = Enums.GameStateEnum.TheTurn;
-                        SetTheTurn();
-                        gameStateChanged = true;
-                        UpdatePot();
-                    }
-                    break;
-                case Enums.GameStateEnum.TheTurn:
-                    if (playerQueue.All(x => x.HasTakenAction))
-                    {
-                        GameState = Enums.GameStateEnum.TheRiver;
-                        SetTheRiver();
-                        gameStateChanged = true;
-                        UpdatePot();
-                    }
-                    break;
-                case Enums.GameStateEnum.TheRiver:
-                    if (playerQueue.All(x => x.HasTakenAction))
-                    {
-                        GameState = Enums.GameStateEnum.Showdown;
-                        gameStateChanged = true;
-                        UpdatePot();
-                    }
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                GameState = Enums.GameStateEnum.Showdown;
+                SetRemainingCards();
+                gameStateChanged = true;
+                UpdatePot();
+            }
+            else
+            {
+                switch (GameState)
+                {
+                    case Enums.GameStateEnum.BlindBet:
+                        if (smallBlindBetDone && bigBlindBetDone)
+                        {
+                            GameState = Enums.GameStateEnum.PreFlop;
+                            SetCards(playerQueue.ToList());
+                            gameStateChanged = true;
+                        }
+
+                        break;
+                    case Enums.GameStateEnum.PreFlop:
+                        if (playerQueue.All(x => x.HasTakenAction))
+                        {
+                            GameState = Enums.GameStateEnum.TheFlop;
+                            SetTheFlop();
+                            gameStateChanged = true;
+                            UpdatePot();
+                        }
+
+                        break;
+                    case Enums.GameStateEnum.TheFlop:
+                        if (playerQueue.All(x => x.HasTakenAction))
+                        {
+                            GameState = Enums.GameStateEnum.TheTurn;
+                            SetTheTurn();
+                            gameStateChanged = true;
+                            UpdatePot();
+                        }
+
+                        break;
+                    case Enums.GameStateEnum.TheTurn:
+                        if (playerQueue.All(x => x.HasTakenAction))
+                        {
+                            GameState = Enums.GameStateEnum.TheRiver;
+                            SetTheRiver();
+                            gameStateChanged = true;
+                            UpdatePot();
+                        }
+
+                        break;
+                    case Enums.GameStateEnum.TheRiver:
+                        if (playerQueue.All(x => x.HasTakenAction))
+                        {
+                            GameState = Enums.GameStateEnum.Showdown;
+                            gameStateChanged = true;
+                            UpdatePot();
+                        }
+
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
 
-            if (!gameStateChanged)
+            if (!gameStateChanged || (gameStateChanged && GameState == Enums.GameStateEnum.PreFlop))
                 return;
             
             //TODO refactor CreateQueue method
@@ -315,33 +338,61 @@ namespace TexasHoldEmServer.GameLogic
             var card3 = cardPool.GetRandomElement();
             cardPool.Remove(card3);
             
-            CommunityCards[0] = card1;
-            CommunityCards[1] = card2;
-            CommunityCards[2] = card3;
+            CommunityCards.Add(card1);
+            CommunityCards.Add(card2);
+            CommunityCards.Add(card3);
         }
         
         private void SetTheTurn()
         {
             var card4 = cardPool.GetRandomElement();
             cardPool.Remove(card4);
-            CommunityCards[3] = card4;
+            CommunityCards.Add(card4);
         }
 
         private void SetTheRiver()
         {
             var card5 = cardPool.GetRandomElement();
             cardPool.Remove(card5);
-            CommunityCards[4] = card5;
+            CommunityCards.Add(card5);
+        }
+
+        private void SetRemainingCards()
+        {
+            while (CommunityCards.Count < 5)
+            {
+                var card = cardPool.GetRandomElement();
+                cardPool.Remove(card);
+                CommunityCards.Add(card);
+            }
         }
         
         #endregion
 
-        public (List<Guid>, Enums.HandRankingType) GetWinner()
+        public List<(List<Guid>, Enums.HandRankingType)> DoShowdown()
+        {
+            var winnerList = new List<(List<Guid>, Enums.HandRankingType)>();
+            var loserList = new List<Guid>();
+            while (Pots.Count > 0)
+            {
+                var firstPot = Pots[0];
+                var showdownPlayers = playerQueue.Where(x => !x.IsAllIn).Concat([playerQueue.First(x => x.Id == firstPot.Item1)]).ToList();
+                showdownPlayers = showdownPlayers.Concat(playerQueue.Where(x => winnerList.SelectMany(y => y.Item1).Contains(x.Id))).DistinctBy(x => x.Id).ToList();
+                showdownPlayers.RemoveAll(x => loserList.Contains(x.Id));
+                var winner = GetWinner(showdownPlayers);
+                winnerList.Add(winner);
+                loserList.Add(showdownPlayers.First(x => x.Id != winner.Item1.First()).Id);
+                Pots.RemoveAt(0);
+            }
+            return winnerList;
+        }
+        
+        private (List<Guid>, Enums.HandRankingType) GetWinner(List<PlayerEntity> showdownPlayers)
         {
             var tieIds = new List<Guid>();
             var winningHand = Enums.HandRankingType.Nothing;
             (Guid PlayerId, CardEntity[] Hand) currentPlayer = (Guid.Empty, []);
-            foreach (var player in playerQueue)
+            foreach (var player in showdownPlayers)
             {
                 var hand = player.HoleCards.Concat(CommunityCards).ToArray();
                 var ranking = HandRankingLogic.GetHandRanking(hand);
@@ -372,16 +423,18 @@ namespace TexasHoldEmServer.GameLogic
             if (isTie)
             {
                 //TODO figure out how to split evenly
-                var split = MainPot / 2;
-                playerQueue.First(x => x.Id == tieIds[0]).Chips += split;
-                playerQueue.First(x => x.Id == tieIds[1]).Chips += split;
-                MainPot = 0;
+                //TODO TODO TODO TODO
+                //var split = Pots.Value / 2;
+                //playerQueue.First(x => x.Id == tieIds[0]).Chips += split;
+                //playerQueue.First(x => x.Id == tieIds[1]).Chips += split;
+                //Pots = [];
                 return (tieIds, winningHand);
             }
 
-            var winner = playerQueue.First(x => x.Id == currentPlayer.PlayerId);
-            winner.Chips += MainPot;
-            MainPot = 0;
+            var winner = showdownPlayers.First(x => x.Id == currentPlayer.PlayerId);
+            //TODO TODO TODO TODO
+            //winner.Chips += Pots.Value;
+            //Pots = [];
             return ([currentPlayer.PlayerId], winningHand);
         }
         
