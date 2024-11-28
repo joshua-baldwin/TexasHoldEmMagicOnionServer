@@ -120,9 +120,9 @@ namespace TexasHoldEmServer.Interfaces
             var previousPlayer = gameLogicManager.CurrentPlayer;
             gameLogicManager.DoAction(commandType, betAmount, out bool isGameOver, out bool isError, out string actionMessage);
             if (isError)
-                BroadcastTo(group, ConnectionId).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pot, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, [], Enums.HandRankingType.Nothing);
+                BroadcastTo(group, ConnectionId).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.MainPot, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, [], Enums.HandRankingType.Nothing);
             else if (isGameOver)
-                Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pot, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, [storage.AllValues.First(x => !x.HasFolded).Id], Enums.HandRankingType.Nothing);
+                Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.MainPot, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, [storage.AllValues.First(x => !x.HasFolded).Id], Enums.HandRankingType.Nothing);
             else
             {
                 var winnerIds = new List<Guid>();
@@ -130,7 +130,7 @@ namespace TexasHoldEmServer.Interfaces
                 if (gameLogicManager.GameState == Enums.GameStateEnum.Showdown)
                     (winnerIds, winningHand) = gameLogicManager.GetWinner();
                 
-                Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pot, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, winnerIds, winningHand);
+                Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.MainPot, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, winnerIds, winningHand);
             }
         }
 

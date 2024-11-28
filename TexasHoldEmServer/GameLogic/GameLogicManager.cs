@@ -22,7 +22,7 @@ namespace TexasHoldEmServer.GameLogic
         
         public PlayerEntity PreviousPlayer { get; private set; }
         public PlayerEntity CurrentPlayer { get; private set; }
-        public int Pot { get; private set; }
+        public int MainPot { get; private set; }
         public CardEntity[] CommunityCards { get; } = new CardEntity[5];
         public Enums.GameStateEnum GameState { get; private set; }
 
@@ -37,7 +37,7 @@ namespace TexasHoldEmServer.GameLogic
             isTie = false;
             PreviousPlayer = null;
             CurrentPlayer = null;
-            Pot = 0;
+            MainPot = 0;
             for (var i = 0; i < CommunityCards.Length; i++)
                 CommunityCards[i] = null;
             GameState = Enums.GameStateEnum.BlindBet;
@@ -104,8 +104,8 @@ namespace TexasHoldEmServer.GameLogic
                     CurrentPlayer.HasFolded = true;
                     if (playerQueue.Count(x => x.HasFolded) == playerQueue.Count - 1)
                     {
-                        playerQueue.First(x => !x.HasFolded).Chips += Pot;
-                        Pot = 0;
+                        playerQueue.First(x => !x.HasFolded).Chips += MainPot;
+                        MainPot = 0;
                         totalChipsForTurn = 0;
                         isGameOver = true;
                         isError = false;
@@ -372,16 +372,16 @@ namespace TexasHoldEmServer.GameLogic
             if (isTie)
             {
                 //TODO figure out how to split evenly
-                var split = Pot / 2;
+                var split = MainPot / 2;
                 playerQueue.First(x => x.Id == tieIds[0]).Chips += split;
                 playerQueue.First(x => x.Id == tieIds[1]).Chips += split;
-                Pot = 0;
+                MainPot = 0;
                 return (tieIds, winningHand);
             }
 
             var winner = playerQueue.First(x => x.Id == currentPlayer.PlayerId);
-            winner.Chips += Pot;
-            Pot = 0;
+            winner.Chips += MainPot;
+            MainPot = 0;
             return ([currentPlayer.PlayerId], winningHand);
         }
         
@@ -422,7 +422,7 @@ namespace TexasHoldEmServer.GameLogic
         
         private void UpdatePot()
         {
-            Pot += totalChipsForTurn;
+            MainPot += totalChipsForTurn;
             totalChipsForTurn = 0;
             previousBet = 0;
             foreach (var player in playerQueue)
