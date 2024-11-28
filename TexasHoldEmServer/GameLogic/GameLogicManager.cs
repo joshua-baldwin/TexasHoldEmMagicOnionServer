@@ -313,14 +313,14 @@ namespace TexasHoldEmServer.GameLogic
             return deck;
         }
         
-        private void CreateQueue(ref List<PlayerEntity> players)
+        public void CreateQueue(List<PlayerEntity> players)
         {
-            players = players.OrderByDescending(x => x.IsDealer)
+            var playerList = players.OrderByDescending(x => x.IsDealer)
                 .ThenByDescending(x => x.PlayerRole == Enums.PlayerRoleEnum.SmallBlind)
                 .ThenByDescending(x => x.PlayerRole == Enums.PlayerRoleEnum.BigBlind).ToList();
-            for (var i = 1; i < players.Count; i++)
-                playerQueue.Enqueue(players[i]);
-            playerQueue.Enqueue(players[0]);
+            for (var i = 1; i < playerList.Count; i++)
+                playerQueue.Enqueue(playerList[i]);
+            playerQueue.Enqueue(playerList[0]);
             
             CurrentPlayer = playerQueue.Peek();
         }
