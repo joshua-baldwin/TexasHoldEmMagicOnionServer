@@ -36,6 +36,8 @@ public class Tests
         return testHand;
     }
 
+    #region Ranking tests
+    
     [Test]
     [TestCase(
         Enums.CardSuitEnum.Club, Enums.CardRankEnum.Ten,
@@ -150,7 +152,11 @@ public class Tests
         
         Assert.That(ranking, Is.EqualTo(handRankingType));
     }
+    
+    #endregion
 
+    #region Compare tests
+    
     [Test]
     [TestCase(Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Two,
         Enums.CardSuitEnum.Club, Enums.CardRankEnum.Ace,
@@ -332,6 +338,10 @@ public class Tests
         Assert.That(sut2.PlayerId, Is.EqualTo(winner));
     }
     
+    #endregion
+    
+    #region Tie tests
+    
     [Test]
     [TestCase(Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Ten,
         Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five,
@@ -345,19 +355,6 @@ public class Tests
         Enums.CardSuitEnum.Spade, Enums.CardRankEnum.Ten,
         Enums.CardSuitEnum.Club, Enums.CardRankEnum.Ten,
         Enums.HandRankingType.FullHouse)]
-    
-    // [TestCase(Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Two,
-    //     Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Five,
-    //     
-    //     Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Ace,
-    //     Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Six,
-    //     
-    //     Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Four,
-    //     Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Eight,
-    //     Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Ten,
-    //     Enums.CardSuitEnum.Club, Enums.CardRankEnum.Jack,
-    //     Enums.CardSuitEnum.Club, Enums.CardRankEnum.Queen,
-    //     Enums.HandRankingType.Flush)]
     
     [TestCase(Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Ten,
         Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five,
@@ -433,5 +430,13 @@ public class Tests
         Assert.That(sut.Hand.Count(x => x.IsFinalHand), Is.EqualTo(5));
         Assert.That(sut2.Hand.Count(x => x.IsFinalHand), Is.EqualTo(5));
         Assert.That(winner, Is.EqualTo(Guid.Empty));
+    }
+    
+    #endregion
+
+    [Test]
+    public void ShowdownTest()
+    {
+        
     }
 }
