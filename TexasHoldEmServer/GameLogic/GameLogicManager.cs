@@ -11,6 +11,7 @@ namespace TexasHoldEmServer.GameLogic
         public const int StartingChips = 50;
         public const int SmallBlindBet = 1;
         public const int BigBlindBet = 2;
+        public const int JokerCount = 2;
         private readonly Queue<PlayerEntity> playerQueue = new();
         private bool smallBlindBetDone;
         private bool bigBlindBetDone;
@@ -49,10 +50,9 @@ namespace TexasHoldEmServer.GameLogic
             CreateQueue(ref players);
         }
 
-        public void DoAction(Enums.CommandTypeEnum commandType, int chipsBet, out bool isGameOver, out bool isError, out string actionMessage, out bool gameStateChanged)
+        public void DoAction(Enums.CommandTypeEnum commandType, int chipsBet, out bool isGameOver, out bool isError, out string actionMessage)
         {
             isGameOver = false;
-            gameStateChanged = false;
             switch (commandType)
             {
                 case Enums.CommandTypeEnum.SmallBlindBet:
@@ -92,7 +92,7 @@ namespace TexasHoldEmServer.GameLogic
                                     playerQueue.All(x => x.LastCommand != Enums.CommandTypeEnum.Raise));
                     if (!canCheck)
                     {
-                        actionMessage = "You can't check because a bet has been placed.\n誰かが別途したのでチェックできない。";
+                        actionMessage = "You can't check because a bet has been placed.\n誰かがベットしたのでチェックできない。";
                         isError = true;
                         return;
                     }
@@ -149,14 +149,14 @@ namespace TexasHoldEmServer.GameLogic
             if (!CurrentPlayer.HasFolded)
                 playerQueue.Enqueue(CurrentPlayer);
             CurrentPlayer = playerQueue.Peek();
-            UpdateGameState(out gameStateChanged);
+            UpdateGameState();
             actionMessage = "";
             isError = false;
         }
 
-        private void UpdateGameState(out bool gameStateChanged)
+        private void UpdateGameState()
         {
-            gameStateChanged = false;
+            var gameStateChanged = false;
             switch (GameState)
             {
                 case Enums.GameStateEnum.BlindBet:
@@ -283,8 +283,8 @@ namespace TexasHoldEmServer.GameLogic
 
             if (useJokers)
             {
-                deck.Add(new CardEntity(Enums.CardSuitEnum.None, Enums.CardRankEnum.Joker));
-                deck.Add(new CardEntity(Enums.CardSuitEnum.None, Enums.CardRankEnum.Joker));
+                for (var i = 0; i < JokerCount; i++)
+                    deck.Add(new CardEntity(Enums.CardSuitEnum.None, Enums.CardRankEnum.Joker));
             }
 
             return deck;
@@ -336,10 +336,10 @@ namespace TexasHoldEmServer.GameLogic
         
         #endregion
 
-        public List<Guid> GetWinner(out Enums.HandRankingType winningHand)
+        public (List<Guid>, Enums.HandRankingType) GetWinner()
         {
             var tieIds = new List<Guid>();
-            winningHand = Enums.HandRankingType.Nothing;
+            var winningHand = Enums.HandRankingType.Nothing;
             (Guid PlayerId, CardEntity[] Hand) currentPlayer = (Guid.Empty, []);
             foreach (var player in playerQueue)
             {
@@ -376,13 +376,13 @@ namespace TexasHoldEmServer.GameLogic
                 playerQueue.First(x => x.Id == tieIds[0]).Chips += split;
                 playerQueue.First(x => x.Id == tieIds[1]).Chips += split;
                 Pot = 0;
-                return tieIds;
+                return (tieIds, winningHand);
             }
 
             var winner = playerQueue.First(x => x.Id == currentPlayer.PlayerId);
             winner.Chips += Pot;
             Pot = 0;
-            return [currentPlayer.PlayerId];
+            return ([currentPlayer.PlayerId], winningHand);
         }
         
         private bool CanPlaceBet(int chipsBet, out string message, bool isCall = false, bool isRaise = false)

@@ -118,7 +118,7 @@ namespace TexasHoldEmServer.Interfaces
                 return;
     
             var previousPlayer = gameLogicManager.CurrentPlayer;
-            gameLogicManager.DoAction(commandType, betAmount, out bool isGameOver, out bool isError, out string actionMessage, out bool gameStateChanged);
+            gameLogicManager.DoAction(commandType, betAmount, out bool isGameOver, out bool isError, out string actionMessage);
             if (isError)
                 BroadcastTo(group, ConnectionId).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pot, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, [], Enums.HandRankingType.Nothing);
             else if (isGameOver)
@@ -128,7 +128,7 @@ namespace TexasHoldEmServer.Interfaces
                 var winnerIds = new List<Guid>();
                 var winningHand = Enums.HandRankingType.Nothing;
                 if (gameLogicManager.GameState == Enums.GameStateEnum.Showdown)
-                    winnerIds = gameLogicManager.GetWinner(out winningHand);
+                    (winnerIds, winningHand) = gameLogicManager.GetWinner();
                 
                 Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pot, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, winnerIds, winningHand);
             }
