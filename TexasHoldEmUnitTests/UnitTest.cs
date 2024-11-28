@@ -6,34 +6,31 @@ namespace TexasHoldEmUnitTests;
 
 public class Tests
 {
-    public class TestPlayer
+    public class TestSystem
     {
-        public Guid PlayerId { get; set; } = Guid.NewGuid();
-        public List<CardEntity> HoleCards { get; set; } = new();
+        public GameLogicManager GameLogicManager { get; set; }
+        public List<PlayerEntity> Players { get; set; } = new();
         public List<CardEntity> CommunityCards { get; set; } = new();
 
-        public CardEntity[] Hand => CommunityCards.Concat(HoleCards).ToArray();
+        public List<CardEntity> GetHand(PlayerEntity player)
+        {
+            var newList = new List<CardEntity>();
+            foreach (var card in CommunityCards)
+                newList.Add(new CardEntity(card.Suit, card.Rank));
+            return player.HoleCards.Concat(new List<CardEntity>(newList)).ToList();
+        }
     }
     
-    public static TestPlayer SetupTestHand(Enums.CardSuitEnum holeCard1Suit, Enums.CardRankEnum holeCard1Rank, Enums.CardSuitEnum holeCard2Suit, Enums.CardRankEnum holeCard2Rank, Enums.CardSuitEnum communityCard1Suit, Enums.CardRankEnum communityCard1Rank, Enums.CardSuitEnum communityCard2Suit, Enums.CardRankEnum communityCard2Rank, Enums.CardSuitEnum communityCard3Suit, Enums.CardRankEnum communityCard3Rank, Enums.CardSuitEnum communityCard4Suit, Enums.CardRankEnum communityCard4Rank, Enums.CardSuitEnum communityCard5Suit, Enums.CardRankEnum communityCard5Rank)
+    private static PlayerEntity SetupTestHand(string name, Enums.PlayerRoleEnum role, Enums.CardSuitEnum holeCard1Suit, Enums.CardRankEnum holeCard1Rank, Enums.CardSuitEnum holeCard2Suit, Enums.CardRankEnum holeCard2Rank)
     {
-        var testHand = new TestPlayer
+        return new PlayerEntity(name, Guid.NewGuid(), role)
         {
             HoleCards =
             [
                 new CardEntity(holeCard1Suit, holeCard1Rank),
                 new CardEntity(holeCard2Suit, holeCard2Rank)
-            ],
-            CommunityCards =
-            [
-                new CardEntity(communityCard1Suit, communityCard1Rank),
-                new CardEntity(communityCard2Suit, communityCard2Rank),
-                new CardEntity(communityCard3Suit, communityCard3Rank),
-                new CardEntity(communityCard4Suit, communityCard4Rank),
-                new CardEntity(communityCard5Suit, communityCard5Rank)
             ]
         };
-        return testHand;
     }
 
     #region Ranking tests
@@ -147,9 +144,18 @@ public class Tests
         Enums.CardSuitEnum communityCard5Suit, Enums.CardRankEnum communityCard5Rank,
         Enums.HandRankingType handRankingType)
     {
-        var sut = SetupTestHand(holeCard1Suit, holeCard1Rank, holeCard2Suit, holeCard2Rank, communityCard1Suit, communityCard1Rank, communityCard2Suit, communityCard2Rank, communityCard3Suit, communityCard3Rank, communityCard4Suit, communityCard4Rank, communityCard5Suit, communityCard5Rank);
-        var ranking = HandRankingLogic.GetHandRanking(sut.Hand);
-        
+        var sut = new TestSystem();
+        var player = SetupTestHand("1", Enums.PlayerRoleEnum.None, holeCard1Suit, holeCard1Rank, holeCard2Suit, holeCard2Rank);
+        sut.Players.Add(player);
+        sut.CommunityCards =
+        [
+            new CardEntity(communityCard1Suit, communityCard1Rank),
+            new CardEntity(communityCard2Suit, communityCard2Rank),
+            new CardEntity(communityCard3Suit, communityCard3Rank),
+            new CardEntity(communityCard4Suit, communityCard4Rank),
+            new CardEntity(communityCard5Suit, communityCard5Rank)
+        ];
+        var ranking = HandRankingLogic.GetHandRanking(sut.GetHand(player).ToArray());
         Assert.That(ranking, Is.EqualTo(handRankingType));
     }
     
@@ -324,18 +330,30 @@ public class Tests
         Enums.CardSuitEnum communityCard5Suit, Enums.CardRankEnum communityCard5Rank,
         Enums.HandRankingType handRankingType)
     {
-        var sut = SetupTestHand(player1HoleCard1Suit, player1HoleCard1Rank, player1HoleCard2Suit, player1HoleCard2Rank, communityCard1Suit, communityCard1Rank, communityCard2Suit, communityCard2Rank, communityCard3Suit, communityCard3Rank, communityCard4Suit, communityCard4Rank, communityCard5Suit, communityCard5Rank);
-        var sut2 = SetupTestHand(player2HoleCard1Suit, player2HoleCard1Rank, player2HoleCard2Suit, player2HoleCard2Rank, communityCard1Suit, communityCard1Rank, communityCard2Suit, communityCard2Rank, communityCard3Suit, communityCard3Rank, communityCard4Suit, communityCard4Rank, communityCard5Suit, communityCard5Rank);
-        
-        var ranking1 = HandRankingLogic.GetHandRanking(sut.Hand);
-        var ranking2 = HandRankingLogic.GetHandRanking(sut2.Hand);
-        var winner = HandRankingLogic.CompareHands((sut.PlayerId, sut.Hand.Where(x => x.IsFinalHand).ToArray()), (sut2.PlayerId, sut2.Hand.Where(x => x.IsFinalHand).ToArray()), handRankingType);
+        var sut = new TestSystem();
+        var p1 = SetupTestHand("1", Enums.PlayerRoleEnum.None, player1HoleCard1Suit, player1HoleCard1Rank, player1HoleCard2Suit, player1HoleCard2Rank);
+        var p2 = SetupTestHand("2", Enums.PlayerRoleEnum.None, player2HoleCard1Suit, player2HoleCard1Rank, player2HoleCard2Suit, player2HoleCard2Rank);
+        sut.Players.Add(p1);
+        sut.Players.Add(p2);
+        sut.CommunityCards =
+        [
+            new CardEntity(communityCard1Suit, communityCard1Rank),
+            new CardEntity(communityCard2Suit, communityCard2Rank),
+            new CardEntity(communityCard3Suit, communityCard3Rank),
+            new CardEntity(communityCard4Suit, communityCard4Rank),
+            new CardEntity(communityCard5Suit, communityCard5Rank)
+        ];
+        var p1Hand = sut.GetHand(p1).ToArray();
+        var p2Hand = sut.GetHand(p2).ToArray();
+        var ranking1 = HandRankingLogic.GetHandRanking(p1Hand);
+        var ranking2 = HandRankingLogic.GetHandRanking(p2Hand);
+        var winner = HandRankingLogic.CompareHands((p1.Id, p1Hand.Where(x => x.IsFinalHand).ToArray()), (p2.Id, p2Hand.Where(x => x.IsFinalHand).ToArray()), handRankingType);
         
         Assert.That(ranking1, Is.EqualTo(handRankingType));
         Assert.That(ranking2, Is.EqualTo(handRankingType));
-        Assert.That(sut.Hand.Count(x => x.IsFinalHand), Is.EqualTo(5));
-        Assert.That(sut2.Hand.Count(x => x.IsFinalHand), Is.EqualTo(5));
-        Assert.That(sut2.PlayerId, Is.EqualTo(winner));
+        Assert.That(p1Hand.Count(x => x.IsFinalHand), Is.EqualTo(5));
+        Assert.That(p2Hand.Count(x => x.IsFinalHand), Is.EqualTo(5));
+        Assert.That(p2.Id, Is.EqualTo(winner));
     }
     
     #endregion
@@ -418,17 +436,29 @@ public class Tests
         Enums.CardSuitEnum communityCard5Suit, Enums.CardRankEnum communityCard5Rank,
         Enums.HandRankingType handRankingType)
     {
-        var sut = SetupTestHand(player1HoleCard1Suit, player1HoleCard1Rank, player1HoleCard2Suit, player1HoleCard2Rank, communityCard1Suit, communityCard1Rank, communityCard2Suit, communityCard2Rank, communityCard3Suit, communityCard3Rank, communityCard4Suit, communityCard4Rank, communityCard5Suit, communityCard5Rank);
-        var sut2 = SetupTestHand(player2HoleCard1Suit, player2HoleCard1Rank, player2HoleCard2Suit, player2HoleCard2Rank, communityCard1Suit, communityCard1Rank, communityCard2Suit, communityCard2Rank, communityCard3Suit, communityCard3Rank, communityCard4Suit, communityCard4Rank, communityCard5Suit, communityCard5Rank);
-        
-        var ranking1 = HandRankingLogic.GetHandRanking(sut.Hand);
-        var ranking2 = HandRankingLogic.GetHandRanking(sut2.Hand);
-        var winner = HandRankingLogic.CompareHands((sut.PlayerId, sut.Hand.Where(x => x.IsFinalHand).ToArray()), (sut2.PlayerId, sut2.Hand.Where(x => x.IsFinalHand).ToArray()), handRankingType);
+        var sut = new TestSystem();
+        var p1 = SetupTestHand("1", Enums.PlayerRoleEnum.None, player1HoleCard1Suit, player1HoleCard1Rank, player1HoleCard2Suit, player1HoleCard2Rank);
+        var p2 = SetupTestHand("2", Enums.PlayerRoleEnum.None, player2HoleCard1Suit, player2HoleCard1Rank, player2HoleCard2Suit, player2HoleCard2Rank);
+        sut.Players.Add(p1);
+        sut.Players.Add(p2);
+        sut.CommunityCards =
+        [
+            new CardEntity(communityCard1Suit, communityCard1Rank),
+            new CardEntity(communityCard2Suit, communityCard2Rank),
+            new CardEntity(communityCard3Suit, communityCard3Rank),
+            new CardEntity(communityCard4Suit, communityCard4Rank),
+            new CardEntity(communityCard5Suit, communityCard5Rank)
+        ];
+        var p1Hand = sut.GetHand(p1).ToArray();
+        var p2Hand = sut.GetHand(p2).ToArray();
+        var ranking1 = HandRankingLogic.GetHandRanking(p1Hand);
+        var ranking2 = HandRankingLogic.GetHandRanking(p2Hand);
+        var winner = HandRankingLogic.CompareHands((p1.Id, p1Hand.Where(x => x.IsFinalHand).ToArray()), (p2.Id, p2Hand.Where(x => x.IsFinalHand).ToArray()), handRankingType);
         
         Assert.That(ranking1, Is.EqualTo(handRankingType));
         Assert.That(ranking2, Is.EqualTo(handRankingType));
-        Assert.That(sut.Hand.Count(x => x.IsFinalHand), Is.EqualTo(5));
-        Assert.That(sut2.Hand.Count(x => x.IsFinalHand), Is.EqualTo(5));
+        Assert.That(p1Hand.Count(x => x.IsFinalHand), Is.EqualTo(5));
+        Assert.That(p2Hand.Count(x => x.IsFinalHand), Is.EqualTo(5));
         Assert.That(winner, Is.EqualTo(Guid.Empty));
     }
     
