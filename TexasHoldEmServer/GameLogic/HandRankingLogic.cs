@@ -10,7 +10,7 @@ namespace TexasHoldEmServer.GameLogic
         /// </summary>
         /// <param name="hand"></param>
         /// <returns></returns>
-        public static Enums.HandRankingType GetHandRanking(CardEntity[] hand)
+        public static Enums.HandRankingType GetHandRanking(List<CardEntity> hand)
         {
             if (IsRoyalFlush(hand))
                 return Enums.HandRankingType.RoyalFlush;
@@ -44,7 +44,7 @@ namespace TexasHoldEmServer.GameLogic
         /// <param name="handRanking"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public static Guid CompareHands((Guid, CardEntity[]) playerHand1, (Guid, CardEntity[]) playerHand2, Enums.HandRankingType handRanking)
+        public static Guid CompareHands((Guid, List<CardEntity>) playerHand1, (Guid, List<CardEntity>) playerHand2, Enums.HandRankingType handRanking)
         {
             switch (handRanking)
             {
@@ -75,7 +75,7 @@ namespace TexasHoldEmServer.GameLogic
 
         #region Check hand
         
-        private static bool IsRoyalFlush(CardEntity[] cards)
+        private static bool IsRoyalFlush(List<CardEntity> cards)
         {
             var groups = cards.GroupBy(x => x.Suit).Where(x => x.Count() >= 5).ToList();
             if (groups.Count == 0)
@@ -96,7 +96,7 @@ namespace TexasHoldEmServer.GameLogic
                 if (royalFlushCards.Count == 0)
                     break;
                 
-                royalFlushCards = new List<Enums.CardRankEnum> { Enums.CardRankEnum.Ace, Enums.CardRankEnum.King, Enums.CardRankEnum.Queen, Enums.CardRankEnum.Jack, Enums.CardRankEnum.Ten };
+                royalFlushCards = [Enums.CardRankEnum.Ace, Enums.CardRankEnum.King, Enums.CardRankEnum.Queen, Enums.CardRankEnum.Jack, Enums.CardRankEnum.Ten];
             }
 
             if (royalFlushCards.Count == 0)
@@ -108,17 +108,17 @@ namespace TexasHoldEmServer.GameLogic
             return false;
         }
 
-        private static bool IsStraightFlush(CardEntity[] cards)
+        private static bool IsStraightFlush(List<CardEntity> cards)
         {
             //フラッシュがあった場合そのカードをチェックする
             var flush = cards.GroupBy(x => x.Suit).FirstOrDefault(x => x.Count() == 5);
-            if (flush == null || !IsStraight(flush.Select(x => x).ToArray()))
+            if (flush == null || !IsStraight(flush.Select(x => x).ToList()))
                 return false;
                 
             return true;
         }
 
-        private static bool IsFourOfAKind(CardEntity[] cards)
+        private static bool IsFourOfAKind(List<CardEntity> cards)
         {
             var isValid = cards.GroupBy(x => x.Rank).Any(group =>
             {
@@ -140,14 +140,14 @@ namespace TexasHoldEmServer.GameLogic
             return isValid;
         }
 
-        private static bool IsFullHouse(CardEntity[] cards)
+        private static bool IsFullHouse(List<CardEntity> cards)
         {
             //ペアか
             if (!IsPair(cards, false))
                 return false;
             //ペア除いて3 of a kindがあるか
             var pair = cards.GroupBy(x => x.Rank).First(x => x.Count() == 2);
-            var isValid = IsThreeOfAKind(cards.Where(card => card.Rank != pair.Key).ToArray(), false);
+            var isValid = IsThreeOfAKind(cards.Where(card => card.Rank != pair.Key).ToList(), false);
             
             if (!isValid)
             {
@@ -158,7 +158,7 @@ namespace TexasHoldEmServer.GameLogic
             return isValid;
         }
 
-        private static bool IsFlush(CardEntity[] cards)
+        private static bool IsFlush(List<CardEntity> cards)
         {
             //7枚の中5枚が同じスーツかをチェック
             var isValid = cards.GroupBy(x => x.Suit).Any(group =>
@@ -181,7 +181,7 @@ namespace TexasHoldEmServer.GameLogic
             return isValid;
         }
 
-        private static bool IsStraight(CardEntity[] cards)
+        private static bool IsStraight(List<CardEntity> cards)
         {
             //7枚の中5枚が連続かをチェック
             var orderedCards = cards.OrderBy(x => x.Rank).ToList();
@@ -217,7 +217,7 @@ namespace TexasHoldEmServer.GameLogic
             return count == 5;
         }
 
-        private static bool IsThreeOfAKind(CardEntity[] cards, bool chooseRemainingHand)
+        private static bool IsThreeOfAKind(List<CardEntity> cards, bool chooseRemainingHand)
         {
             //同じランクが3枚あるか
             var isValid = cards.GroupBy(x => x.Rank).Any(group =>
@@ -246,7 +246,7 @@ namespace TexasHoldEmServer.GameLogic
             return isValid;
         }
 
-        private static bool IsTwoPair(CardEntity[] cards)
+        private static bool IsTwoPair(List<CardEntity> cards)
         {
             //ペアが2つあるか
             var isValid = cards.GroupBy(x => x.Rank).Count(group =>
@@ -271,7 +271,7 @@ namespace TexasHoldEmServer.GameLogic
             return isValid;
         }
 
-        private static bool IsPair(CardEntity[] cards, bool chooseRemainingHand)
+        private static bool IsPair(List<CardEntity> cards, bool chooseRemainingHand)
         {
             var isValid = cards.GroupBy(x => x.Rank).Any(group =>
             {
@@ -300,7 +300,7 @@ namespace TexasHoldEmServer.GameLogic
             return isValid;
         }
 
-        private static bool IsHighCard(CardEntity[] cards)
+        private static bool IsHighCard(List<CardEntity> cards)
         {
             foreach (var card in cards)
             {
@@ -327,39 +327,39 @@ namespace TexasHoldEmServer.GameLogic
 
         #region Compare
         
-        private static Guid CompareRoyalFlushes((Guid, CardEntity[]) playerHand1, (Guid, CardEntity[]) playerHand2)
+        private static Guid CompareRoyalFlushes((Guid, List<CardEntity>) playerHand1, (Guid, List<CardEntity>) playerHand2)
         {
             //両方royal flush持ってたら引き分け
             return Guid.Empty;
         }
         
-        private static Guid CompareStraightFlushes((Guid, CardEntity[]) playerHand1, (Guid, CardEntity[]) playerHand2)
+        private static Guid CompareStraightFlushes((Guid, List<CardEntity>) playerHand1, (Guid, List<CardEntity>) playerHand2)
         {
             return CompareStraights(playerHand1, playerHand2);
         }
         
-        private static Guid CompareFourOfAKinds((Guid, CardEntity[]) playerHand1, (Guid, CardEntity[]) playerHand2)
+        private static Guid CompareFourOfAKinds((Guid, List<CardEntity>) playerHand1, (Guid, List<CardEntity>) playerHand2)
         {
-            var hand1 = playerHand1.Item2.GroupBy(x => x.Rank).Where(x => x.Count() == 4).ToArray();
-            var hand2 = playerHand2.Item2.GroupBy(x => x.Rank).Where(x => x.Count() == 4).ToArray();
+            var hand1 = playerHand1.Item2.GroupBy(x => x.Rank).Where(x => x.Count() == 4).ToList();
+            var hand2 = playerHand2.Item2.GroupBy(x => x.Rank).Where(x => x.Count() == 4).ToList();
             
             //同じランクだった場合、high cardをチェックする
             Guid betterHand;
             if (hand1[0].Key == hand2[0].Key)
             {
-                var arg1 = (playerHand1.Item1, playerHand1.Item2.Where(x => x.Rank != hand1[0].Key).ToArray());
-                var arg2 = (playerHand2.Item1, playerHand2.Item2.Where(x => x.Rank != hand2[0].Key).ToArray());
+                var arg1 = (playerHand1.Item1, playerHand1.Item2.Where(x => x.Rank != hand1[0].Key).ToList());
+                var arg2 = (playerHand2.Item1, playerHand2.Item2.Where(x => x.Rank != hand2[0].Key).ToList());
                 betterHand = CompareHighCards(arg1, arg2);
             }
             else
             {
-                betterHand = hand1.Rank > hand2.Rank ? playerHand1.Item1 : playerHand2.Item1;
+                betterHand = hand1[0].Key > hand2[0].Key ? playerHand1.Item1 : playerHand2.Item1;
             }
             
             return betterHand;   
         }
         
-        private static Guid CompareFullHouses((Guid, CardEntity[]) playerHand1, (Guid, CardEntity[]) playerHand2)
+        private static Guid CompareFullHouses((Guid, List<CardEntity>) playerHand1, (Guid, List<CardEntity>) playerHand2)
         {
             //3 of a kindが同じだった場合ペアをチェックする
             var betterHand = CompareThreeOfAKinds(playerHand1, playerHand2);
@@ -368,15 +368,15 @@ namespace TexasHoldEmServer.GameLogic
                 : betterHand;
         }
         
-        private static Guid CompareFlushes((Guid, CardEntity[]) playerHand1, (Guid, CardEntity[]) playerHand2)
+        private static Guid CompareFlushes((Guid, List<CardEntity>) playerHand1, (Guid, List<CardEntity>) playerHand2)
         {
             return CompareHighCards(playerHand1, playerHand2);
         }
         
-        private static Guid CompareStraights((Guid, CardEntity[]) playerHand1, (Guid, CardEntity[]) playerHand2)
+        private static Guid CompareStraights((Guid, List<CardEntity>) playerHand1, (Guid, List<CardEntity>) playerHand2)
         {
-            var hand1 = playerHand1.Item2.OrderByDescending(x => x.Rank).ToArray();
-            var hand2 = playerHand2.Item2.OrderByDescending(x => x.Rank).ToArray();
+            var hand1 = playerHand1.Item2.OrderByDescending(x => x.Rank).ToList();
+            var hand2 = playerHand2.Item2.OrderByDescending(x => x.Rank).ToList();
 
             //一番高いランクが同じだった場合引き分け
             if (hand1[0].Rank == hand2[0].Rank)
@@ -385,41 +385,41 @@ namespace TexasHoldEmServer.GameLogic
             return hand1[0].Rank > hand2[0].Rank ? playerHand1.Item1 : playerHand2.Item1;
         }
         
-        private static Guid CompareThreeOfAKinds((Guid, CardEntity[]) playerHand1, (Guid, CardEntity[]) playerHand2)
+        private static Guid CompareThreeOfAKinds((Guid, List<CardEntity>) playerHand1, (Guid, List<CardEntity>) playerHand2)
         {
-            var hand1 = playerHand1.Item2.GroupBy(x => x.Rank).Where(x => x.Count() == 3).ToArray();
-            var hand2 = playerHand2.Item2.GroupBy(x => x.Rank).Where(x => x.Count() == 3).ToArray();
+            var hand1 = playerHand1.Item2.GroupBy(x => x.Rank).Where(x => x.Count() == 3).ToList();
+            var hand2 = playerHand2.Item2.GroupBy(x => x.Rank).Where(x => x.Count() == 3).ToList();
 
             //同じランクだった場合、high cardをチェックする
             Guid betterHand;
             if (hand1[0].Key == hand2[0].Key)
             {
-                var arg1 = (playerHand1.Item1, playerHand1.Item2.Where(x => x.Rank != hand1[0].Key).ToArray());
-                var arg2 = (playerHand2.Item1, playerHand2.Item2.Where(x => x.Rank != hand2[0].Key).ToArray());
+                var arg1 = (playerHand1.Item1, playerHand1.Item2.Where(x => x.Rank != hand1[0].Key).ToList());
+                var arg2 = (playerHand2.Item1, playerHand2.Item2.Where(x => x.Rank != hand2[0].Key).ToList());
                 betterHand = CompareHighCards(arg1, arg2);
             }
             else
             {
-                betterHand = hand1.Rank > hand2.Rank ? playerHand1.Item1 : playerHand2.Item1;
+                betterHand = hand1[0].Key > hand2[0].Key ? playerHand1.Item1 : playerHand2.Item1;
             }
             
             return betterHand;
         }
         
-        private static Guid CompareTwoPairs((Guid, CardEntity[]) playerHand1, (Guid, CardEntity[]) playerHand2)
+        private static Guid CompareTwoPairs((Guid, List<CardEntity>) playerHand1, (Guid, List<CardEntity>) playerHand2)
         {
             return ComparePairs(playerHand1, playerHand2);
         }
 
-        private static Guid ComparePairs((Guid, CardEntity[]) playerHand1, (Guid, CardEntity[]) playerHand2)
+        private static Guid ComparePairs((Guid, List<CardEntity>) playerHand1, (Guid, List<CardEntity>) playerHand2)
         {
-            var hand1 = playerHand1.Item2.GroupBy(x => x.Rank).Where(x => x.Count() == 2).OrderByDescending(x => x.Key).ToArray();
-            var hand2 = playerHand2.Item2.GroupBy(x => x.Rank).Where(x => x.Count() == 2).OrderByDescending(x => x.Key).ToArray();
+            var hand1 = playerHand1.Item2.GroupBy(x => x.Rank).Where(x => x.Count() == 2).OrderByDescending(x => x.Key).ToList();
+            var hand2 = playerHand2.Item2.GroupBy(x => x.Rank).Where(x => x.Count() == 2).OrderByDescending(x => x.Key).ToList();
 
             //高いランクのペアが勝ち
             //全部同じだった場合引き分け
             var betterHand = Guid.Empty;
-            for (var i = 0; i < hand1.Length; i++)
+            for (var i = 0; i < hand1.Count; i++)
             {
                 if (hand1[i].Key == hand2[i].Key)
                     continue;
@@ -430,20 +430,20 @@ namespace TexasHoldEmServer.GameLogic
             if (betterHand != Guid.Empty)
                 return betterHand;
 
-            var others1 = playerHand1.Item2.Except(hand1.SelectMany(x => x)).ToArray();
-            var others2 = playerHand2.Item2.Except(hand2.SelectMany(x => x)).ToArray();
+            var others1 = playerHand1.Item2.Except(hand1.SelectMany(x => x)).ToList();
+            var others2 = playerHand2.Item2.Except(hand2.SelectMany(x => x)).ToList();
             return CompareHighCards((playerHand1.Item1, others1), (playerHand2.Item1, others2));
         }
 
-        private static Guid CompareHighCards((Guid, CardEntity[]) playerHand1, (Guid, CardEntity[]) playerHand2)
+        private static Guid CompareHighCards((Guid, List<CardEntity>) playerHand1, (Guid, List<CardEntity>) playerHand2)
         {
-            var hand1 = playerHand1.Item2.OrderByDescending(x => x.Rank).ToArray();
-            var hand2 = playerHand2.Item2.OrderByDescending(x => x.Rank).ToArray();
+            var hand1 = playerHand1.Item2.OrderByDescending(x => x.Rank).ToList();
+            var hand2 = playerHand2.Item2.OrderByDescending(x => x.Rank).ToList();
 
             //一番高いランクが勝ち
             //全部同じだった場合引き分け
             var betterHand = Guid.Empty;
-            for (int i = 0; i < hand1.Length; i++)
+            for (int i = 0; i < hand1.Count; i++)
             {
                 if (hand1[i].Rank == hand2[i].Rank)
                     continue;

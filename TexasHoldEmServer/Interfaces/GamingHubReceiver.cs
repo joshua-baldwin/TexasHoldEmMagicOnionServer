@@ -123,11 +123,10 @@ namespace TexasHoldEmServer.Interfaces
             if (isError)
                 BroadcastTo(group, ConnectionId).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pots, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, []);
             else if (isGameOver)
-                Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pots, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, [([storage.AllValues.First(x => !x.HasFolded).Id], Enums.HandRankingType.Nothing)]);
+                Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pots, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, [new WinningHandEntity { Winner = storage.AllValues.First(x => !x.HasFolded) }]);
             else
             {
-                var winnerList = new List<(List<Guid>, Enums.HandRankingType)>();
-                var winningHand = Enums.HandRankingType.Nothing;
+                var winnerList = new List<WinningHandEntity>();
                 if (gameLogicManager.GameState == Enums.GameStateEnum.Showdown)
                     winnerList = gameLogicManager.DoShowdown();
                 

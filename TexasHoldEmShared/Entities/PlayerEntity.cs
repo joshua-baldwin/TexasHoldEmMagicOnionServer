@@ -47,6 +47,9 @@ namespace THE.MagicOnion.Shared.Entities
         [Key(12)]
         public bool IsAllIn { get; set; }
         
+        [Key(14)]
+        public BestHandEntity? BestHand { get; set; }
+        
         public PlayerEntity(string name, Guid id, Enums.PlayerRoleEnum role)
         {
             Name = name;
