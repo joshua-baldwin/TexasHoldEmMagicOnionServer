@@ -9,8 +9,8 @@ namespace TexasHoldEmServer.GameLogic
         public const int MaxPlayers = 10;
         public const int MaxHoleCards = 2;
         public const int StartingChips = 50;
-        public const int SmallBlindBet = 1;
-        public const int BigBlindBet = 2;
+        public const int MinBet = 2;
+        public const int MaxBet = 4;
         public const int JokerCount = 2;
         private readonly Queue<PlayerEntity> playerQueue = new();
         private List<PlayerEntity> allPlayerList = new();
@@ -22,7 +22,7 @@ namespace TexasHoldEmServer.GameLogic
         
         public PlayerEntity PreviousPlayer { get; private set; }
         public PlayerEntity CurrentPlayer { get; private set; }
-        public List<(Guid, int)> Pots { get; private set; } = new();
+        public List<(Guid, int)> Pots { get; private set; } = [(Guid.Empty, 0)];
         public List<CardEntity> CommunityCards { get; set; } = new();
         public Enums.GameStateEnum GameState { get; private set; }
         
@@ -38,7 +38,7 @@ namespace TexasHoldEmServer.GameLogic
             isTie = false;
             PreviousPlayer = null;
             CurrentPlayer = null;
-            Pots = [];
+            Pots = [(Guid.Empty, 0)];
             for (var i = 0; i < CommunityCards.Count; i++)
                 CommunityCards[i] = null;
             GameState = Enums.GameStateEnum.BlindBet;
@@ -57,29 +57,30 @@ namespace TexasHoldEmServer.GameLogic
             switch (commandType)
             {
                 case Enums.CommandTypeEnum.SmallBlindBet:
-                    if (!CanPlaceBet(SmallBlindBet, out var message))
+                    var betAmount = MinBet / 2;
+                    if (!CanPlaceBet(betAmount, out var message))
                     {
                         actionMessage = message;
                         isError = true;
                         return;
                     }
-                    actionMessage = $"{CurrentPlayer.Name} bet {SmallBlindBet}.";
-                    previousBet = SmallBlindBet;
-                    CurrentPlayer.CurrentBet = SmallBlindBet;
-                    CurrentPlayer.Chips -= SmallBlindBet;
+                    actionMessage = $"{CurrentPlayer.Name} bet {betAmount}.";
+                    previousBet = betAmount;
+                    CurrentPlayer.CurrentBet = betAmount;
+                    CurrentPlayer.Chips -= betAmount;
                     smallBlindBetDone = true;
                     break;
                 case Enums.CommandTypeEnum.BigBlindBet:
-                    if (!CanPlaceBet(BigBlindBet, out message))
+                    if (!CanPlaceBet(MinBet, out message))
                     {
                         actionMessage = message;
                         isError = true;
                         return;
                     }
-                    actionMessage = $"{CurrentPlayer.Name} bet {BigBlindBet}.";
-                    previousBet = BigBlindBet;
-                    CurrentPlayer.CurrentBet = BigBlindBet;
-                    CurrentPlayer.Chips -= BigBlindBet;
+                    actionMessage = $"{CurrentPlayer.Name} bet {MinBet}.";
+                    previousBet = MinBet;
+                    CurrentPlayer.CurrentBet = MinBet;
+                    CurrentPlayer.Chips -= MinBet;
                     bigBlindBetDone = true;
                     break;
                 case Enums.CommandTypeEnum.Check:
@@ -104,7 +105,7 @@ namespace TexasHoldEmServer.GameLogic
                     if (playerQueue.Count(x => x.HasFolded) == playerQueue.Count - 1)
                     {
                         playerQueue.First(x => !x.HasFolded).Chips += Pots[0].Item2;
-                        Pots = [];
+                        Pots = [(Guid.Empty, 0)];
                         isGameOver = true;
                         isError = false;
                         return;
