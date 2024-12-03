@@ -59,5 +59,17 @@ namespace THE.MagicOnion.Shared.Entities
             Id = id;
             PlayerRole = role;
         }
+
+        public void InitializeForNextRound()
+        {
+            HoleCards.Clear();
+            CurrentBetBeforeAllIn = 0;
+            CurrentBetAfterAllIn = 0;
+            HasTakenAction = false;
+            HasFolded = false;
+            LastCommand = 0;
+            IsAllIn = false;
+            BestHand = null;
+        }
     }
 }

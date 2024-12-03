@@ -80,7 +80,7 @@ namespace TexasHoldEmServer.Interfaces
             return storage.AllValues.ToArray();
         }
 
-        public async Task<bool> StartGame(Guid playerId)
+        public async Task<bool> StartGame(Guid playerId, bool isFirstRound)
         {
             if (group == null)
                 return false;
@@ -93,10 +93,12 @@ namespace TexasHoldEmServer.Interfaces
             if (players.Any(player => !player.IsReady))
                 return false;
             
-            gameLogicManager.SetupGame(players);
+            players.ForEach(player => player.IsReady = false);
+            
+            gameLogicManager.SetupGame(players, isFirstRound);
             gameLogicManager.CreateQueue(players);
 
-            Broadcast(group).OnGameStart(gameLogicManager.PlayerQueue.ToArray(), gameLogicManager.CurrentPlayer, gameLogicManager.GameState);
+            Broadcast(group).OnGameStart(gameLogicManager.PlayerQueue.ToArray(), gameLogicManager.CurrentPlayer, gameLogicManager.GameState, isFirstRound);
             return true;
         }
 

@@ -70,7 +70,8 @@ namespace TexasHoldEmShared.Enums
             TheFlop,
             TheTurn,
             TheRiver,
-            Showdown
+            Showdown,
+            GameOver
         }
         
         public enum HandRankingType

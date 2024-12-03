@@ -9,6 +9,7 @@ namespace TexasHoldEmServer.GameLogic
         public const int MaxPlayers = 10;
         public const int MaxHoleCards = 2;
         public const int StartingChips = 50;
+        public const int MaxRounds = 3;
         public const int MinBet = 2;
         public const int RaiseAmount = 4;
         public const int JokerCount = 2;
@@ -24,7 +25,7 @@ namespace TexasHoldEmServer.GameLogic
         private List<CardEntity> cardPool;
         private bool isTie;
         private int callDifference;
-        private List<PlayerEntity> allInPlayers;
+        private List<PlayerEntity> allInPlayers = new();
 
         public PlayerEntity PreviousPlayer { get; private set; }
         public PlayerEntity CurrentPlayer { get; private set; }
@@ -47,15 +48,22 @@ namespace TexasHoldEmServer.GameLogic
             PreviousPlayer = null;
             CurrentPlayer = null;
             Pots = [(Guid.Empty, 0)];
-            for (var i = 0; i < CommunityCards.Count; i++)
-                CommunityCards[i] = null;
+            CommunityCards.Clear();
             GameState = Enums.GameStateEnum.BlindBet;
         }
-        public void SetupGame(List<PlayerEntity> players)
+        
+        public void SetupGame(List<PlayerEntity> players, bool isFirstRound)
         {
             allPlayerList = players;
             cardPool = CreateDeck();
-            players.ForEach(player => player.Chips = StartingChips);
+            if (isFirstRound)
+                players.ForEach(player => player.Chips = StartingChips);
+            else
+            {
+                players.ForEach(player => player.InitializeForNextRound());
+                InitializeForNextRound();
+            }
+
             SetRoles(players);
         }
 
@@ -116,6 +124,7 @@ namespace TexasHoldEmServer.GameLogic
                         Pots = [(Guid.Empty, 0)];
                         isGameOver = true;
                         isError = false;
+                        GameState = Enums.GameStateEnum.GameOver;
                         return;
                     }
                     break;
@@ -209,6 +218,24 @@ namespace TexasHoldEmServer.GameLogic
             UpdateGameState();
             actionMessage = "";
             isError = false;
+        }
+
+        private void InitializeForNextRound()
+        {
+            playerQueue.Clear();
+            smallBlindBetDone = false;
+            bigBlindBetDone = false;
+            previousBet = (0, false, false);
+            lastAllIn = (0, false);
+            isTie = false;
+            callDifference = 0;
+            allInPlayers.Clear();
+            PreviousPlayer = null;
+            CurrentPlayer = null;
+            Pots = [(Guid.Empty, 0)];
+            CommunityCards.Clear();
+            GameState = Enums.GameStateEnum.BlindBet;
+            CurrentRaise = 0;
         }
 
         private void UpdateGameState()
