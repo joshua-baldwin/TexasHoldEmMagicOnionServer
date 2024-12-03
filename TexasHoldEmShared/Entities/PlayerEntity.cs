@@ -33,18 +33,21 @@ namespace THE.MagicOnion.Shared.Entities
         public int Chips { get; set; }
         
         [Key(8)]
-        public int CurrentBet { get; set; }
+        public int CurrentBetBeforeAllIn { get; set; }
         
         [Key(9)]
-        public bool HasTakenAction { get; set; }
+        public int CurrentBetAfterAllIn { get; set; }
         
         [Key(10)]
-        public bool HasFolded { get; set; }
+        public bool HasTakenAction { get; set; }
         
         [Key(11)]
-        public Enums.CommandTypeEnum LastCommand { get; set; }
+        public bool HasFolded { get; set; }
         
         [Key(12)]
+        public Enums.CommandTypeEnum LastCommand { get; set; }
+        
+        [Key(13)]
         public bool IsAllIn { get; set; }
         
         [Key(14)]
