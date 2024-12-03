@@ -982,17 +982,21 @@ public class Tests
         sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
         sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out _, out var isError, out _);
+        Assert.That(isError, Is.False);
         var p1PrevBet = sut.GameLogicManager.PreviousPlayer.CurrentBetBeforeAllIn;
         sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out _, out _);
+        Assert.That(isError, Is.False);
         var p2PrevBet = sut.GameLogicManager.PreviousPlayer.CurrentBetBeforeAllIn;
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheFlop));
         sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
+        Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheFlop));
         Assert.That(p3.CurrentBetAfterAllIn, Is.EqualTo(p2PrevBet));
         
         var currentSidePot = sut.GameLogicManager.Pots[0].Item2;
         sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
+        Assert.That(isError, Is.False);
         var currentMainPot = sut.GameLogicManager.Pots[1].Item2;
         Assert.That(sut.GameLogicManager.Pots[0].Item2, Is.EqualTo((p2PrevBet - p1PrevBet) * 2));
         Assert.That(sut.GameLogicManager.Pots[1].Item2, Is.EqualTo(p1PrevBet * players.Count));
