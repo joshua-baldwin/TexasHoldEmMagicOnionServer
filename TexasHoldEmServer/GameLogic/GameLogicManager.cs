@@ -10,8 +10,7 @@ namespace TexasHoldEmServer.GameLogic
         public const int MaxHoleCards = 2;
         public const int StartingChips = 50;
         public const int MinBet = 2;
-        //TODO rename to RaiseAmount
-        public const int MaxBet = 4;
+        public const int RaiseAmount = 4;
         public const int JokerCount = 2;
         public const string MustBetDoublePreviousMessage = "You must bet double the previous bet.\nさっきのベットの倍をベットしないといけない。";
         public const string PreviousRaiseNotAFullRaiseMessage = "The previous raise was not a full raise so you cannot raise.\n前のレイズはフルレイズじゃなかったのでレイズできない。";
@@ -514,9 +513,9 @@ namespace TexasHoldEmServer.GameLogic
             }
 
             //TODO check previous raise
-            if (isRaise && chipsBet.Amount < MaxBet)
+            if (isRaise && chipsBet.Amount < RaiseAmount)
             {
-                message = $"The minimum bet is {MaxBet}.\n最低限のベットは{MaxBet}。";
+                message = $"The minimum bet is {RaiseAmount}.\n最低限のベットは{RaiseAmount}。";
                 return false;
             }
 
