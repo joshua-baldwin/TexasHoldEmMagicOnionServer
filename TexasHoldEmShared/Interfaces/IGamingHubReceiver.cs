@@ -10,7 +10,7 @@ namespace THE.MagicOnion.Shared.Interfaces
         void OnJoinRoom(PlayerEntity player, int playerCount);
         void OnLeaveRoom(PlayerEntity player, int playerCount);
         void OnGetAllPlayers(PlayerEntity[] playerEntities);
-        void OnGameStart(PlayerEntity[] playerEntities, PlayerEntity currentPlayer, Enums.GameStateEnum gameState, bool isFirstRound);
+        void OnGameStart(PlayerEntity[] playerEntities, PlayerEntity currentPlayer, Enums.GameStateEnum gameState, int roundNumber, bool isFirstRound);
         void OnCancelGameStart();
         void OnDoAction(Enums.CommandTypeEnum commandType, PlayerEntity[] playerEntities, Guid previousPlayerId, Guid currentPlayerId, Guid targetPlayerId, List<(Guid, int)> pots, List<CardEntity> communityCards, Enums.GameStateEnum gameState, bool isError, string actionMessage, List<WinningHandEntity> winnerList);
     }

@@ -2,6 +2,7 @@ using MagicOnion.Server.Hubs;
 using TexasHoldEmServer.GameLogic;
 using TexasHoldEmServer.ServerEntities;
 using THE.MagicOnion.Shared.Entities;
+using THE.MagicOnion.Shared.Utilities;
 
 namespace TexasHoldEmServer.Managers
 {
@@ -50,7 +51,7 @@ namespace TexasHoldEmServer.Managers
         {
             foreach (var room in roomDictionary.Values)
             {
-                if (room.Storage.AllValues.Count < GameLogicManager.MaxPlayers)
+                if (room.Storage.AllValues.Count < Constants.MaxPlayers)
                     return room;
             }
 

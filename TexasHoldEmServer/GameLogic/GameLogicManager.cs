@@ -6,13 +6,6 @@ namespace TexasHoldEmServer.GameLogic
 {
     public class GameLogicManager
     {
-        public const int MaxPlayers = 10;
-        public const int MaxHoleCards = 2;
-        public const int StartingChips = 50;
-        public const int MaxRounds = 3;
-        public const int MinBet = 2;
-        public const int RaiseAmount = 4;
-        public const int JokerCount = 2;
         public const string MustBetDoublePreviousMessage = "You must bet double the previous bet.\nさっきのベットの倍をベットしないといけない。";
         public const string PreviousRaiseNotAFullRaiseMessage = "The previous raise was not a full raise so you cannot raise.\n前のレイズはフルレイズじゃなかったのでレイズできない。";
         
@@ -33,6 +26,7 @@ namespace TexasHoldEmServer.GameLogic
         public List<CardEntity> CommunityCards { get; set; } = new();
         public Enums.GameStateEnum GameState { get; private set; }
         public int CurrentRaise { get; set; }
+        public int CurrentRound { get; set; }
         
         public Queue<PlayerEntity> PlayerQueue => playerQueue;
 
@@ -54,10 +48,11 @@ namespace TexasHoldEmServer.GameLogic
         
         public void SetupGame(List<PlayerEntity> players, bool isFirstRound)
         {
+            CurrentRound++;
             allPlayerList = players;
             cardPool = CreateDeck();
             if (isFirstRound)
-                players.ForEach(player => player.Chips = StartingChips);
+                players.ForEach(player => player.Chips = Constants.StartingChips);
             else
             {
                 players.ForEach(player => player.InitializeForNextRound());
@@ -73,7 +68,7 @@ namespace TexasHoldEmServer.GameLogic
             switch (commandType)
             {
                 case Enums.CommandTypeEnum.SmallBlindBet:
-                    var betAmount = MinBet / 2;
+                    var betAmount = Constants.MinBet / 2;
                     if (!CanPlaceBet((betAmount, false, false), out var message))
                     {
                         actionMessage = message;
@@ -87,16 +82,16 @@ namespace TexasHoldEmServer.GameLogic
                     smallBlindBetDone = true;
                     break;
                 case Enums.CommandTypeEnum.BigBlindBet:
-                    if (!CanPlaceBet((MinBet, false, false), out message))
+                    if (!CanPlaceBet((Constants.MinBet, false, false), out message))
                     {
                         actionMessage = message;
                         isError = true;
                         return;
                     }
-                    actionMessage = $"{CurrentPlayer.Name} bet {MinBet}.";
-                    previousBet = (MinBet, false, false);
-                    CurrentPlayer.CurrentBetBeforeAllIn = MinBet;
-                    CurrentPlayer.Chips -= MinBet;
+                    actionMessage = $"{CurrentPlayer.Name} bet {Constants.MinBet}.";
+                    previousBet = (Constants.MinBet, false, false);
+                    CurrentPlayer.CurrentBetBeforeAllIn = Constants.MinBet;
+                    CurrentPlayer.Chips -= Constants.MinBet;
                     bigBlindBetDone = true;
                     break;
                 case Enums.CommandTypeEnum.Check:
@@ -375,7 +370,7 @@ namespace TexasHoldEmServer.GameLogic
             while (dealt < players.Count)
             {
                 players[startIndex].HoleCards = new List<CardEntity>();
-                for (var i = 0; i < MaxHoleCards; i++)
+                for (var i = 0; i < Constants.MaxHoleCards; i++)
                 {
                     var card = shuffled.GetRandomElement();
                     shuffled.Remove(card);
@@ -404,7 +399,7 @@ namespace TexasHoldEmServer.GameLogic
 
             if (useJokers)
             {
-                for (var i = 0; i < JokerCount; i++)
+                for (var i = 0; i < Constants.JokerCount; i++)
                     deck.Add(new CardEntity(Enums.CardSuitEnum.None, Enums.CardRankEnum.Joker));
             }
 
@@ -558,9 +553,9 @@ namespace TexasHoldEmServer.GameLogic
             }
 
             //TODO check previous raise
-            if (isRaise && chipsBet.Amount < RaiseAmount)
+            if (isRaise && chipsBet.Amount < Constants.RaiseAmount)
             {
-                message = $"The minimum bet is {RaiseAmount}.\n最低限のベットは{RaiseAmount}。";
+                message = $"The minimum bet is {Constants.RaiseAmount}.\n最低限のベットは{Constants.RaiseAmount}。";
                 return false;
             }
 

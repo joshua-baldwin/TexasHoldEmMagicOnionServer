@@ -98,7 +98,7 @@ namespace TexasHoldEmServer.Interfaces
             gameLogicManager.SetupGame(players, isFirstRound);
             gameLogicManager.CreateQueue(players);
 
-            Broadcast(group).OnGameStart(gameLogicManager.PlayerQueue.ToArray(), gameLogicManager.CurrentPlayer, gameLogicManager.GameState, isFirstRound);
+            Broadcast(group).OnGameStart(gameLogicManager.PlayerQueue.ToArray(), gameLogicManager.CurrentPlayer, gameLogicManager.GameState, gameLogicManager.CurrentRound, isFirstRound);
             return true;
         }
 
