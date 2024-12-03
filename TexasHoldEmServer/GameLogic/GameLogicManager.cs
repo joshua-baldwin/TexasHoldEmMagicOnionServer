@@ -69,7 +69,7 @@ namespace TexasHoldEmServer.GameLogic
             {
                 case Enums.CommandTypeEnum.SmallBlindBet:
                     var betAmount = Constants.MinBet / 2;
-                    if (!CanPlaceBet((betAmount, false, false), out var message))
+                    if (!CanPlaceBet((betAmount, 0, false, false), out var message))
                     {
                         actionMessage = message;
                         isError = true;
@@ -82,7 +82,7 @@ namespace TexasHoldEmServer.GameLogic
                     smallBlindBetDone = true;
                     break;
                 case Enums.CommandTypeEnum.BigBlindBet:
-                    if (!CanPlaceBet((Constants.MinBet, false, false), out message))
+                    if (!CanPlaceBet((Constants.MinBet, 0, false, false), out message))
                     {
                         actionMessage = message;
                         isError = true;
@@ -125,7 +125,7 @@ namespace TexasHoldEmServer.GameLogic
                     break;
                 case Enums.CommandTypeEnum.Call:
                     var callAmount = callDifference == 0 ? previousBet.Amount : callDifference;
-                    if (!CanPlaceBet((callAmount, false, false), out message, true))
+                    if (!CanPlaceBet((callAmount, 0, false, false), out message, true))
                     {
                         actionMessage = message;
                         isError = true;
@@ -143,7 +143,7 @@ namespace TexasHoldEmServer.GameLogic
                     break;
                 case Enums.CommandTypeEnum.Raise:
                     betAmount = chipsBet + previousBet.Amount;
-                    if (!CanPlaceBet((chipsBet, false, chipsBet >= CurrentRaise * 2), out message, isRaise: true))
+                    if (!CanPlaceBet((betAmount, chipsBet, false, chipsBet >= CurrentRaise * 2), out message, isRaise: true))
                     {
                         actionMessage = message;
                         isError = true;
@@ -544,18 +544,17 @@ namespace TexasHoldEmServer.GameLogic
             return winningHand;
         }
         
-        private bool CanPlaceBet((int Amount, bool IsAllIn, bool IsDoublePrevious) chipsBet, out string message, bool isCall = false, bool isRaise = false)
+        private bool CanPlaceBet((int BetAmount, int RaiseAmount, bool IsAllIn, bool IsDoublePrevious) chipsBet, out string message, bool isCall = false, bool isRaise = false)
         {
-            if (chipsBet.Amount <= 0)
+            if (chipsBet.BetAmount <= 0)
             {
                 message = "The bet must be greater than 0.\n0以上ベットしないといけない。";
                 return false;
             }
 
-            //TODO check previous raise
-            if (isRaise && chipsBet.Amount < Constants.RaiseAmount)
+            if (isRaise && chipsBet.RaiseAmount < Constants.RaiseAmount)
             {
-                message = $"The minimum bet is {Constants.RaiseAmount}.\n最低限のベットは{Constants.RaiseAmount}。";
+                message = $"The minimum raise is {Constants.RaiseAmount}.\nミニマムレイズは{Constants.RaiseAmount}。";
                 return false;
             }
 
@@ -571,13 +570,13 @@ namespace TexasHoldEmServer.GameLogic
                 return false;
             }
             
-            if (isRaise && chipsBet.Amount < CurrentRaise * 2)
+            if (isRaise && chipsBet.RaiseAmount < CurrentRaise * 2)
             {
                 message = MustBetDoublePreviousMessage;
                 return false;
             }
             
-            if (chipsBet.Amount > CurrentPlayer.Chips)
+            if (chipsBet.BetAmount > CurrentPlayer.Chips)
             {
                 message = "Not enough chips.\nチップが足りない。";
                 return false;

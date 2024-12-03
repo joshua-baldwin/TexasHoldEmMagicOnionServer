@@ -1,6 +1,7 @@
 using TexasHoldEmServer.GameLogic;
 using TexasHoldEmShared.Enums;
 using THE.MagicOnion.Shared.Entities;
+using THE.MagicOnion.Shared.Utilities;
 
 namespace TexasHoldEmUnitTests;
 
@@ -470,7 +471,7 @@ public class Tests
         var p3 = SetupTestHand("none", Enums.PlayerRoleEnum.None, Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Ten, Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Nine);
         
         var players = new List<PlayerEntity> { p1, p2, p3 };
-        sut.GameLogicManager.SetupGame(players);
+        sut.GameLogicManager.SetupGame(players, true);
         var sb = players.First(x => x.Name == "small");
         sb.IsDealer = false;
         sb.PlayerRole = role1;
@@ -515,7 +516,7 @@ public class Tests
     }
 
     [Test]
-    [TestCase(Enums.PlayerRoleEnum.SmallBlind, 40, Enums.PlayerRoleEnum.BigBlind, 80, Enums.PlayerRoleEnum.None, 20, "You must bet double the previous bet.\nさっきのベットの倍をベットしないといけない。")]
+    [TestCase(Enums.PlayerRoleEnum.SmallBlind, 60, Enums.PlayerRoleEnum.BigBlind, 80, Enums.PlayerRoleEnum.None, 20, "You must bet double the previous bet.\nさっきのベットの倍をベットしないといけない。")]
     public void RaiseTest(Enums.PlayerRoleEnum role1, int chip1, Enums.PlayerRoleEnum role2, int chip2, Enums.PlayerRoleEnum role3, int chip3, string message)
     {
         var sut = new TestSystem();
@@ -524,7 +525,7 @@ public class Tests
         var p3 = SetupTestHand("none", Enums.PlayerRoleEnum.None, Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Eight, Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five);
         
         var players = new List<PlayerEntity> { p1, p2, p3 };
-        sut.GameLogicManager.SetupGame(players);
+        sut.GameLogicManager.SetupGame(players, true);
         var sb = players.First(x => x.Name == "small");
         sb.IsDealer = false;
         sb.PlayerRole = role1;
@@ -594,7 +595,7 @@ public class Tests
         var p2 = SetupTestHand("big", Enums.PlayerRoleEnum.BigBlind, Enums.CardSuitEnum.Club, Enums.CardRankEnum.Ten, Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Nine);
         
         var players = new List<PlayerEntity> { p1, p2 };
-        sut.GameLogicManager.SetupGame(players);
+        sut.GameLogicManager.SetupGame(players, true);
         var sb = players.First(x => x.Name == "small");
         sb.IsDealer = false;
         sb.PlayerRole = role1;
@@ -671,7 +672,7 @@ public class Tests
         var p3 = SetupTestHand("none", Enums.PlayerRoleEnum.None, Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Eight, Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five);
         
         var players = new List<PlayerEntity> { p1, p2, p3 };
-        sut.GameLogicManager.SetupGame(players);
+        sut.GameLogicManager.SetupGame(players, true);
         var sb = players.First(x => x.Name == "small");
         sb.IsDealer = false;
         sb.PlayerRole = role1;
@@ -756,7 +757,7 @@ public class Tests
         var p3 = SetupTestHand("none", Enums.PlayerRoleEnum.None, Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Eight, Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five);
         
         var players = new List<PlayerEntity> { p1, p2, p3 };
-        sut.GameLogicManager.SetupGame(players);
+        sut.GameLogicManager.SetupGame(players, true);
         var sb = players.First(x => x.Name == "small");
         sb.IsDealer = false;
         sb.PlayerRole = role1;
@@ -846,7 +847,7 @@ public class Tests
         var p3 = SetupTestHand("none", Enums.PlayerRoleEnum.None, Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Eight, Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five);
         
         var players = new List<PlayerEntity> { p1, p2, p3 };
-        sut.GameLogicManager.SetupGame(players);
+        sut.GameLogicManager.SetupGame(players, true);
         var sb = players.First(x => x.Name == "small");
         sb.IsDealer = false;
         sb.PlayerRole = role1;
@@ -926,9 +927,9 @@ public class Tests
     }
     
     [Test]
-    [TestCase(Enums.PlayerRoleEnum.SmallBlind, 50, Enums.PlayerRoleEnum.BigBlind, 8, Enums.PlayerRoleEnum.None, 30, 10, true, Enums.GameStateEnum.TheFlop, "The previous raise was not a full raise so you cannot raise.\n前のレイズはフルレイズじゃなかったのでレイズできない。")]
-    [TestCase(Enums.PlayerRoleEnum.SmallBlind, 60, Enums.PlayerRoleEnum.BigBlind, 20, Enums.PlayerRoleEnum.None, 30, 10, true, Enums.GameStateEnum.TheFlop, "You must bet double the previous bet.\nさっきのベットの倍をベットしないといけない。")]
-    [TestCase(Enums.PlayerRoleEnum.SmallBlind, 60, Enums.PlayerRoleEnum.BigBlind, 20, Enums.PlayerRoleEnum.None, 80, 40, false, Enums.GameStateEnum.TheTurn, "")]
+    [TestCase(Enums.PlayerRoleEnum.SmallBlind, 60, Enums.PlayerRoleEnum.BigBlind, 8, Enums.PlayerRoleEnum.None, 30, 10, true, Enums.GameStateEnum.TheFlop, "The previous raise was not a full raise so you cannot raise.\n前のレイズはフルレイズじゃなかったのでレイズできない。")]
+    [TestCase(Enums.PlayerRoleEnum.SmallBlind, 70, Enums.PlayerRoleEnum.BigBlind, 20, Enums.PlayerRoleEnum.None, 30, 10, true, Enums.GameStateEnum.TheFlop, "You must bet double the previous bet.\nさっきのベットの倍をベットしないといけない。")]
+    [TestCase(Enums.PlayerRoleEnum.SmallBlind, 70, Enums.PlayerRoleEnum.BigBlind, 20, Enums.PlayerRoleEnum.None, 80, 40, false, Enums.GameStateEnum.TheTurn, "")]
     public void AllInWith3PlayersAllInThenCallThenRaise(Enums.PlayerRoleEnum role1, int chip1, Enums.PlayerRoleEnum role2, int chip2, Enums.PlayerRoleEnum role3, int chip3, int raiseAmount, bool isBetError, Enums.GameStateEnum newGameState, string errorMessage)
     {
         var sut = new TestSystem();
@@ -937,7 +938,7 @@ public class Tests
         var p3 = SetupTestHand("none", Enums.PlayerRoleEnum.None, Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Eight, Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five);
         
         var players = new List<PlayerEntity> { p1, p2, p3 };
-        sut.GameLogicManager.SetupGame(players);
+        sut.GameLogicManager.SetupGame(players, true);
         var sb = players.First(x => x.Name == "small");
         sb.IsDealer = false;
         sb.PlayerRole = role1;
@@ -1013,7 +1014,7 @@ public class Tests
         var p3 = SetupTestHand("none", Enums.PlayerRoleEnum.None, Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Eight, Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five);
         
         var players = new List<PlayerEntity> { p1, p2, p3 };
-        sut.GameLogicManager.SetupGame(players);
+        sut.GameLogicManager.SetupGame(players, true);
         var sb = players.First(x => x.Name == "small");
         sb.IsDealer = false;
         sb.PlayerRole = role1;
@@ -1113,7 +1114,7 @@ public class Tests
     }
     
     [Test]
-    [TestCase(Enums.PlayerRoleEnum.SmallBlind, 60, Enums.PlayerRoleEnum.BigBlind, 17, Enums.PlayerRoleEnum.None, 150, 40, false, Enums.GameStateEnum.TheTurn)]
+    [TestCase(Enums.PlayerRoleEnum.SmallBlind, 90, Enums.PlayerRoleEnum.BigBlind, 17, Enums.PlayerRoleEnum.None, 150, 40, false, Enums.GameStateEnum.TheTurn)]
     public void AllInWith3PlayersRaiseAfterAllIn(Enums.PlayerRoleEnum role1, int chip1, Enums.PlayerRoleEnum role2, int chip2, Enums.PlayerRoleEnum role3, int chip3, int raiseAmount, bool isBetError, Enums.GameStateEnum newGameState)
     {
         var sut = new TestSystem();
@@ -1122,7 +1123,7 @@ public class Tests
         var p3 = SetupTestHand("none", Enums.PlayerRoleEnum.None, Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Eight, Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five);
         
         var players = new List<PlayerEntity> { p1, p2, p3 };
-        sut.GameLogicManager.SetupGame(players);
+        sut.GameLogicManager.SetupGame(players, true);
         var sb = players.First(x => x.Name == "small");
         sb.IsDealer = false;
         sb.PlayerRole = role1;
@@ -1199,7 +1200,7 @@ public class Tests
     }
     
     [Test]
-    [TestCase(Enums.PlayerRoleEnum.SmallBlind, 60, Enums.PlayerRoleEnum.BigBlind, 20, Enums.PlayerRoleEnum.None, 70, false, Enums.GameStateEnum.TheTurn)]
+    [TestCase(Enums.PlayerRoleEnum.SmallBlind, 90, Enums.PlayerRoleEnum.BigBlind, 20, Enums.PlayerRoleEnum.None, 70, false, Enums.GameStateEnum.TheTurn)]
     public void AllInWith3PlayersReRaiseAfterAllInThenFold(Enums.PlayerRoleEnum role1, int chip1, Enums.PlayerRoleEnum role2, int chip2, Enums.PlayerRoleEnum role3, int chip3, bool isBetError, Enums.GameStateEnum newGameState)
     {
         var sut = new TestSystem();
@@ -1208,7 +1209,7 @@ public class Tests
         var p3 = SetupTestHand("none", Enums.PlayerRoleEnum.None, Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Eight, Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five);
         
         var players = new List<PlayerEntity> { p1, p2, p3 };
-        sut.GameLogicManager.SetupGame(players);
+        sut.GameLogicManager.SetupGame(players, true);
         var sb = players.First(x => x.Name == "small");
         sb.IsDealer = false;
         sb.PlayerRole = role1;
@@ -1258,7 +1259,7 @@ public class Tests
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheFlop));
         sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
         Assert.That(isError, Is.False);
-        Assert.That(p3.CurrentBetAfterAllIn, Is.EqualTo(chip2 - GameLogicManager.MinBet));
+        Assert.That(p3.CurrentBetAfterAllIn, Is.EqualTo(chip2 - Constants.MinBet));
         
         sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 40, out _, out isError, out _);
         Assert.That(isError, Is.False);
@@ -1307,7 +1308,7 @@ public class Tests
         var p4 = SetupTestHand("none2", Enums.PlayerRoleEnum.None, Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Jack, Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Queen);
         
         var players = new List<PlayerEntity> { p1, p2, p3, p4 };
-        sut.GameLogicManager.SetupGame(players);
+        sut.GameLogicManager.SetupGame(players, true);
         var sb = players.First(x => x.Name == "small");
         sb.IsDealer = false;
         sb.PlayerRole = role1;
@@ -1439,7 +1440,7 @@ public class Tests
         var p5 = SetupTestHand("none3", Enums.PlayerRoleEnum.None, Enums.CardSuitEnum.Club, Enums.CardRankEnum.Jack, Enums.CardSuitEnum.Spade, Enums.CardRankEnum.Ace);
         
         var players = new List<PlayerEntity> { p1, p2, p3, p4, p5 };
-        sut.GameLogicManager.SetupGame(players);
+        sut.GameLogicManager.SetupGame(players, true);
         var sb = players.First(x => x.Name == "small");
         sb.IsDealer = false;
         sb.PlayerRole = role1;
@@ -1599,7 +1600,7 @@ public class Tests
         var p3 = SetupTestHand("none", Enums.PlayerRoleEnum.None, Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Eight, Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five);
         
         var players = new List<PlayerEntity> { p1, p2, p3 };
-        sut.GameLogicManager.SetupGame(players);
+        sut.GameLogicManager.SetupGame(players, true);
         var sb = players.First(x => x.Name == "small");
         sb.IsDealer = false;
         sb.PlayerRole = role1;
@@ -1698,7 +1699,7 @@ public class Tests
         var p3 = SetupTestHand("none", Enums.PlayerRoleEnum.None, Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Eight, Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five);
         
         var players = new List<PlayerEntity> { p1, p2, p3 };
-        sut.GameLogicManager.SetupGame(players);
+        sut.GameLogicManager.SetupGame(players, true);
         var sb = players.First(x => x.Name == "small");
         sb.IsDealer = false;
         sb.PlayerRole = role1;
@@ -1757,6 +1758,6 @@ public class Tests
         ];
         
         Assert.That(p1.Chips, Is.EqualTo(p1ChipsBefore + pot));
-        Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheFlop));
+        Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.GameOver));
     }
 }
