@@ -138,19 +138,20 @@ namespace TexasHoldEmServer.GameLogic
                     callDifference = 0;
                     break;
                 case Enums.CommandTypeEnum.Raise:
-                    if (!CanPlaceBet((chipsBet, false, chipsBet >= previousBet.Amount * 2), out message, isRaise: true))
+                    betAmount = chipsBet + previousBet.Amount;
+                    if (!CanPlaceBet((chipsBet, false, chipsBet >= CurrentRaise * 2), out message, isRaise: true))
                     {
                         actionMessage = message;
                         isError = true;
                         return;
                     }
                     actionMessage = $"{CurrentPlayer.Name} raised {chipsBet}.";
-                    previousBet = (chipsBet, true, chipsBet >= previousBet.Amount * 2);
+                    previousBet = (betAmount, true, chipsBet >= CurrentRaise * 2);
                     if (playerQueue.Any(x => x.IsAllIn))
-                        CurrentPlayer.CurrentBetAfterAllIn += chipsBet;
+                        CurrentPlayer.CurrentBetAfterAllIn += betAmount;
                     else
-                        CurrentPlayer.CurrentBetBeforeAllIn += chipsBet;
-                    CurrentPlayer.Chips -= chipsBet;
+                        CurrentPlayer.CurrentBetBeforeAllIn += betAmount;
+                    CurrentPlayer.Chips -= betAmount;
                     if (chipsBet >= CurrentRaise * 2)
                     {
                         foreach (var player in playerQueue)
@@ -162,7 +163,7 @@ namespace TexasHoldEmServer.GameLogic
                 case Enums.CommandTypeEnum.AllIn:
                     actionMessage = $"{CurrentPlayer.Name} went all in.";
                     if (CurrentPlayer.Chips >= previousBet.Amount * 2)
-                        CurrentRaise = CurrentPlayer.Chips;
+                        CurrentRaise = CurrentPlayer.Chips - previousBet.Amount;
                     lastAllIn = (CurrentPlayer.Chips, CurrentPlayer.Chips >= previousBet.Amount * 2);
                     previousBet = (CurrentPlayer.Chips, true, CurrentPlayer.Chips >= previousBet.Amount * 2);
                     CurrentPlayer.CurrentBetBeforeAllIn += CurrentPlayer.Chips;
@@ -302,6 +303,7 @@ namespace TexasHoldEmServer.GameLogic
             callDifference = 0;
             lastAllIn = (0, false);
             previousBet = (0, false, false);
+            CurrentRaise = 0;
         }
 
         #region Setup
@@ -531,7 +533,7 @@ namespace TexasHoldEmServer.GameLogic
                 return false;
             }
             
-            if (isRaise && chipsBet.Amount < previousBet.Amount * 2)
+            if (isRaise && chipsBet.Amount < CurrentRaise * 2)
             {
                 message = MustBetDoublePreviousMessage;
                 return false;
