@@ -64,7 +64,7 @@ namespace TexasHoldEmServer.GameLogic
                 InitializeForNextRound();
             }
 
-            SetRoles(players);
+            SetRoles(players, isFirstRound);
         }
 
         public void DoAction(Enums.CommandTypeEnum commandType, int chipsBet, out bool isGameOver, out bool isError, out string actionMessage)
@@ -335,16 +335,32 @@ namespace TexasHoldEmServer.GameLogic
 
         #region Setup
         
-        private void SetRoles(List<PlayerEntity> players)
+        private void SetRoles(List<PlayerEntity> players, bool isFirstRound)
         {
-            var dealer = players.GetRandomElement();
-            dealer.IsDealer = true;
+            if (isFirstRound)
+            {
+                var dealer = players.GetRandomElement();
+                dealer.IsDealer = true;
 
-            var index = players.IndexOf(dealer);
-            index = index + 1 >= players.Count ? 0 : index + 1;
-            players[index].PlayerRole = Enums.PlayerRoleEnum.SmallBlind;
-            index = index + 1 >= players.Count ? 0 : index + 1;
-            players[index].PlayerRole = Enums.PlayerRoleEnum.BigBlind;
+                var index = players.IndexOf(dealer);
+                index = index + 1 >= players.Count ? 0 : index + 1;
+                players[index].PlayerRole = Enums.PlayerRoleEnum.SmallBlind;
+                index = index + 1 >= players.Count ? 0 : index + 1;
+                players[index].PlayerRole = Enums.PlayerRoleEnum.BigBlind;
+            }
+            else
+            {
+                var dealer = players.First(x => x.IsDealer);
+                dealer.IsDealer = false;
+                var dealerIndex = players.IndexOf(dealer);
+                dealerIndex = dealerIndex + 1 >= players.Count ? 0 : dealerIndex + 1;
+                players[dealerIndex].PlayerRole = Enums.PlayerRoleEnum.None;
+                players[dealerIndex].IsDealer = true;
+                dealerIndex = dealerIndex + 1 >= players.Count ? 0 : dealerIndex + 1;
+                players[dealerIndex].PlayerRole = Enums.PlayerRoleEnum.SmallBlind;
+                dealerIndex = dealerIndex + 1 >= players.Count ? 0 : dealerIndex + 1;
+                players[dealerIndex].PlayerRole = Enums.PlayerRoleEnum.BigBlind;
+            }
         }
 
         private void SetCards(List<PlayerEntity> players)
