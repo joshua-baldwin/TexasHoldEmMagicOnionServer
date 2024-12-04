@@ -6,18 +6,16 @@ namespace TexasHoldEmServer.GameLogic
 {
     public class GameLogicManager
     {
-        public const string MustBetDoublePreviousMessage = "You must bet double the previous bet.\nさっきのベットの倍をベットしないといけない。";
-        public const string PreviousRaiseNotAFullRaiseMessage = "The previous raise was not a full raise so you cannot raise.\n前のレイズはフルレイズじゃなかったのでレイズできない。";
+        public const string MustRaiseMoreThanPreviousMessage = "You must raise more than the previous raise.\nさっきのレイズより高い金額レイズしないといけない。";
         
         private readonly Queue<PlayerEntity> playerQueue = new();
         private List<PlayerEntity> allPlayerList = new();
         private bool smallBlindBetDone;
         private bool bigBlindBetDone;
-        private (int Amount, bool IsAllIn, bool IsDoublePrevious) previousBet;
-        private (int Amount, bool IsDoublePrevious) lastAllIn;
+        private (int Amount, bool IsAllIn, bool IsGreaterThanPrevious) previousBet;
+        private (int Amount, int RaiseAmount, bool IsDoublePrevious) lastAllIn;
         private List<CardEntity> cardPool;
         private bool isTie;
-        private int callDifference;
         private List<PlayerEntity> allInPlayers = new();
 
         public PlayerEntity PreviousPlayer { get; private set; }
@@ -25,7 +23,7 @@ namespace TexasHoldEmServer.GameLogic
         public List<(Guid, int)> Pots { get; private set; } = [(Guid.Empty, 0)];
         public List<CardEntity> CommunityCards { get; set; } = new();
         public Enums.GameStateEnum GameState { get; private set; }
-        public int CurrentRaise { get; set; }
+        public (int RaiseAmount, int TotalBet) CurrentRaise { get; set; }
         public int CurrentRound { get; set; }
         
         public Queue<PlayerEntity> PlayerQueue => playerQueue;
@@ -36,7 +34,7 @@ namespace TexasHoldEmServer.GameLogic
             smallBlindBetDone = false;
             bigBlindBetDone = false;
             previousBet = (0, false, false);
-            lastAllIn = (0, false);
+            lastAllIn = (0, 0, false);
             cardPool.Clear();
             isTie = false;
             PreviousPlayer = null;
@@ -115,16 +113,19 @@ namespace TexasHoldEmServer.GameLogic
                     CurrentPlayer.HasFolded = true;
                     if (playerQueue.Count(x => x.HasFolded) == playerQueue.Count + allInPlayers.Count - 1)
                     {
-                        playerQueue.First(x => !x.HasFolded).Chips += Pots[0].Item2;
-                        Pots = [(Guid.Empty, 0)];
                         isGameOver = true;
-                        isError = false;
                         GameState = Enums.GameStateEnum.GameOver;
-                        return;
                     }
                     break;
                 case Enums.CommandTypeEnum.Call:
-                    var callAmount = callDifference == 0 ? previousBet.Amount : callDifference;
+                    int callAmount;
+                    if (CurrentRaise.RaiseAmount != 0 && CurrentPlayer.LastCommand == Enums.CommandTypeEnum.Raise && CurrentPlayer.CurrentBetBeforeAllIn < lastAllIn.RaiseAmount)
+                        callAmount = CurrentRaise.RaiseAmount;
+                    else if (CurrentRaise.RaiseAmount != 0 && previousBet.Amount < CurrentRaise.TotalBet)
+                        callAmount = CurrentRaise.TotalBet;
+                    else
+                        callAmount = previousBet.Amount;
+
                     if (!CanPlaceBet((callAmount, 0, false, false), out message, true))
                     {
                         actionMessage = message;
@@ -139,60 +140,53 @@ namespace TexasHoldEmServer.GameLogic
                         CurrentPlayer.CurrentBetBeforeAllIn += callAmount;
                     CurrentPlayer.Chips -= callAmount;
                     CurrentPlayer.HasTakenAction = true;
-                    callDifference = 0;
                     break;
                 case Enums.CommandTypeEnum.Raise:
                     betAmount = chipsBet + previousBet.Amount;
-                    if (!CanPlaceBet((betAmount, chipsBet, false, chipsBet >= CurrentRaise * 2), out message, isRaise: true))
+                    if (!CanPlaceBet((betAmount, chipsBet, false, chipsBet > CurrentRaise.RaiseAmount), out message, isRaise: true))
                     {
                         actionMessage = message;
                         isError = true;
                         return;
                     }
                     actionMessage = $"{CurrentPlayer.Name} raised {chipsBet}.";
-                    previousBet = (betAmount, true, chipsBet >= CurrentRaise * 2);
+                    previousBet = (betAmount, false, CurrentRaise.RaiseAmount != 0 && chipsBet > CurrentRaise.RaiseAmount);
                     if (playerQueue.Any(x => x.IsAllIn))
                         CurrentPlayer.CurrentBetAfterAllIn += betAmount;
                     else
                         CurrentPlayer.CurrentBetBeforeAllIn += betAmount;
                     CurrentPlayer.Chips -= betAmount;
-                    if (chipsBet >= CurrentRaise * 2)
+                    if (CurrentRaise.RaiseAmount != 0)
                     {
                         foreach (var player in playerQueue)
                             player.HasTakenAction = false;
                     }
-                    CurrentRaise = chipsBet;
+                    
                     CurrentPlayer.HasTakenAction = true;
+                    CurrentRaise = (chipsBet, betAmount);
+                    
                     break;
                 case Enums.CommandTypeEnum.AllIn:
                     actionMessage = $"{CurrentPlayer.Name} went all in.";
-                    if (CurrentPlayer.Chips >= previousBet.Amount * 2)
-                        CurrentRaise = CurrentPlayer.Chips - previousBet.Amount;
-                    lastAllIn = (CurrentPlayer.Chips, CurrentPlayer.Chips >= previousBet.Amount * 2);
-                    previousBet = (CurrentPlayer.Chips, true, CurrentPlayer.Chips >= previousBet.Amount * 2);
+                    
+                    var isRaise = CurrentRaise.RaiseAmount != 0 && CurrentPlayer.Chips - CurrentRaise.RaiseAmount > CurrentRaise.RaiseAmount;
+                    lastAllIn = (CurrentPlayer.Chips, CurrentPlayer.Chips - CurrentRaise.RaiseAmount, isRaise);
+
+                    CurrentPlayer.HasTakenAction = true;
+                    if (isRaise)
+                    {
+                        CurrentRaise = (CurrentPlayer.Chips - CurrentRaise.RaiseAmount, CurrentPlayer.Chips);
+                        foreach (var player in playerQueue)
+                            player.HasTakenAction = false;
+                    }
+
+                    previousBet = (CurrentPlayer.Chips, true, isRaise);
                     CurrentPlayer.CurrentBetBeforeAllIn += CurrentPlayer.Chips;
                     CurrentPlayer.Chips = 0;
                     CurrentPlayer.IsAllIn = true;
-                    CurrentPlayer.HasTakenAction = true;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(commandType), commandType, null);
-            }
-            
-            switch (commandType)
-            {
-                case Enums.CommandTypeEnum.AllIn when previousBet.Amount >= CurrentRaise:
-                case Enums.CommandTypeEnum.Raise when chipsBet >= CurrentRaise * 2:
-                    foreach (var player in playerQueue.Where(x => x.LastCommand == Enums.CommandTypeEnum.Raise))
-                    {
-                        player.HasTakenAction = false;
-                    }
-
-                    break;
-                case Enums.CommandTypeEnum.Call:
-                    if (PreviousPlayer.CurrentBetBeforeAllIn > CurrentRaise)
-                        callDifference = PreviousPlayer.CurrentBetBeforeAllIn - CurrentRaise;
-                    break;
             }
 
             PreviousPlayer = playerQueue.Dequeue();
@@ -221,16 +215,15 @@ namespace TexasHoldEmServer.GameLogic
             smallBlindBetDone = false;
             bigBlindBetDone = false;
             previousBet = (0, false, false);
-            lastAllIn = (0, false);
+            lastAllIn = (0, 0, false);
             isTie = false;
-            callDifference = 0;
             allInPlayers.Clear();
             PreviousPlayer = null;
             CurrentPlayer = null;
             Pots = [(Guid.Empty, 0)];
             CommunityCards.Clear();
             GameState = Enums.GameStateEnum.BlindBet;
-            CurrentRaise = 0;
+            CurrentRaise = (0, 0);
         }
 
         private void UpdateGameState()
@@ -238,10 +231,18 @@ namespace TexasHoldEmServer.GameLogic
             var gameStateChanged = false;
             if (playerQueue.Count == 1 || playerQueue.All(x => x.IsAllIn) || (playerQueue.Count(x => x.IsAllIn) == playerQueue.Count - 1 && playerQueue.All(x => x.HasTakenAction)))
             {
-                GameState = Enums.GameStateEnum.Showdown;
-                SetRemainingCards();
-                gameStateChanged = true;
-                UpdatePot();
+                if (GameState == Enums.GameStateEnum.GameOver)
+                {
+                    gameStateChanged = true;
+                    UpdatePot();    
+                }
+                else
+                {
+                    GameState = Enums.GameStateEnum.Showdown;
+                    SetRemainingCards();
+                    gameStateChanged = true;
+                    UpdatePot();
+                }
             }
             else
             {
@@ -322,10 +323,9 @@ namespace TexasHoldEmServer.GameLogic
                 }
             }
 
-            callDifference = 0;
-            lastAllIn = (0, false);
+            lastAllIn = (0, 0, false);
             previousBet = (0, false, false);
-            CurrentRaise = 0;
+            CurrentRaise = (0, 0);
         }
 
         #region Setup
@@ -544,7 +544,7 @@ namespace TexasHoldEmServer.GameLogic
             return winningHand;
         }
         
-        private bool CanPlaceBet((int BetAmount, int RaiseAmount, bool IsAllIn, bool IsDoublePrevious) chipsBet, out string message, bool isCall = false, bool isRaise = false)
+        private bool CanPlaceBet((int BetAmount, int RaiseAmount, bool IsAllIn, bool IsGreaterThanPrevious) chipsBet, out string message, bool isCall = false, bool isRaise = false)
         {
             if (chipsBet.BetAmount <= 0)
             {
@@ -557,22 +557,10 @@ namespace TexasHoldEmServer.GameLogic
                 message = $"The minimum raise is {Constants.RaiseAmount}.\nミニマムレイズは{Constants.RaiseAmount}。";
                 return false;
             }
-
-            if (isRaise && previousBet is { IsAllIn: true, IsDoublePrevious: false })
-            {
-                message = PreviousRaiseNotAFullRaiseMessage;
-                return false;
-            }
             
-            if (isRaise && lastAllIn.Amount != 0 && !lastAllIn.IsDoublePrevious)
+            if (isRaise && chipsBet.RaiseAmount <= CurrentRaise.RaiseAmount)
             {
-                message = PreviousRaiseNotAFullRaiseMessage;
-                return false;
-            }
-            
-            if (isRaise && chipsBet.RaiseAmount < CurrentRaise * 2)
-            {
-                message = MustBetDoublePreviousMessage;
+                message = MustRaiseMoreThanPreviousMessage;
                 return false;
             }
             
@@ -591,7 +579,6 @@ namespace TexasHoldEmServer.GameLogic
             var allPlayers = playerQueue.ToList();
             while (allPlayers.Any(x => x.IsAllIn))
             {
-                //TODO what if two players go all in with same amount
                 var minNotAllIn = allPlayers.Where(x => !x.IsAllIn && x.CurrentBetBeforeAllIn != 0).MinBy(x => x.CurrentBetBeforeAllIn);
                 var minAllIn = allPlayers.Where(x => x.IsAllIn).MinBy(x => x.CurrentBetBeforeAllIn);
                 var playerWithMinimumBet = minNotAllIn == null || minAllIn.CurrentBetBeforeAllIn < minNotAllIn.CurrentBetBeforeAllIn ? minAllIn : minNotAllIn;
