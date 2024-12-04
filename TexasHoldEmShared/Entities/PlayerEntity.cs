@@ -33,10 +33,10 @@ namespace THE.MagicOnion.Shared.Entities
         public int Chips { get; set; }
         
         [Key(8)]
-        public int CurrentBetBeforeAllIn { get; set; }
+        public List<int> CurrentBets { get; private set; }
         
         [Key(9)]
-        public int CurrentBetAfterAllIn { get; set; }
+        public int CurrentBetIndex { get; set; }
         
         [Key(10)]
         public bool HasTakenAction { get; set; }
@@ -58,13 +58,63 @@ namespace THE.MagicOnion.Shared.Entities
             Name = name;
             Id = id;
             PlayerRole = role;
+            CurrentBets = new List<int> { 0 };
+        }
+
+        public void AddNewCurrentBet(int bet)
+        {
+            CurrentBets.Add(bet);
+            CurrentBetIndex++;
+        }
+
+        public void AddToCurrentBet(int bet)
+        {
+            CurrentBets[CurrentBetIndex] += bet;
+        }
+
+        public void SubtractFromCurrentBet(int bet)
+        {
+            //when subtracting after making the main pot, if the order is raise, all in, call,
+            //the player who raised needs to get subtracted from the first nonzero element
+            //since they bet before the all in
+            var index = CurrentBetIndex;
+            while (CurrentBets[index] == 0)
+                index--;
+
+            Recurse(index, bet);
+        }
+
+        private void Recurse(int index, int remainder)
+        {
+            var newRemainder = CurrentBets[index] - remainder;
+            if (newRemainder >= 0)
+            {
+                CurrentBets[index] -= remainder;
+                return;
+            }
+
+            CurrentBets[index] = 0;
+            index--;
+                
+            Recurse(index, -newRemainder);
+        }
+
+        public void ResetCurrentBets()
+        {
+            CurrentBets = new List<int> { 0 };
+            CurrentBetIndex = 0;
+        }
+
+        public int GetCurrentBet()
+        {
+            return CurrentBets[CurrentBetIndex];
         }
 
         public void InitializeForNextRound()
         {
             HoleCards.Clear();
-            CurrentBetBeforeAllIn = 0;
-            CurrentBetAfterAllIn = 0;
+            CurrentBets = new List<int> { 0 };
+            CurrentBetIndex = 0;
             HasTakenAction = false;
             HasFolded = false;
             LastCommand = 0;

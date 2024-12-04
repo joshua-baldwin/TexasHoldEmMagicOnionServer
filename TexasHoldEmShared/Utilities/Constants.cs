@@ -6,7 +6,7 @@ namespace THE.MagicOnion.Shared.Utilities
         public static int MaxHoleCards = 2;
         public static int StartingChips = 50;
         public static int MinBet = 2;
-        public static int RaiseAmount = 4;
+        public static int RaiseAmount = 1;
         public static int JokerCount = 2;
         public static int MaxRounds = 3;
     }

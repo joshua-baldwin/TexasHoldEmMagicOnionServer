@@ -122,6 +122,7 @@ namespace TexasHoldEmServer.Interfaces
     
             var previousPlayer = gameLogicManager.CurrentPlayer;
             gameLogicManager.DoAction(commandType, betAmount, out bool isGameOver, out bool isError, out string actionMessage);
+            Console.WriteLine(actionMessage);
             if (isError)
                 BroadcastTo(group, ConnectionId).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pots, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, []);
             else if (isGameOver)
