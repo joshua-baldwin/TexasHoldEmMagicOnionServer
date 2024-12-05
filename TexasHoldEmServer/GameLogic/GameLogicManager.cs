@@ -41,6 +41,7 @@ namespace TexasHoldEmServer.GameLogic
             Pots = [(Guid.Empty, 0)];
             CommunityCards.Clear();
             GameState = Enums.GameStateEnum.BlindBet;
+            CurrentRound = 0;
         }
         
         public void SetupGame(List<PlayerEntity> players, bool isFirstRound)
@@ -494,6 +495,20 @@ namespace TexasHoldEmServer.GameLogic
         private WinningHandEntity GetWinner(List<PlayerEntity> showdownPlayers)
         {
             var winningHand = new WinningHandEntity();
+            if (showdownPlayers.Count == 1)
+            {
+                var player = showdownPlayers.First();
+                var hand = player.HoleCards.Concat(CommunityCards).ToList();
+                var rank = HandRankingLogic.GetHandRanking(hand);
+                player.BestHand = new BestHandEntity { Cards = hand.Where(x => x.IsFinalHand).ToList(), HandRanking = rank };
+                winningHand.HandRanking = rank;
+                winningHand.Winner = player;
+                winningHand.Cards = player.BestHand.Cards;
+                winningHand.Winner.Chips += Pots[0].Item2;
+                winningHand.PotToWinner = Pots[0].Item2;
+                return winningHand;
+            }
+            
             foreach (var player in showdownPlayers)
             {
                 Enums.HandRankingType ranking;
