@@ -81,14 +81,14 @@ namespace TexasHoldEmServer.Interfaces
             return storage.AllValues.ToArray();
         }
 
-        public async Task<bool> StartGame(Guid playerId, bool isFirstRound)
+        public async Task<Enums.StartResponseTypeEnum> StartGame(Guid playerId, bool isFirstRound)
         {
             if (group == null)
-                return false;
+                return Enums.StartResponseTypeEnum.GroupDoesNotExist;
             
             var players = storage.AllValues.ToList();
             var currentPlayer = players.FirstOrDefault(player => player.Id == playerId);
-            if (currentPlayer.Chips < Constants.MinBet)
+            if (currentPlayer.Chips < Constants.MinBet && !isFirstRound)
             {
                 //not enough chips to play
                 Broadcast(group).OnLeaveRoom(self, storage.AllValues.Count);
@@ -99,13 +99,13 @@ namespace TexasHoldEmServer.Interfaces
                     roomManager.ClearRooms();
                     gameLogicManager.Reset();
                 }
-                return false;
+                return Enums.StartResponseTypeEnum.NotEnoughChips;
             }
             if (currentPlayer != null)
                 currentPlayer.IsReady = true;
             
             if (players.Any(player => !player.IsReady))
-                return false;
+                return Enums.StartResponseTypeEnum.AllPlayersNotReady;
             
             players.ForEach(player => player.IsReady = false);
             
@@ -113,7 +113,7 @@ namespace TexasHoldEmServer.Interfaces
             gameLogicManager.CreateQueue(players);
 
             Broadcast(group).OnGameStart(gameLogicManager.PlayerQueue.ToArray(), gameLogicManager.CurrentPlayer, gameLogicManager.GameState, gameLogicManager.CurrentRound, isFirstRound);
-            return true;
+            return Enums.StartResponseTypeEnum.Success;
         }
 
         public async Task CancelStart(Guid playerId)

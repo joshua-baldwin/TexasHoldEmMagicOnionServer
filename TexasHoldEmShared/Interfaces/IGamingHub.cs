@@ -11,7 +11,7 @@ namespace THE.MagicOnion.Shared.Interfaces
         Task<bool> JoinRoomAsync(string name);
         Task<PlayerEntity> LeaveRoomAsync();
         Task<PlayerEntity[]> GetAllPlayers();
-        Task<bool> StartGame(Guid playerId, bool isFirstRound);
+        Task<Enums.StartResponseTypeEnum> StartGame(Guid playerId, bool isFirstRound);
         Task CancelStart(Guid playerId);
         Task DoAction(Enums.CommandTypeEnum commandType, int betAmount, Guid targetPlayerId);
     }

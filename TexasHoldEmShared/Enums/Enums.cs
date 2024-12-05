@@ -88,5 +88,14 @@ namespace TexasHoldEmShared.Enums
             HighCard,
             Nothing
         }
+
+        public enum StartResponseTypeEnum
+        {
+            Success,
+            AllPlayersNotReady,
+            NotEnoughChips,
+            GroupDoesNotExist,
+            Failed
+        }
     }
 }
