@@ -4,6 +4,7 @@ using TexasHoldEmServer.Managers;
 using TexasHoldEmShared.Enums;
 using THE.MagicOnion.Shared.Entities;
 using THE.MagicOnion.Shared.Interfaces;
+using THE.MagicOnion.Shared.Utilities;
 
 #pragma warning disable CS8604 // Possible null reference argument.
 #pragma warning disable CS8603 // Possible null reference return.
@@ -87,6 +88,19 @@ namespace TexasHoldEmServer.Interfaces
             
             var players = storage.AllValues.ToList();
             var currentPlayer = players.FirstOrDefault(player => player.Id == playerId);
+            if (currentPlayer.Chips < Constants.MinBet)
+            {
+                //not enough chips to play
+                Broadcast(group).OnLeaveRoom(self, storage.AllValues.Count);
+                await group.RemoveAsync(Context);
+                roomManager.RemoveConnection(self.RoomId, self.Id);
+                if (storage.AllValues.Count == 0)
+                {
+                    roomManager.ClearRooms();
+                    gameLogicManager.Reset();
+                }
+                return false;
+            }
             if (currentPlayer != null)
                 currentPlayer.IsReady = true;
             
@@ -126,7 +140,10 @@ namespace TexasHoldEmServer.Interfaces
             if (isError)
                 BroadcastTo(group, ConnectionId).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pots, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, []);
             else if (isGameOver)
-                Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pots, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, [new WinningHandEntity { Winner = storage.AllValues.First(x => !x.HasFolded) }]);
+            {
+                var winnerList = gameLogicManager.DoShowdown();
+                Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pots, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, winnerList);
+            }
             else
             {
                 var winnerList = new List<WinningHandEntity>();
