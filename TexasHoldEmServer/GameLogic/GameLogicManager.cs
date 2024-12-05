@@ -261,6 +261,7 @@ namespace TexasHoldEmServer.GameLogic
                             GameState = Enums.GameStateEnum.PreFlop;
                             SetCards(playerQueue.ToList());
                             gameStateChanged = true;
+                            UpdatePot();
                         }
 
                         break;
@@ -628,7 +629,8 @@ namespace TexasHoldEmServer.GameLogic
                 }
             }
 
-            previousBet = (0, false, false);
+            if (GameState != Enums.GameStateEnum.PreFlop)
+                previousBet = (0, false, false);
         }
     }
 }

@@ -2403,6 +2403,7 @@ public class Tests
         var winners = sut.GameLogicManager.DoShowdown();
         
         Assert.That(winners[0].Winner.Id, Is.EqualTo(p2.Id));
+        Assert.That(mainPot, Is.EqualTo(Constants.MinBet / 2 + Constants.MinBet));
         Assert.That(winners[0].PotToWinner, Is.EqualTo(mainPot));
         Assert.That(winners[0].HandRanking, Is.EqualTo(Enums.HandRankingType.FullHouse));
         Assert.That(p1.Chips, Is.EqualTo(sbChipsBefore));
