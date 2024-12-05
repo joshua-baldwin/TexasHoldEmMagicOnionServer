@@ -478,6 +478,8 @@ namespace TexasHoldEmServer.GameLogic
         {
             var winnerList = new List<WinningHandEntity>();
             var showdownDictionary = new Dictionary<Guid, List<PlayerEntity>>();
+            var num = Pots.Count - 2;
+            var potNumber = (char)('A' + num);
             while (Pots.Count > 0)
             {
                 var firstPot = Pots[0];
@@ -487,8 +489,10 @@ namespace TexasHoldEmServer.GameLogic
                     : allPlayerList.Where(x => !x.HasFolded && (!x.IsAllIn || showdownDictionary.ContainsKey(x.Id))).Concat([potPlayer]).ToList();
                 showdownDictionary.Add(potPlayer == null ? Guid.Empty : potPlayer.Id, eligiblePlayers);
                 var winner = GetWinner(showdownDictionary[firstPot.Item1]);
+                winner.PotName = Pots.Count == 1 ? "Main pot" : $"Side pot {potNumber}";
                 winnerList.Add(winner);
                 Pots.RemoveAt(0);
+                potNumber--;
             }
             
             return winnerList;
@@ -566,7 +570,7 @@ namespace TexasHoldEmServer.GameLogic
                 winningHand.Winner.Chips += Pots[0].Item2;
                 winningHand.PotToWinner = Pots[0].Item2;
             }
-
+            
             return winningHand;
         }
         

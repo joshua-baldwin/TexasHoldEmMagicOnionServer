@@ -25,5 +25,8 @@ namespace THE.MagicOnion.Shared.Entities
         
         [Key(5)]
         public int PotToTiedWith { get; set; }
+        
+        [Key(6)]
+        public string PotName { get; set; }
     }
 }
