@@ -622,9 +622,17 @@ namespace TexasHoldEmServer.GameLogic
                 {
                     player.SubtractFromCurrentBet(minBet);
                 });
-                
+
                 foreach (var player in minAllInPlayers)
+                {
                     allPlayers.Remove(player);
+                    allPlayers.ForEach(x =>
+                    {
+                        if (!x.IsAllIn)
+                            x.RemoveCurrentBet();
+                    });
+                    //TODO remove extra currentbets
+                }
             }
 
             var sidePot = 0;

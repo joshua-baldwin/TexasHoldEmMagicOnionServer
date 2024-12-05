@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using MessagePack;
 using TexasHoldEmShared.Enums;
 
@@ -89,6 +90,16 @@ namespace THE.MagicOnion.Shared.Entities
                 index--;
 
             Recurse(index, bet);
+        }
+
+        public void RemoveCurrentBet()
+        {
+            int? zero = CurrentBets.FirstOrDefault(x => x == 0);
+            if (zero == null)
+                return;
+            
+            CurrentBets.Remove(zero.Value);
+            CurrentBetIndex--;
         }
 
         private void Recurse(int index, int remainder)
