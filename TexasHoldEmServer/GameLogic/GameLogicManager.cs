@@ -79,6 +79,7 @@ namespace TexasHoldEmServer.GameLogic
                     previousBet = (betAmount, false, false);
                     CurrentPlayer.AddToCurrentBet(betAmount);
                     CurrentPlayer.Chips -= betAmount;
+                    CurrentPlayer.RaiseAmount = betAmount;
                     smallBlindBetDone = true;
                     break;
                 case Enums.CommandTypeEnum.BigBlindBet:
@@ -92,6 +93,7 @@ namespace TexasHoldEmServer.GameLogic
                     previousBet = (Constants.MinBet, false, false);
                     CurrentPlayer.AddToCurrentBet(Constants.MinBet);
                     CurrentPlayer.Chips -= Constants.MinBet;
+                    CurrentPlayer.RaiseAmount = Constants.MinBet;
                     bigBlindBetDone = true;
                     break;
                 case Enums.CommandTypeEnum.Check:
@@ -498,12 +500,7 @@ namespace TexasHoldEmServer.GameLogic
             if (showdownPlayers.Count == 1)
             {
                 var player = showdownPlayers.First();
-                var hand = player.HoleCards.Concat(CommunityCards).ToList();
-                var rank = HandRankingLogic.GetHandRanking(hand);
-                player.BestHand = new BestHandEntity { Cards = hand.Where(x => x.IsFinalHand).ToList(), HandRanking = rank };
-                winningHand.HandRanking = rank;
                 winningHand.Winner = player;
-                winningHand.Cards = player.BestHand.Cards;
                 winningHand.Winner.Chips += Pots[0].Item2;
                 winningHand.PotToWinner = Pots[0].Item2;
                 return winningHand;
