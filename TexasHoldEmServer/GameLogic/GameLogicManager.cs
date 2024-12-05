@@ -157,6 +157,7 @@ namespace TexasHoldEmServer.GameLogic
                     previousBet = (betAmount, false, betAmount > CurrentRaise.TotalBet);
                     CurrentPlayer.AddToCurrentBet(betAmount);
                     CurrentPlayer.Chips -= betAmount;
+                    CurrentPlayer.RaiseAmount = chipsBet;
                     if (betAmount > CurrentRaise.TotalBet)
                     {
                         foreach (var player in playerQueue)

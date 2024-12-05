@@ -33,7 +33,7 @@ namespace THE.MagicOnion.Shared.Entities
         public int Chips { get; set; }
         
         [Key(8)]
-        public List<int> CurrentBets { get; private set; }
+        public List<int> CurrentBets { get; set; }
         
         [Key(9)]
         public int CurrentBetIndex { get; set; }
@@ -52,6 +52,9 @@ namespace THE.MagicOnion.Shared.Entities
         
         [Key(14)]
         public BestHandEntity? BestHand { get; set; }
+        
+        [Key(15)]
+        public int RaiseAmount { get; set; }
         
         public PlayerEntity(string name, Guid id, Enums.PlayerRoleEnum role)
         {
