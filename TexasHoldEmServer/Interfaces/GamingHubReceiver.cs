@@ -106,6 +106,9 @@ namespace TexasHoldEmServer.Interfaces
             
             if (players.Any(player => !player.IsReady))
                 return Enums.StartResponseTypeEnum.AllPlayersNotReady;
+
+            if (players.Count < Constants.MinimumPlayers)
+                return Enums.StartResponseTypeEnum.NotEnoughPlayers;
             
             players.ForEach(player => player.IsReady = false);
             

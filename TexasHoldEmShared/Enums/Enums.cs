@@ -94,6 +94,7 @@ namespace TexasHoldEmShared.Enums
             Success,
             AllPlayersNotReady,
             NotEnoughChips,
+            NotEnoughPlayers,
             GroupDoesNotExist,
             Failed
         }
