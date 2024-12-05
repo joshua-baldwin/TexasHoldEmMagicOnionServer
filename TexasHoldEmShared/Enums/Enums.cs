@@ -76,16 +76,27 @@ namespace TexasHoldEmShared.Enums
         
         public enum HandRankingType
         {
+            [Description("ロイヤルフラッシュ")]
             RoyalFlush = 1,
+            [Description("ストレートフラッシュ")]
             StraightFlush,
+            [Description("フォーカード")]
             FourOfAKind,
+            [Description("フルハウス")]
             FullHouse,
+            [Description("フラッシュ")]
             Flush,
+            [Description("ストレート")]
             Straight,
+            [Description("スリーカード")]
             ThreeOfAKind,
+            [Description("ツーペア")]
             TwoPair,
+            [Description("ペア")]
             Pair,
+            [Description("ハイカード")]
             HighCard,
+            [Description("無し")]
             Nothing
         }
 
