@@ -500,7 +500,12 @@ namespace TexasHoldEmServer.GameLogic
             if (showdownPlayers.Count == 1)
             {
                 var player = showdownPlayers.First();
+                var hand = player.HoleCards.Concat(CommunityCards).ToList();
+                var rank = HandRankingLogic.GetHandRanking(hand);
+                player.BestHand = new BestHandEntity { Cards = hand.Where(x => x.IsFinalHand).ToList(), HandRanking = rank };
+                winningHand.HandRanking = rank;
                 winningHand.Winner = player;
+                winningHand.Cards = player.BestHand.Cards;
                 winningHand.Winner.Chips += Pots[0].Item2;
                 winningHand.PotToWinner = Pots[0].Item2;
                 return winningHand;
