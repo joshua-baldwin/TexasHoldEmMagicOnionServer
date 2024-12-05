@@ -56,6 +56,10 @@ namespace THE.MagicOnion.Shared.Entities
         [Key(15)]
         public int RaiseAmount { get; set; }
         
+        //use to show if player is bluffing with a raise or all in
+        [Key(16)]
+        public BestHandEntity CurrentBestHand { get; set; }
+        
         public PlayerEntity(string name, Guid id, Enums.PlayerRoleEnum role)
         {
             Name = name;
