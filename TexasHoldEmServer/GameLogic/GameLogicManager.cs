@@ -203,7 +203,7 @@ namespace TexasHoldEmServer.GameLogic
 
             PreviousPlayer = playerQueue.Dequeue();
             PreviousPlayer.LastCommand = commandType;
-            if (!CurrentPlayer.HasFolded)
+            if (!CurrentPlayer.HasFolded && (CurrentPlayer.Chips > 0 || CurrentPlayer.Chips == 0 && CurrentPlayer.IsAllIn))
                 playerQueue.Enqueue(CurrentPlayer);
             CurrentPlayer = playerQueue.Peek();
             if (playerQueue.Any(x => !x.IsAllIn))
