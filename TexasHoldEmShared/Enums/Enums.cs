@@ -109,5 +109,12 @@ namespace TexasHoldEmShared.Enums
             GroupDoesNotExist,
             Failed
         }
+
+        public enum JoinRoomResponseTypeEnum
+        {
+            Success,
+            AllRoomsFull,
+            Failed
+        }
     }
 }

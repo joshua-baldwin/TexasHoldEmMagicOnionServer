@@ -8,7 +8,7 @@ namespace THE.MagicOnion.Shared.Interfaces
 {
     public interface IGamingHub : IStreamingHub<IGamingHub, IGamingHubReceiver>
     {
-        Task<bool> JoinRoomAsync(string name);
+        Task<Enums.JoinRoomResponseTypeEnum> JoinRoomAsync(string name);
         Task<PlayerEntity> LeaveRoomAsync();
         Task<PlayerEntity[]> GetAllPlayers();
         Task<Enums.StartResponseTypeEnum> StartGame(Guid playerId, bool isFirstRound);

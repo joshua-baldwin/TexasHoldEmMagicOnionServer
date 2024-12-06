@@ -20,38 +20,46 @@ namespace TexasHoldEmServer.Interfaces
         private IRoomManager? roomManager;
         private GameLogicManager? gameLogicManager;
         
-        public async Task<bool> JoinRoomAsync(string userName)
+        public async Task<Enums.JoinRoomResponseTypeEnum> JoinRoomAsync(string userName)
         {
-            if (roomManager == null)
-                roomManager = Context.ServiceProvider.GetService<IRoomManager>();
-            
-            if (gameLogicManager == null)
-                gameLogicManager = Context.ServiceProvider.GetService<GameLogicManager>();
-
-            self = new PlayerEntity(userName, Guid.NewGuid(), Enums.PlayerRoleEnum.None);
-            var existingRoom = roomManager.GetNonFullRoomEntity();
-            if (existingRoom == null)
+            try
             {
-                if (roomManager.GetRoomCount() >= RoomManager.MaxRoomCount)
+                if (roomManager == null)
+                    roomManager = Context.ServiceProvider.GetService<IRoomManager>();
+
+                if (gameLogicManager == null)
+                    gameLogicManager = Context.ServiceProvider.GetService<GameLogicManager>();
+
+                self = new PlayerEntity(userName, Guid.NewGuid(), Enums.PlayerRoleEnum.None);
+                var existingRoom = roomManager.GetNonFullRoomEntity();
+                if (existingRoom == null)
                 {
-                    return false;
+                    if (roomManager.GetRoomCount() >= RoomManager.MaxRoomCount)
+                    {
+                        return Enums.JoinRoomResponseTypeEnum.AllRoomsFull;
+                    }
+
+                    var roomId = Guid.NewGuid();
+                    self.RoomId = roomId;
+                    (group, storage) = await Group.AddAsync(roomId.ToString(), self);
+                    roomManager.AddRoomAndConnection(roomId, group, storage, self.Id, ConnectionId);
                 }
-                var roomId = Guid.NewGuid();
-                self.RoomId = roomId;
-                (group, storage) = await Group.AddAsync(roomId.ToString(), self);
-                roomManager.AddRoomAndConnection(roomId, group, storage, self.Id, ConnectionId);
+                else
+                {
+                    (group, storage) = await Group.AddAsync(existingRoom.Id.ToString(), self);
+                    roomManager.AddConnection(existingRoom.Id, self.Id, ConnectionId);
+                }
+
+                self.RoomId = Guid.Parse(group.GroupName);
+                Broadcast(group).OnJoinRoom(self, storage.AllValues.Count);
             }
-            else
+            catch (Exception)
             {
-                (group, storage) = await Group.AddAsync(existingRoom.Id.ToString(), self);
-                roomManager.AddConnection(existingRoom.Id, self.Id, ConnectionId);
+                return Enums.JoinRoomResponseTypeEnum.Failed;
             }
 
-            self.RoomId = Guid.Parse(group.GroupName);
-            Broadcast(group).OnJoinRoom(self, storage.AllValues.Count);
-            
             Console.WriteLine($"{userName} joined");
-            return true;
+            return Enums.JoinRoomResponseTypeEnum.Success;
         }
 
         public async Task<PlayerEntity> LeaveRoomAsync()
