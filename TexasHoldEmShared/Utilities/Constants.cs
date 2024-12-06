@@ -9,6 +9,6 @@ namespace THE.MagicOnion.Shared.Utilities
         public static int MinBet = 2;
         public static int RaiseAmount = 1;
         public static int JokerCount = 2;
-        public static int MaxRounds = 3;
+        public static int MaxRounds = 5;
     }
 }

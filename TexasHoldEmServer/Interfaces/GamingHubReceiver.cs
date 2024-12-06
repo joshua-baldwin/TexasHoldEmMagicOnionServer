@@ -91,6 +91,9 @@ namespace TexasHoldEmServer.Interfaces
 
         public async Task<Enums.StartResponseTypeEnum> StartGame(Guid playerId, bool isFirstRound)
         {
+            if (gameLogicManager.CurrentRound > Constants.MaxRounds)
+                return Enums.StartResponseTypeEnum.AlreadyPlayedMaxRounds;
+            
             if (group == null)
                 return Enums.StartResponseTypeEnum.GroupDoesNotExist;
             
