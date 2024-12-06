@@ -334,6 +334,8 @@ namespace TexasHoldEmServer.GameLogic
                 }
             }
 
+            allInPlayers.ForEach(x => x.LastCommand = 0);
+
             lastAllIn = (0, 0, false);
             previousBet = (0, false, false);
             CurrentRaise = (0, 0);
