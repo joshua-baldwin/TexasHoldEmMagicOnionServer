@@ -30,10 +30,16 @@ namespace TexasHoldEmServer.GameLogic
                 return Enums.HandRankingType.TwoPair;
             if (IsPair(hand, true))
                 return Enums.HandRankingType.Pair;
-            if (IsHighCard(hand))
-                return Enums.HandRankingType.HighCard;
-
-            return Enums.HandRankingType.Nothing;
+            
+            //if high card, select highest cards and return
+            var maxCardsForHand = hand.Count == 2 ? 2 : 5;
+            hand = hand.OrderByDescending(h => h.Rank).ToList();
+            for (var i = 0; i < maxCardsForHand; i++)
+            {
+                hand[i].IsFinalHand = true;
+            }
+            
+            return Enums.HandRankingType.HighCard;
         }
 
         /// <summary>
@@ -300,30 +306,6 @@ namespace TexasHoldEmServer.GameLogic
             }
 
             return isValid;
-        }
-
-        private static bool IsHighCard(List<CardEntity> cards)
-        {
-            foreach (var card in cards)
-            {
-                if (card.Rank is
-                    not (Enums.CardRankEnum.Ace or
-                    Enums.CardRankEnum.King or
-                    Enums.CardRankEnum.Queen or
-                    Enums.CardRankEnum.Jack or
-                    Enums.CardRankEnum.Ten))
-                    continue;
-                
-                card.IsFinalHand = true;
-                var maxCardsForHand = cards.Count == 2 ? 2 : 5;
-                while (cards.Count(x => x.IsFinalHand) < maxCardsForHand)
-                {
-                    cards.Where(x => !x.IsFinalHand).MaxBy(x => x.Rank).IsFinalHand = true;    
-                }
-                return true;
-            }
-
-            return false;
         }
         
         #endregion
