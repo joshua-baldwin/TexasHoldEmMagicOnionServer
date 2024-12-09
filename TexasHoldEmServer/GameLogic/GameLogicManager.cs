@@ -434,18 +434,15 @@ namespace TexasHoldEmServer.GameLogic
                     player.CurrentBet = 0;
                 previousBet = (0, false, false);
             }
-            
-            var players = PlayerQueue.Where(x => !x.IsAllIn).OrderByDescending(x => x.IsDealer)
-                .ThenByDescending(x => x.PlayerRole == Enums.PlayerRoleEnum.SmallBlind)
-                .ThenByDescending(x => x.PlayerRole == Enums.PlayerRoleEnum.BigBlind).ToList();
+
+            var players = PlayerQueue.Where(x => !x.IsAllIn).OrderBy(x => x.OrderInQueue).ToList();
             allInPlayers = PlayerQueue.Where(x => x.IsAllIn).ToList();
             PlayerQueue.Clear();
-            for (var i = 1; i < players.Count; i++)
-                PlayerQueue.Enqueue(players[i]);
-            
+            foreach (var player in players)
+                PlayerQueue.Enqueue(player);
+
             if (players.Count > 0)
             {
-                PlayerQueue.Enqueue(players[0]);
                 CurrentPlayer = PlayerQueue.Peek();
                 foreach (var player in PlayerQueue)
                 {
@@ -481,7 +478,8 @@ namespace TexasHoldEmServer.GameLogic
             }
             else
             {
-                var dealer = players.First(x => x.IsDealer);
+                //if dealer dropped out of game get a new random
+                var dealer = players.FirstOrDefault(x => x.IsDealer) ?? players.GetRandomElement();
                 dealer.IsDealer = false;
                 var dealerIndex = players.IndexOf(dealer);
                 dealerIndex = dealerIndex + 1 >= players.Count ? 0 : dealerIndex + 1;
@@ -550,6 +548,13 @@ namespace TexasHoldEmServer.GameLogic
             for (var i = 1; i < playerList.Count; i++)
                 PlayerQueue.Enqueue(playerList[i]);
             PlayerQueue.Enqueue(playerList[0]);
+
+            var order = 1;
+            foreach (var player in PlayerQueue)
+            {
+                player.OrderInQueue = order;
+                order++;
+            }
             
             CurrentPlayer = PlayerQueue.Peek();
         }

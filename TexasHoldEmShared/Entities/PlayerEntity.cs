@@ -18,46 +18,49 @@ namespace THE.MagicOnion.Shared.Entities
         public Enums.PlayerRoleEnum PlayerRole { get; set; }
         
         [Key(3)]
-        public Guid RoomId { get; set; }
+        public int OrderInQueue { get; set; }
         
         [Key(4)]
-        public bool IsDealer { get; set; }
+        public Guid RoomId { get; set; }
         
         [Key(5)]
-        public List<CardEntity> HoleCards { get; set; }
+        public bool IsDealer { get; set; }
         
         [Key(6)]
-        public bool IsReady { get; set; }
+        public List<CardEntity> HoleCards { get; set; }
         
         [Key(7)]
-        public int Chips { get; set; }
+        public bool IsReady { get; set; }
         
         [Key(8)]
-        public int CurrentBet { get; set; }
+        public int Chips { get; set; }
         
         [Key(9)]
-        public int CurrentBetIndex { get; set; }
+        public int CurrentBet { get; set; }
         
         [Key(10)]
-        public bool HasTakenAction { get; set; }
+        public int CurrentBetIndex { get; set; }
         
         [Key(11)]
-        public bool HasFolded { get; set; }
+        public bool HasTakenAction { get; set; }
         
         [Key(12)]
-        public Enums.CommandTypeEnum LastCommand { get; set; }
+        public bool HasFolded { get; set; }
         
         [Key(13)]
-        public bool IsAllIn { get; set; }
+        public Enums.CommandTypeEnum LastCommand { get; set; }
         
         [Key(14)]
-        public BestHandEntity? BestHand { get; set; }
+        public bool IsAllIn { get; set; }
         
         [Key(15)]
+        public BestHandEntity? BestHand { get; set; }
+        
+        [Key(16)]
         public int RaiseAmount { get; set; }
         
         //currently held cards; use to show if player is bluffing with a raise or all in
-        [Key(16)]
+        [Key(17)]
         public BestHandEntity CurrentBestHand { get; set; }
         
         public PlayerEntity(string name, Guid id, Enums.PlayerRoleEnum role)
