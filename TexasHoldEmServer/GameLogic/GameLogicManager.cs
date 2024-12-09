@@ -20,7 +20,7 @@ namespace TexasHoldEmServer.GameLogic
         public Queue<PlayerEntity> PlayerQueue { get; } = new();
         public PlayerEntity PreviousPlayer { get; private set; }
         public PlayerEntity CurrentPlayer { get; private set; }
-        public List<PotEntity> Pots { get; private set; } = [new (Guid.Empty, 0, 0, null)];
+        public List<PotEntity> Pots { get; private set; } = [new (Guid.Empty, 0, 0, false, null)];
         public List<CardEntity> CommunityCards { get; set; } = new();
         public Enums.GameStateEnum GameState { get; private set; }
         public int CurrentRound { get; private set; }
@@ -35,7 +35,7 @@ namespace TexasHoldEmServer.GameLogic
             isTie = false;
             PreviousPlayer = null;
             CurrentPlayer = null;
-            Pots = [new PotEntity(Guid.Empty, 0, 0, null)];
+            Pots = [new PotEntity(Guid.Empty, 0, 0, false, null)];
             CommunityCards.Clear();
             GameState = Enums.GameStateEnum.BlindBet;
             CurrentRound = 0;
@@ -81,7 +81,7 @@ namespace TexasHoldEmServer.GameLogic
                     smallBlindBetDone = true;
                     
                     if (Pots.Count == 0 || Pots[0].GoesToPlayer != Guid.Empty)
-                        Pots.Insert(0, new PotEntity(Guid.Empty, betAmount, 0, null));
+                        Pots.Insert(0, new PotEntity(Guid.Empty, betAmount, 0, false, null));
                     else
                     {
                         potEntity = Pots[0];
@@ -255,7 +255,7 @@ namespace TexasHoldEmServer.GameLogic
                 return;
             
             if (Pots[0].GoesToPlayer != Guid.Empty)
-                Pots.Insert(0, new PotEntity(Guid.Empty, callAmount, 0, null));
+                Pots.Insert(0, new PotEntity(Guid.Empty, callAmount, 0, false, null));
             else
             {
                 potEntity = Pots[0];
@@ -273,7 +273,7 @@ namespace TexasHoldEmServer.GameLogic
             {
                 var index = Pots.IndexOf(Pots.First(x => x.AllInAmount > CurrentPlayer.CurrentBet));
                 var eligiblePlayers = PlayerQueue.Where(x => !x.IsAllIn).Concat(allInPlayersForRound.Where(x => x.CurrentBet >= CurrentPlayer.CurrentBet)).ToList();
-                Pots.Insert(index + 1, new PotEntity(CurrentPlayer.Id, CurrentPlayer.CurrentBet, CurrentPlayer.CurrentBet, eligiblePlayers));
+                Pots.Insert(index + 1, new PotEntity(CurrentPlayer.Id, CurrentPlayer.CurrentBet, CurrentPlayer.CurrentBet, CurrentPlayer.CurrentBet <= previousBet.Amount, eligiblePlayers));
                         
                 var amounts = PlayerQueue.Where(x => x.HasTakenAction).OrderByDescending(x => x.CurrentBet).Select(x => x.CurrentBet).ToList();
                 var potIndex2 = Pots.Count - 1;
@@ -317,7 +317,7 @@ namespace TexasHoldEmServer.GameLogic
                 if (sidePot != 0)
                 {
                     if (Pots[0].GoesToPlayer != Guid.Empty)
-                        Pots.Insert(0, new PotEntity(Guid.Empty, sidePot, 0, PlayerQueue.Where(x => !x.IsAllIn && !x.HasFolded).ToList()));
+                        Pots.Insert(0, new PotEntity(Guid.Empty, sidePot, 0, false, PlayerQueue.Where(x => !x.IsAllIn && !x.HasFolded).ToList()));
                     else
                     {
                         potEntity = Pots[0];
@@ -352,7 +352,7 @@ namespace TexasHoldEmServer.GameLogic
             allInPlayers.Clear();
             PreviousPlayer = null;
             CurrentPlayer = null;
-            Pots = [new PotEntity(Guid.Empty, 0, 0, null)];
+            Pots = [new PotEntity(Guid.Empty, 0, 0, false, null)];
             CommunityCards.Clear();
             GameState = Enums.GameStateEnum.BlindBet;
             currentRaise = (0, 0);
@@ -461,7 +461,7 @@ namespace TexasHoldEmServer.GameLogic
             allInPlayersForRound.Clear();
             maxBetForTurn = 0;
             if (Pots[0].GoesToPlayer != Guid.Empty && GameState != Enums.GameStateEnum.Showdown && GameState != Enums.GameStateEnum.GameOver)
-                Pots.Insert(0, new PotEntity(Guid.Empty, 0, 0, null));
+                Pots.Insert(0, new PotEntity(Guid.Empty, 0, 0, false, null));
         }
 
         #region Setup

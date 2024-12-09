@@ -17,13 +17,17 @@ namespace THE.MagicOnion.Shared.Entities
         public int AllInAmount { get; set; }
         
         [Key(3)]
+        public bool ForcedAllIn { get; set; }
+        
+        [Key(4)]
         public List<PlayerEntity> EligiblePlayers { get; set; }
 
-        public PotEntity(Guid goesToPlayer, int potAmount, int allInAmount, List<PlayerEntity> eligiblePlayers)
+        public PotEntity(Guid goesToPlayer, int potAmount, int allInAmount, bool forcedAllIn, List<PlayerEntity> eligiblePlayers)
         {
             GoesToPlayer = goesToPlayer;
             PotAmount = potAmount;
             AllInAmount = allInAmount;
+            ForcedAllIn = forcedAllIn;
             EligiblePlayers = eligiblePlayers;
         }
     }
