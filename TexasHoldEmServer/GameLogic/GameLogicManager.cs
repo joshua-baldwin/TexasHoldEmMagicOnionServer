@@ -724,7 +724,7 @@ namespace TexasHoldEmServer.GameLogic
                 return false;
             }
             
-            if (chipsBet.BetAmount > CurrentPlayer.Chips)
+            if (chipsBet.BetAmount >= CurrentPlayer.Chips)
             {
                 message = "Not enough chips.\nチップが足りない。";
                 return false;
