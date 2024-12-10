@@ -116,7 +116,8 @@ namespace TexasHoldEmServer.GameLogic
                                    ||
                                    (GameState == Enums.GameStateEnum.PreFlop &&
                                     CurrentPlayer.PlayerRole == Enums.PlayerRoleEnum.BigBlind &&
-                                    PlayerQueue.All(x => x.LastCommand != Enums.CommandTypeEnum.Raise));
+                                    PlayerQueue.All(x => x.LastCommand is not Enums.CommandTypeEnum.Raise &&
+                                                         x.LastCommand is not Enums.CommandTypeEnum.AllIn));
                     if (!canCheck)
                     {
                         actionMessage = "You can't check because a bet has been placed.\n誰かがベットしたのでチェックできない。";
