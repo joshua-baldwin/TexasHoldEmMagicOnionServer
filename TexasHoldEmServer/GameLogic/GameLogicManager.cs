@@ -362,7 +362,7 @@ namespace TexasHoldEmServer.GameLogic
         private void UpdateGameState()
         {
             var gameStateChanged = false;
-            if (PlayerQueue.Count == 1 || PlayerQueue.All(x => x.IsAllIn) || (PlayerQueue.Count(x => x.IsAllIn) == PlayerQueue.Count - 1 && PlayerQueue.All(x => x.HasTakenAction)))
+            if (PlayerQueue.Count == 1 || PlayerQueue.All(x => x.IsAllIn) || (PlayerQueue.Count(x => x.IsAllIn) == PlayerQueue.Count - 1 && PlayerQueue.All(x => x.HasTakenAction || x.IsAllIn)))
             {
                 if (GameState == Enums.GameStateEnum.GameOver)
                     gameStateChanged = true;
