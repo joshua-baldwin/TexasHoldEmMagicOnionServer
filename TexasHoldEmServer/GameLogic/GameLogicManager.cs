@@ -27,16 +27,16 @@ namespace TexasHoldEmServer.GameLogic
 
         public void Reset()
         {
-            PlayerQueue.Clear();
+            PlayerQueue?.Clear();
             smallBlindBetDone = false;
             bigBlindBetDone = false;
             previousBet = (0, false, false);
-            cardPool.Clear();
+            cardPool?.Clear();
             isTie = false;
             PreviousPlayer = null;
             CurrentPlayer = null;
             Pots = [new PotEntity(Guid.Empty, 0, 0, false, null)];
-            CommunityCards.Clear();
+            CommunityCards?.Clear();
             GameState = Enums.GameStateEnum.BlindBet;
             CurrentRound = 0;
         }

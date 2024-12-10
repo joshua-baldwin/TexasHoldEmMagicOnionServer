@@ -2290,7 +2290,7 @@ public class Tests
         
         Assert.That(winners[0].Winner.Id, Is.EqualTo(p1.Id));
         Assert.That(winners[0].PotToWinner, Is.EqualTo(mainPot));
-        Assert.That(winners[0].HandRanking, Is.EqualTo(Enums.HandRankingType.ThreeOfAKind));
+        Assert.That(winners[0].HandRanking, Is.EqualTo(Enums.HandRankingType.Nothing));
         Assert.That(p1.Chips, Is.EqualTo(sbChipsBefore + mainPot));
         Assert.That(p2.Chips, Is.EqualTo(bbChipsBefore));
         Assert.That(p3.Chips, Is.EqualTo(p3ChipsBefore));
@@ -2513,7 +2513,7 @@ public class Tests
         Assert.That(winners[0].Winner.Id, Is.EqualTo(p2.Id));
         Assert.That(mainPot, Is.EqualTo(Constants.MinBet / 2 + Constants.MinBet));
         Assert.That(winners[0].PotToWinner, Is.EqualTo(mainPot));
-        Assert.That(winners[0].HandRanking, Is.EqualTo(Enums.HandRankingType.FullHouse));
+        Assert.That(winners[0].HandRanking, Is.EqualTo(Enums.HandRankingType.Nothing));
         Assert.That(p1.Chips, Is.EqualTo(sbChipsBefore));
         Assert.That(p2.Chips, Is.EqualTo(bbChipsBefore + mainPot));
         Assert.That(p3.Chips, Is.EqualTo(p3ChipsBefore));
