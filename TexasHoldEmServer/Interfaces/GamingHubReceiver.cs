@@ -115,6 +115,9 @@ namespace TexasHoldEmServer.Interfaces
             if (currentPlayer != null)
                 currentPlayer.IsReady = true;
             
+            if (!isFirstRound)
+                players = players.Where(player => player.Chips > Constants.MinBet).ToList();
+            
             if (players.Any(player => !player.IsReady))
                 return Enums.StartResponseTypeEnum.AllPlayersNotReady;
 
@@ -123,8 +126,8 @@ namespace TexasHoldEmServer.Interfaces
             
             players.ForEach(player => player.IsReady = false);
             
-            gameLogicManager.SetupGame(players, isFirstRound);
-            gameLogicManager.CreateQueue(players);
+            gameLogicManager.SetupGame(players.ToList(), isFirstRound);
+            gameLogicManager.CreateQueue(players.ToList());
 
             Broadcast(group).OnGameStart(gameLogicManager.PlayerQueue.ToArray(), gameLogicManager.CurrentPlayer, gameLogicManager.GameState, gameLogicManager.CurrentRound, isFirstRound);
             return Enums.StartResponseTypeEnum.Success;
