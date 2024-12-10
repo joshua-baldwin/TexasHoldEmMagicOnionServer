@@ -129,7 +129,13 @@ namespace TexasHoldEmServer.Interfaces
             gameLogicManager.SetupGame(players.ToList(), isFirstRound);
             gameLogicManager.CreateQueue(players.ToList());
 
-            BroadcastTo(group, players.Select(x => x.Id).ToArray()).OnGameStart(gameLogicManager.PlayerQueue.ToArray(), gameLogicManager.CurrentPlayer, gameLogicManager.GameState, gameLogicManager.CurrentRound, isFirstRound);
+            var room = roomManager.GetRoomEntity(currentPlayer.RoomId);
+            var eligiblePlayers = room.Storage.AllValues.Where(player => players.Select(x => x.Id).Contains(player.Id));
+            var ids = new List<Guid>();
+            foreach (var player in eligiblePlayers)
+                ids.Add(room.GetConnectionId(player.Id));
+            
+            BroadcastTo(group, ids.ToArray()).OnGameStart(gameLogicManager.PlayerQueue.ToArray(), gameLogicManager.CurrentPlayer, gameLogicManager.GameState, gameLogicManager.CurrentRound, isFirstRound);
             return Enums.StartResponseTypeEnum.Success;
         }
 

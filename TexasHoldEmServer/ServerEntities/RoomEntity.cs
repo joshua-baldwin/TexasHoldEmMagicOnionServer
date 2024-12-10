@@ -28,4 +28,10 @@ public class RoomEntity
     {
         connections.Remove(playerId);
     }
+
+    public Guid GetConnectionId(Guid playerId)
+    {
+        connections.TryGetValue(playerId, out var connectionId);
+        return connectionId;
+    }
 }
