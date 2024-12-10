@@ -636,12 +636,16 @@ namespace TexasHoldEmServer.GameLogic
             if (showdownPlayers.Count == 1)
             {
                 var player = showdownPlayers.First();
-                var hand = player.HoleCards.Concat(CommunityCards).ToList();
-                var rank = HandRankingLogic.GetHandRanking(hand);
-                player.BestHand = new BestHandEntity { Cards = hand.Where(x => x.IsFinalHand).ToList(), HandRanking = rank };
-                winningHand.HandRanking = rank;
+                if (GameState != Enums.GameStateEnum.GameOver)
+                {
+                    var hand = player.HoleCards.Concat(CommunityCards).ToList();
+                    var rank = HandRankingLogic.GetHandRanking(hand);
+                    player.BestHand = new BestHandEntity { Cards = hand.Where(x => x.IsFinalHand).ToList(), HandRanking = rank };
+                    winningHand.HandRanking = rank;
+                    winningHand.Cards = player.BestHand.Cards;
+                }
+
                 winningHand.Winner = player;
-                winningHand.Cards = player.BestHand.Cards;
                 winningHand.Winner.Chips += Pots[0].PotAmount;
                 winningHand.PotToWinner = Pots[0].PotAmount;
                 return winningHand;
