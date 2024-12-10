@@ -761,7 +761,7 @@ public class Tests
     }
     
     [Test]
-    [TestCase(Enums.PlayerRoleEnum.SmallBlind, 50, Enums.PlayerRoleEnum.BigBlind, 20, Enums.PlayerRoleEnum.None, 50)]
+    [TestCase(Enums.PlayerRoleEnum.SmallBlind, 50, Enums.PlayerRoleEnum.BigBlind, 20, Enums.PlayerRoleEnum.None, 60)]
     public void AllInWith3PlayersAndFirstTwoGoAllIn(Enums.PlayerRoleEnum role1, int chip1, Enums.PlayerRoleEnum role2, int chip2, Enums.PlayerRoleEnum role3, int chip3)
     {
         var sut = new TestSystem();
@@ -815,15 +815,113 @@ public class Tests
         
         sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out var isError, out _);
         var sbBet = p1.CurrentBet;
-        Assert.That(isError, Is.False);
+        Assert.That(!isError);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out isError, out _);
-        Assert.That(isError, Is.False);
+        Assert.That(!isError);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheFlop));
         var p3ChipsBeforeBet = p3.Chips;
         sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _);
-        Assert.That(isError, Is.False);
+        Assert.That(!isError);
+        Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
+        Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.Showdown));
+        
+        sut.GameLogicManager.CommunityCards =
+        [
+            new CardEntity(Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Five),
+            new CardEntity(Enums.CardSuitEnum.Spade, Enums.CardRankEnum.Eight),
+            new CardEntity(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Ten),
+            new CardEntity(Enums.CardSuitEnum.Spade, Enums.CardRankEnum.Nine),
+            new CardEntity(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Nine)
+        ];
+
+        var sbChipsBefore = p1.Chips;
+        var bbChipsBefore = p2.Chips;
+        var sidePot = sut.GameLogicManager.Pots[0].PotAmount;
+        var mainPot = sut.GameLogicManager.Pots[1].PotAmount;
+        var winners = sut.GameLogicManager.DoShowdown();
+        
+        Assert.That(winners[0].Winner.Id, Is.EqualTo(p1.Id));
+        Assert.That(winners[0].PotToWinner, Is.EqualTo(sidePot));
+        
+        Assert.That(winners[1].Winner.Id, Is.EqualTo(p2.Id));
+        Assert.That(winners[1].PotToWinner, Is.EqualTo(mainPot));
+        
+        Assert.That(p1.Chips, Is.EqualTo(sbChipsBefore + winners[0].PotToWinner));
+        Assert.That(p2.Chips, Is.EqualTo(bbChipsBefore + winners[1].PotToWinner));
+        Assert.That(p3.Chips, Is.EqualTo(p3ChipsBeforeBet - sbBet));
+        Assert.That(winners[0].HandRanking, Is.EqualTo(Enums.HandRankingType.ThreeOfAKind));
+        Assert.That(winners[1].HandRanking, Is.EqualTo(Enums.HandRankingType.FullHouse));
+        Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.Showdown));
+    }
+    
+    [Test]
+    [TestCase(Enums.PlayerRoleEnum.SmallBlind, 50, Enums.PlayerRoleEnum.BigBlind, 20, Enums.PlayerRoleEnum.None, 50)]
+    public void AllInWith3PlayersAndLastCannotCallSoTheyGoAllIn(Enums.PlayerRoleEnum role1, int chip1, Enums.PlayerRoleEnum role2, int chip2, Enums.PlayerRoleEnum role3, int chip3)
+    {
+        var sut = new TestSystem();
+        var p1 = SetupTestHand("small", Enums.PlayerRoleEnum.SmallBlind, Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.King, Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Nine);
+        var p2 = SetupTestHand("big", Enums.PlayerRoleEnum.BigBlind, Enums.CardSuitEnum.Club, Enums.CardRankEnum.Ten, Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Nine);
+        var p3 = SetupTestHand("none", Enums.PlayerRoleEnum.None, Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Eight, Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five);
+        
+        var players = new List<PlayerEntity> { p1, p2, p3 };
+        sut.GameLogicManager.SetupGame(players, true);
+        var sb = players.First(x => x.Name == "small");
+        sb.IsDealer = false;
+        sb.PlayerRole = role1;
+        sb.Chips = chip1;
+        
+        var bb = players.First(x => x.Name == "big");
+        bb.IsDealer = false;
+        bb.PlayerRole = role2;
+        bb.Chips = chip2;
+        
+        var none = players.First(x => x.Name == "none");
+        none.IsDealer = true;
+        none.PlayerRole = role3;
+        none.Chips = chip3;
+        
+        sut.GameLogicManager.CreateQueue(players);
+        
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _);
+
+        sut.GameLogicManager.PlayerQueue.First(x => x.PlayerRole == role1).HoleCards =
+        [
+            new CardEntity(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.King),
+            new CardEntity(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Nine)
+            
+        ];
+        sut.GameLogicManager.PlayerQueue.First(x => x.PlayerRole == role2).HoleCards =
+        [
+            new CardEntity(Enums.CardSuitEnum.Club, Enums.CardRankEnum.Ten),
+            new CardEntity(Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Nine)
+            
+        ];
+        sut.GameLogicManager.PlayerQueue.First(x => x.PlayerRole == role3).HoleCards =
+        [
+            new CardEntity(Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Eight),
+            new CardEntity(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five)
+        ];
+        
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _);
+        
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out var isError, out _);
+        var sbBet = p1.CurrentBet;
+        Assert.That(!isError);
+        Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out isError, out _);
+        Assert.That(!isError);
+        Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
+        Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheFlop));
+        var p3ChipsBeforeBet = p3.Chips;
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _);
+        Assert.That(isError);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out isError, out _);
+        Assert.That(!isError);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.Showdown));
         
