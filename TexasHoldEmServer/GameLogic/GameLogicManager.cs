@@ -724,6 +724,7 @@ namespace TexasHoldEmServer.GameLogic
                 return false;
             }
             
+            //if bet equals chips make player go all in
             if (chipsBet.BetAmount >= CurrentPlayer.Chips)
             {
                 message = "Not enough chips.\nチップが足りない。";
