@@ -672,12 +672,15 @@ namespace TexasHoldEmServer.GameLogic
                 }
                 else if (ranking == winningHand.HandRanking)
                 {
-                    var guid = HandRankingLogic.CompareHands((winningHand.Winner.Id, winningHand.Cards), (player.Id, player.BestHand.Cards), ranking);
+                    var winnerToCompare = winningHand.Winner ?? winningHand.TiedWith.First();
+                    var guid = HandRankingLogic.CompareHands((winnerToCompare.Id, winningHand.Cards), (player.Id, player.BestHand.Cards), ranking);
                     if (guid == Guid.Empty)
                     {
                         isTie = true;
-                        winningHand.TiedWith.Add(winningHand.Winner);
-                        winningHand.TiedWith.Add(player);
+                        if (winningHand.TiedWith.All(x => x.Id != winnerToCompare.Id))
+                            winningHand.TiedWith.Add(winnerToCompare);
+                        if (winningHand.TiedWith.All(x => x.Id != player.Id))
+                            winningHand.TiedWith.Add(player);
                         winningHand.Winner = null;
                     }
                     else
