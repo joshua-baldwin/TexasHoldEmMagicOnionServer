@@ -21,6 +21,9 @@ namespace THE.MagicOnion.Shared.Entities
         
         [Key(4)]
         public List<PlayerEntity> EligiblePlayers { get; set; }
+        
+        [Key(5)]
+        public bool IsLocked { get; set; }
 
         public PotEntity(Guid goesToPlayer, int potAmount, int allInAmount, bool forcedAllIn, List<PlayerEntity> eligiblePlayers)
         {

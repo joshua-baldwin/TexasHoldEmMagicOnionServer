@@ -198,11 +198,12 @@ namespace TexasHoldEmServer.GameLogic
 
                     previousBet = (CurrentPlayer.Chips, true, isRaise);
                     
+                    CurrentPlayer.AllInAmount = CurrentPlayer.Chips;
                     CurrentPlayer.CurrentBet += CurrentPlayer.Chips;
                     CurrentPlayer.Chips = 0;
                     CurrentPlayer.IsAllIn = true;
-                    if (CurrentPlayer.CurrentBet > maxBetForTurn)
-                        maxBetForTurn = CurrentPlayer.CurrentBet;
+                    if (CurrentPlayer.AllInAmount > maxBetForTurn)
+                        maxBetForTurn = CurrentPlayer.AllInAmount;
 
                     RecalculatePots();
                     break;
@@ -232,13 +233,13 @@ namespace TexasHoldEmServer.GameLogic
         {
             PotEntity potEntity;
             var potIndex = Pots.Count - 1;
-            while (callAmount > 0 && potIndex >= 0 && Pots[0].GoesToPlayer != Guid.Empty)
+            while (callAmount > 0 && potIndex >= 0 && Pots[potIndex].GoesToPlayer != Guid.Empty && !Pots[potIndex].IsLocked)
             {
                 var allInAmount = PlayerQueue.FirstOrDefault(x => x.Id == Pots[potIndex].GoesToPlayer)?.CurrentBet;
                 potEntity = Pots[potIndex];
                 if (allInAmount.HasValue && allInAmount.Value != 0)
                 {
-                    var toPot = callAmount - allInAmount.Value > 0 ? callAmount - allInAmount.Value : callAmount;
+                    var toPot = callAmount - allInAmount.Value > 0 ? allInAmount.Value : callAmount;
                     potEntity.PotAmount += toPot;
                     callAmount -= toPot;
                 }
@@ -269,22 +270,24 @@ namespace TexasHoldEmServer.GameLogic
         {
             PotEntity potEntity;
             //if a second person goes all in for a lower amount need to create a new pot and insert to the bottom and recalculate pot amounts
-            var createNewPot = Pots.Any(x => x.AllInAmount > CurrentPlayer.CurrentBet);
+            var createNewPot = Pots.Any(x => x.AllInAmount != 0 && x.AllInAmount > CurrentPlayer.AllInAmount && !x.IsLocked);
             if (Pots.Count == 0 || createNewPot)
             {
-                var index = Pots.IndexOf(Pots.First(x => x.AllInAmount > CurrentPlayer.CurrentBet));
-                var eligiblePlayers = PlayerQueue.Where(x => !x.IsAllIn).Concat(allInPlayersForRound.Where(x => x.CurrentBet >= CurrentPlayer.CurrentBet)).ToList();
-                Pots.Insert(index + 1, new PotEntity(CurrentPlayer.Id, CurrentPlayer.CurrentBet, CurrentPlayer.CurrentBet, CurrentPlayer.CurrentBet <= previousBet.Amount, eligiblePlayers));
-                        
-                var amounts = PlayerQueue.Where(x => x.HasTakenAction).OrderByDescending(x => x.CurrentBet).Select(x => x.CurrentBet).ToList();
-                var potIndex2 = Pots.Count - 1;
+                var index = Pots.IndexOf(Pots.First(x => x.AllInAmount > CurrentPlayer.AllInAmount));
+                var eligiblePlayers = PlayerQueue.Where(x => !x.IsAllIn).Concat(allInPlayersForRound.Where(x => x.CurrentBet >= CurrentPlayer.AllInAmount)).ToList();
+                //if two players go all in on same turn, and second all in is less, set the pot amount of the new pot to the amount in the previous pot before the first all in
+                //set the pot amount of the previous pot to 0 asince we recalculate in the while loop
+                Pots.Insert(index + 1, new PotEntity(CurrentPlayer.Id, Pots[index].PotAmount - Pots[index].AllInAmount, CurrentPlayer.AllInAmount, CurrentPlayer.AllInAmount <= previousBet.Amount, eligiblePlayers));
+                Pots[index].PotAmount = 0;
+                var amounts = PlayerQueue.Where(x => x.IsAllIn).OrderByDescending(x => x.AllInAmount).Select(x => x.AllInAmount).ToList();
+                var potIndex = Pots.Count(x => !x.IsLocked) - 1;
                 while (amounts.Count > 0)
                 {
                     var toTake = amounts.Last() * amounts.Count;
-                    potEntity = Pots[potIndex2];
-                    potEntity.PotAmount = toTake;
-                    Pots[potIndex2] = potEntity;
-                    potIndex2--;
+                    potEntity = Pots[potIndex];
+                    potEntity.PotAmount += toTake;
+                    Pots[potIndex] = potEntity;
+                    potIndex--;
                             
                     for (var i = 0; i < amounts.Count; i++)
                         amounts[i] -= amounts.Last();
@@ -294,12 +297,12 @@ namespace TexasHoldEmServer.GameLogic
             }
             else
             {
-                var allInBet = CurrentPlayer.CurrentBet;
+                var allInBet = CurrentPlayer.AllInAmount;
                 potEntity = Pots[0];
                 potEntity.GoesToPlayer = CurrentPlayer.Id;
                 potEntity.PotAmount += allInBet;
-                potEntity.AllInAmount = CurrentPlayer.CurrentBet;
-                potEntity.EligiblePlayers = PlayerQueue.Where(x => !x.IsAllIn).Concat(allInPlayersForRound.Where(x => x.CurrentBet >= CurrentPlayer.CurrentBet)).ToList();
+                potEntity.AllInAmount = CurrentPlayer.AllInAmount;
+                potEntity.EligiblePlayers = PlayerQueue.Where(x => !x.IsAllIn).Concat(allInPlayersForRound.Where(x => x.CurrentBet >= CurrentPlayer.AllInAmount)).ToList();
                 Pots[0] = potEntity;
                         
                 var sidePot = 0;
@@ -460,6 +463,8 @@ namespace TexasHoldEmServer.GameLogic
             maxBetForTurn = 0;
             if (Pots[0].GoesToPlayer != Guid.Empty && GameState != Enums.GameStateEnum.Showdown && GameState != Enums.GameStateEnum.GameOver)
                 Pots.Insert(0, new PotEntity(Guid.Empty, 0, 0, false, null));
+            if (Pots[^1].GoesToPlayer != Guid.Empty)
+                Pots[^1].IsLocked = true;
         }
 
         #region Setup
