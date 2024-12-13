@@ -485,9 +485,10 @@ namespace TexasHoldEmServer.GameLogic
             else
             {
                 //if dealer dropped out of game get a new random
-                var dealer = players.FirstOrDefault(x => x.IsDealer) ?? players.GetRandomElement();
-                dealer.IsDealer = false;
-                var dealerIndex = players.IndexOf(dealer);
+                var dealer = players.FirstOrDefault(x => x.IsDealer);
+                if (dealer != null)
+                    dealer.IsDealer = false;
+                var dealerIndex = dealer == null ? -1 : players.IndexOf(dealer);
                 dealerIndex = dealerIndex + 1 >= players.Count ? 0 : dealerIndex + 1;
                 players[dealerIndex].PlayerRole = Enums.PlayerRoleEnum.None;
                 players[dealerIndex].IsDealer = true;
