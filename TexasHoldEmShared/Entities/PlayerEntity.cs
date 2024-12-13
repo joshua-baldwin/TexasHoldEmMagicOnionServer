@@ -63,7 +63,7 @@ namespace THE.MagicOnion.Shared.Entities
         [Key(17)]
         public BestHandEntity CurrentBestHand { get; set; }
         
-        [IgnoreMember]
+        [Key(18)]
         public int AllInAmount { get; set; }
         
         public PlayerEntity(string name, Guid id, Enums.PlayerRoleEnum role)
@@ -83,6 +83,9 @@ namespace THE.MagicOnion.Shared.Entities
             LastCommand = 0;
             IsAllIn = false;
             BestHand = null;
+            RaiseAmount = 0;
+            CurrentBestHand = null;
+            AllInAmount = 0;
         }
     }
 }
