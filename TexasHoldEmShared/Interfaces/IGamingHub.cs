@@ -13,6 +13,7 @@ namespace THE.MagicOnion.Shared.Interfaces
         Task<PlayerEntity[]> GetAllPlayers();
         Task<Enums.StartResponseTypeEnum> StartGame(Guid playerId, bool isFirstRound);
         Task CancelStart(Guid playerId);
-        Task DoAction(Enums.CommandTypeEnum commandType, int betAmount, Guid targetPlayerId);
+        Task DoAction(Enums.CommandTypeEnum commandType, int betAmount, Guid selectedJoker, Guid targetPlayerId);
+        Task BuyJoker(Guid playerId, JokerEntity joker);
     }
 }

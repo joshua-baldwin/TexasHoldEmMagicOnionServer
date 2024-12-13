@@ -57,7 +57,7 @@ namespace TexasHoldEmServer.GameLogic
             SetRoles(players, isFirstRound);
         }
 
-        public void DoAction(Enums.CommandTypeEnum commandType, int chipsBet, out bool isGameOver, out bool isError, out string actionMessage)
+        public void DoAction(Enums.CommandTypeEnum commandType, int chipsBet, out bool isGameOver, out bool isError, out string actionMessage, Guid selectedJoker, Guid targetPlayerId)
         {
             PotEntity potEntity;
             isGameOver = false;
@@ -207,6 +207,20 @@ namespace TexasHoldEmServer.GameLogic
 
                     RecalculatePots();
                     break;
+                case Enums.CommandTypeEnum.UseJoker:
+                    var joker = CurrentPlayer.JokerCards.First(x => x.Id == selectedJoker);
+                    var targetPlayer = PlayerQueue.First(x => x.Id == targetPlayerId);
+                    if (!CanUseJoker(joker, targetPlayer, out message))
+                    {
+                        actionMessage = message;
+                        isError = true;
+                        return;
+                    }
+
+                    CurrentPlayer.Chips -= joker.UseCost;
+                    UseJoker(joker, targetPlayer);
+                    
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(commandType), commandType, null);
             }
@@ -227,6 +241,18 @@ namespace TexasHoldEmServer.GameLogic
             }
 
             UpdateGameState();
+        }
+
+        private void UseJoker(JokerEntity joker, PlayerEntity targetPlayer)
+        {
+            CurrentPlayer.JokerCards.RemoveAll(x => x.Id == joker.Id);
+            foreach (var ability in joker.GetAbilityEntities(JokerManager.GetJokerAbilities()))
+            {
+                foreach (var effect in ability.GetAbilityEffects(JokerManager.GetJokerAbilityEffects()))
+                {
+                    
+                }
+            }
         }
 
         private void DistributeBetAmountToPots(int callAmount)
@@ -465,6 +491,16 @@ namespace TexasHoldEmServer.GameLogic
                 Pots.Insert(0, new PotEntity(Guid.Empty, 0, 0, false, null));
             if (Pots[^1].GoesToPlayer != Guid.Empty)
                 Pots[^1].IsLocked = true;
+
+            foreach (var player in PlayerQueue)
+            {
+                for (var i = player.ActiveEffects.Count - 1; i >= 0; i--)
+                {
+                    
+                    player.ActiveEffects.RemoveAt(i);
+                    break;
+                }
+            }
         }
 
         #region Setup
@@ -536,12 +572,6 @@ namespace TexasHoldEmServer.GameLogic
             foreach (var suit in suits.Where(x => x != Enums.CardSuitEnum.None))
             {
                 deck.AddRange(ranks.Where(rank => rank != Enums.CardRankEnum.Joker).Select(rank => new CardEntity(suit, rank)));
-            }
-
-            if (useJokers)
-            {
-                for (var i = 0; i < Constants.JokerCount; i++)
-                    deck.Add(new CardEntity(Enums.CardSuitEnum.None, Enums.CardRankEnum.Joker));
             }
 
             return deck;
@@ -740,6 +770,24 @@ namespace TexasHoldEmServer.GameLogic
                 return false;
             }
 
+            message = "";
+            return true;
+        }
+
+        private bool CanUseJoker(JokerEntity joker, PlayerEntity targetPlayer, out string message)
+        {
+            if (joker.CurrentUses >= joker.MaxUses)
+            {
+                message = "You've reached the max use count for this Joker .\nこのジョーカーの利用上限数を超えた。";
+                return false;
+            }
+
+            if (CurrentPlayer.Chips <= joker.UseCost)
+            {
+                message = "You don't have enough chips to use this Joker.\nこのジョーカーを使うには必要なチップが足りない。";
+                return false;
+            }
+            
             message = "";
             return true;
         }

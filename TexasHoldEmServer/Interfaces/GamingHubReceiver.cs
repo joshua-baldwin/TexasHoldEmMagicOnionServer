@@ -152,13 +152,13 @@ namespace TexasHoldEmServer.Interfaces
             Broadcast(group).OnCancelGameStart();
         }
 
-        public async Task DoAction(Enums.CommandTypeEnum commandType, int betAmount, Guid targetPlayerId)
+        public async Task DoAction(Enums.CommandTypeEnum commandType, int betAmount, Guid selectedJoker, Guid targetPlayerId)
         {
             if (group == null)
                 return;
     
             var previousPlayer = gameLogicManager.CurrentPlayer;
-            gameLogicManager.DoAction(commandType, betAmount, out bool isGameOver, out bool isError, out string actionMessage);
+            gameLogicManager.DoAction(commandType, betAmount, out bool isGameOver, out bool isError, out string actionMessage, selectedJoker, targetPlayerId);
             Console.WriteLine(actionMessage);
             if (isError)
                 BroadcastTo(group, ConnectionId).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pots, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, []);
@@ -175,6 +175,13 @@ namespace TexasHoldEmServer.Interfaces
                 
                 Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pots, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, winnerList);
             }
+        }
+
+        public async Task BuyJoker(Guid playerId, JokerEntity joker)
+        {
+            if (group == null)
+                return;
+            
         }
 
         protected override ValueTask OnDisconnected()

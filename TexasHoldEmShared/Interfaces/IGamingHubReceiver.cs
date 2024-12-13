@@ -13,5 +13,6 @@ namespace THE.MagicOnion.Shared.Interfaces
         void OnGameStart(PlayerEntity[] playerEntities, PlayerEntity currentPlayer, Enums.GameStateEnum gameState, int roundNumber, bool isFirstRound);
         void OnCancelGameStart();
         void OnDoAction(Enums.CommandTypeEnum commandType, PlayerEntity[] playerEntities, Guid previousPlayerId, Guid currentPlayerId, Guid targetPlayerId, List<PotEntity> pots, List<CardEntity> communityCards, Enums.GameStateEnum gameState, bool isError, string actionMessage, List<WinningHandEntity> winnerList);
+        void OnBuyJoker(PlayerEntity player, JokerEntity joker);
     }
 }
