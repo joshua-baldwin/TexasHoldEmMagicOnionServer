@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using TexasHoldEmServer.GameLogic;
 using TexasHoldEmShared.Enums;
 using THE.MagicOnion.Shared.Entities;
@@ -489,26 +490,26 @@ public class Tests
         
         sut.GameLogicManager.CreateQueue(players);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out var isGameOver, out var isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out var isGameOver, out var isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 25, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 25, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         
@@ -543,8 +544,8 @@ public class Tests
 
         sut.GameLogicManager.CreateQueue(players);
 
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
 
         sut.GameLogicManager.PlayerQueue.First(x => x.Name == "small").HoleCards =
         [
@@ -564,24 +565,24 @@ public class Tests
             new CardEntity(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five)
         ];
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out var isError, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out var isError, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out isError, out _, Guid.Empty, Guid.Empty);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out _, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out _, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 10, out _, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 10, out _, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheFlop));
         Assert.That(sut.GameLogicManager.PreviousPlayer.CurrentBet, Is.EqualTo(15));
         
         var prevBet = sut.GameLogicManager.CurrentPlayer.CurrentBet;
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 20, out _, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 20, out _, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheFlop));
@@ -610,8 +611,8 @@ public class Tests
         
         sut.GameLogicManager.CreateQueue(players);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
 
         sut.GameLogicManager.PlayerQueue.First(x => x.Name == "small").HoleCards =
         [
@@ -626,19 +627,19 @@ public class Tests
             
         ];
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out var isGameOver, out var isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out var isGameOver, out var isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheFlop));
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
@@ -694,8 +695,8 @@ public class Tests
         
         sut.GameLogicManager.CreateQueue(players);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
 
         sut.GameLogicManager.PlayerQueue.First(x => x.PlayerRole == role1).HoleCards =
         [
@@ -715,15 +716,15 @@ public class Tests
             new CardEntity(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five)
         ];
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 25, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 25, out _, out _, out _, Guid.Empty, Guid.Empty);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.Showdown));
         
@@ -788,8 +789,8 @@ public class Tests
         
         sut.GameLogicManager.CreateQueue(players);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
 
         sut.GameLogicManager.PlayerQueue.First(x => x.PlayerRole == role1).HoleCards =
         [
@@ -809,20 +810,20 @@ public class Tests
             new CardEntity(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five)
         ];
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out var isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out var isError, out _, Guid.Empty, Guid.Empty);
         var sbBet = p1.CurrentBet;
         Assert.That(!isError);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheFlop));
         var p3ChipsBeforeBet = p3.Chips;
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.Showdown));
@@ -884,8 +885,8 @@ public class Tests
         
         sut.GameLogicManager.CreateQueue(players);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
 
         sut.GameLogicManager.PlayerQueue.First(x => x.PlayerRole == role1).HoleCards =
         [
@@ -905,22 +906,22 @@ public class Tests
             new CardEntity(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five)
         ];
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out var isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out var isError, out _, Guid.Empty, Guid.Empty);
         var sbBet = p1.CurrentBet;
         Assert.That(!isError);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheFlop));
         var p3ChipsBeforeBet = p3.Chips;
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.Showdown));
@@ -982,8 +983,8 @@ public class Tests
         
         sut.GameLogicManager.CreateQueue(players);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
 
         sut.GameLogicManager.PlayerQueue.First(x => x.PlayerRole == role1).HoleCards =
         [
@@ -1003,18 +1004,18 @@ public class Tests
             new CardEntity(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five)
         ];
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out var isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out var isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheFlop));
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Fold, 0, out _, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Fold, 0, out _, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         
         sut.GameLogicManager.CommunityCards =
@@ -1073,8 +1074,8 @@ public class Tests
         
         sut.GameLogicManager.CreateQueue(players);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
 
         sut.GameLogicManager.PlayerQueue.First(x => x.PlayerRole == role1).HoleCards =
         [
@@ -1094,28 +1095,28 @@ public class Tests
             new CardEntity(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five)
         ];
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out _, out var isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out _, out var isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         var prevBet = sut.GameLogicManager.PreviousPlayer.CurrentBet;
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheFlop));
         Assert.That(p3.CurrentBet, Is.EqualTo(prevBet));
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 40, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 40, out _, out _, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheFlop));
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheTurn));
     }
@@ -1148,8 +1149,8 @@ public class Tests
         
         sut.GameLogicManager.CreateQueue(players);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
 
         sut.GameLogicManager.PlayerQueue.First(x => x.PlayerRole == role1).HoleCards =
         [
@@ -1169,24 +1170,24 @@ public class Tests
             new CardEntity(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five)
         ];
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out _, out var isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out _, out var isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         var prevBet = sut.GameLogicManager.PreviousPlayer.CurrentBet;
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheFlop));
         Assert.That(p3.CurrentBet, Is.EqualTo(prevBet));
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheTurn));
     }
@@ -1219,8 +1220,8 @@ public class Tests
         
         sut.GameLogicManager.CreateQueue(players);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
 
         sut.GameLogicManager.PlayerQueue.First(x => x.PlayerRole == role1).HoleCards =
         [
@@ -1240,20 +1241,20 @@ public class Tests
             new CardEntity(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five)
         ];
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
         var preFlopTotal = sut.GameLogicManager.Pots[0].PotAmount;
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out _, out var isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out _, out var isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         var p1PrevBet = sut.GameLogicManager.PreviousPlayer.CurrentBet;
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheFlop));
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheTurn));
@@ -1261,10 +1262,10 @@ public class Tests
         Assert.That(sut.GameLogicManager.Pots[1].PotAmount, Is.EqualTo(preFlopTotal + 15));
 
         var raiseAmount = 5;
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, raiseAmount, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, raiseAmount, out _, out _, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         
@@ -1274,8 +1275,8 @@ public class Tests
         Assert.That(currentMainPot, Is.EqualTo(preFlopTotal + p1PrevBet * players.Count));
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheRiver));
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.Showdown));
         
         sut.GameLogicManager.CommunityCards =
@@ -1335,8 +1336,8 @@ public class Tests
         
         sut.GameLogicManager.CreateQueue(players);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
 
         sut.GameLogicManager.PlayerQueue.First(x => x.PlayerRole == role1).HoleCards =
         [
@@ -1356,26 +1357,26 @@ public class Tests
             new CardEntity(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five)
         ];
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
         var preFlopTotal = sut.GameLogicManager.Pots[0].PotAmount;
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out _, out var isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out _, out var isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         var p2PrevBet = sut.GameLogicManager.PreviousPlayer.CurrentBet;
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheFlop));
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheFlop));
         Assert.That(p3.CurrentBet, Is.EqualTo(p2PrevBet));
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheTurn));
@@ -1385,14 +1386,14 @@ public class Tests
         Assert.That(currentSidePot, Is.EqualTo(0));
         Assert.That(currentMainPot, Is.EqualTo(preFlopTotal + p2PrevBet * players.Count));
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out _, out _, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheRiver));
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.Showdown));
         
         sut.GameLogicManager.CommunityCards =
@@ -1452,8 +1453,8 @@ public class Tests
         
         sut.GameLogicManager.CreateQueue(players);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
 
         sut.GameLogicManager.PlayerQueue.First(x => x.PlayerRole == role1).HoleCards =
         [
@@ -1473,48 +1474,48 @@ public class Tests
             new CardEntity(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five)
         ];
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
 
         var initialRaise = 5;
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, initialRaise, out _, out var isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, initialRaise, out _, out var isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheFlop));
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 20, out _, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 20, out _, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheFlop));
         Assert.That(sut.GameLogicManager.PreviousPlayer.CurrentBet, Is.EqualTo(35));
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 40, out _, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 40, out _, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheFlop));
         Assert.That(sut.GameLogicManager.PreviousPlayer.CurrentBet, Is.EqualTo(75 + initialRaise));
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheTurn));
         var val = sut.GameLogicManager.PlayerQueue.First().CurrentBet;
         Assert.That(sut.GameLogicManager.PlayerQueue.All(x => x.CurrentBet == val));
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheRiver));
         var val2 = sut.GameLogicManager.PlayerQueue.First().CurrentBet;
         Assert.That(sut.GameLogicManager.PlayerQueue.All(x => x.CurrentBet == val2));
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.Showdown));
         
@@ -1548,8 +1549,8 @@ public class Tests
         
         sut.GameLogicManager.CreateQueue(players);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
 
         sut.GameLogicManager.PlayerQueue.First(x => x.PlayerRole == role1).HoleCards =
         [
@@ -1569,30 +1570,30 @@ public class Tests
             new CardEntity(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five)
         ];
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out _, out var isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out _, out var isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheFlop));
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         Assert.That(p3.CurrentBet, Is.EqualTo(chip2 - Constants.MinBet));
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 40, out _, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 40, out _, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheTurn));
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Fold, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Fold, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.Showdown));
@@ -1658,8 +1659,8 @@ public class Tests
         
         sut.GameLogicManager.CreateQueue(players);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
 
         sut.GameLogicManager.PlayerQueue.First(x => x.Name == "small").HoleCards =
         [
@@ -1685,43 +1686,43 @@ public class Tests
             new CardEntity(Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Queen)
         ];
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out var isGameOver, out var isError, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out var isGameOver, out var isError, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 25, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 25, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
-        Assert.That(isError, Is.False);
-        Assert.That(isGameOver, Is.False);
-        Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out isGameOver, out isError, out _);
-        Assert.That(isError, Is.False);
-        Assert.That(isGameOver, Is.False);
-        Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
+        Assert.That(isError, Is.False);
+        Assert.That(isGameOver, Is.False);
+        Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
+        
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
+        Assert.That(isError, Is.False);
+        Assert.That(isGameOver, Is.False);
+        Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
@@ -1795,8 +1796,8 @@ public class Tests
         
         sut.GameLogicManager.CreateQueue(players);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
 
         sut.GameLogicManager.PlayerQueue.First(x => x.Name == "small").HoleCards =
         [
@@ -1822,25 +1823,25 @@ public class Tests
             new CardEntity(Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Queen)
         ];
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out var isGameOver, out var isError, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out var isGameOver, out var isError, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 50, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 50, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
@@ -1888,8 +1889,8 @@ public class Tests
         
         sut.GameLogicManager.CreateQueue(players);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
 
         sut.GameLogicManager.PlayerQueue.First(x => x.Name == "small").HoleCards =
         [
@@ -1921,70 +1922,70 @@ public class Tests
             new CardEntity(Enums.CardSuitEnum.Spade, Enums.CardRankEnum.Ace)
         ];
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out var isGameOver, out var isError, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out var isGameOver, out var isError, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 25, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 25, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheTurn));
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheTurn));
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheRiver));
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
@@ -2069,8 +2070,8 @@ public class Tests
         
         sut.GameLogicManager.CreateQueue(players);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
 
         sut.GameLogicManager.PlayerQueue.First(x => x.Name == "small").HoleCards =
         [
@@ -2102,29 +2103,29 @@ public class Tests
             new CardEntity(Enums.CardSuitEnum.Spade, Enums.CardRankEnum.Ace)
         ];
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out var isGameOver, out var isError, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out var isGameOver, out var isError, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 35, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 35, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
@@ -2133,15 +2134,15 @@ public class Tests
         var val = sut.GameLogicManager.PlayerQueue.First().CurrentBet;
         Assert.That(sut.GameLogicManager.PlayerQueue.All(x => x.CurrentBet == val));
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
@@ -2149,15 +2150,15 @@ public class Tests
         var val2 = sut.GameLogicManager.PlayerQueue.First().CurrentBet;
         Assert.That(sut.GameLogicManager.PlayerQueue.All(x => x.CurrentBet == val2));
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
@@ -2230,8 +2231,8 @@ public class Tests
         
         sut.GameLogicManager.CreateQueue(players);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
 
         sut.GameLogicManager.PlayerQueue.First(x => x.PlayerRole == role1).HoleCards =
         [
@@ -2251,37 +2252,37 @@ public class Tests
             new CardEntity(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five)
         ];
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out _, out var isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out _, out var isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _);
-        Assert.That(isError, Is.False);
-        Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out _, out isError, out _);
-        Assert.That(isError, Is.False);
-        Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _);
-        Assert.That(isError, Is.False);
-        Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out _, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out _, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _, Guid.Empty, Guid.Empty);
+        Assert.That(isError, Is.False);
+        Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
+        
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out _, out isError, out _, Guid.Empty, Guid.Empty);
+        Assert.That(isError, Is.False);
+        Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _, Guid.Empty, Guid.Empty);
+        Assert.That(isError, Is.False);
+        Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         
@@ -2338,8 +2339,8 @@ public class Tests
         
         sut.GameLogicManager.CreateQueue(players);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
 
         sut.GameLogicManager.PlayerQueue.First(x => x.PlayerRole == role1).HoleCards =
         [
@@ -2359,15 +2360,15 @@ public class Tests
             new CardEntity(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five)
         ];
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out _, out _, out _, Guid.Empty, Guid.Empty);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Fold, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Fold, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Fold, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Fold, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         
         sut.GameLogicManager.CommunityCards =
@@ -2428,8 +2429,8 @@ public class Tests
         
         sut.GameLogicManager.CreateQueue(players);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
 
         sut.GameLogicManager.PlayerQueue.First(x => x.Name == "small").HoleCards =
         [
@@ -2454,37 +2455,37 @@ public class Tests
             new CardEntity(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five)
         ];
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 25, out _, out var isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 25, out _, out var isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out _, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheFlop));
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheTurn));
         var val = sut.GameLogicManager.PlayerQueue.First().CurrentBet;
         Assert.That(sut.GameLogicManager.PlayerQueue.All(x => x.CurrentBet == val));
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out _, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 5, out _, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Fold, 0, out _, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Fold, 0, out _, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Fold, 0, out _, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Fold, 0, out _, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0), Is.True);
         var val2 = sut.GameLogicManager.PlayerQueue.First().CurrentBet;
@@ -2554,8 +2555,8 @@ public class Tests
         
         sut.GameLogicManager.CreateQueue(players);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
 
         sut.GameLogicManager.PlayerQueue.First(x => x.Name == "small").HoleCards =
         [
@@ -2580,13 +2581,13 @@ public class Tests
             new CardEntity(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five)
         ];
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Fold, 0, out var isGameOver, out var isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Fold, 0, out var isGameOver, out var isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Fold, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Fold, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.False);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Fold, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Fold, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError, Is.False);
         Assert.That(isGameOver, Is.True);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.GameOver));
@@ -2651,8 +2652,8 @@ public class Tests
         
         sut.GameLogicManager.CreateQueue(players);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
 
         sut.GameLogicManager.PlayerQueue.First(x => x.Name == "small").HoleCards =
         [
@@ -2677,13 +2678,13 @@ public class Tests
             new CardEntity(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five)
         ];
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out var isGameOver, out var isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out var isGameOver, out var isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(!isGameOver);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(!isGameOver);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(!isGameOver);
         Assert.That(sut.GameLogicManager.PlayerQueue.All(x => x.CurrentBet == Constants.MinBet));
@@ -2717,8 +2718,8 @@ public class Tests
         
         sut.GameLogicManager.CreateQueue(players);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
 
         sut.GameLogicManager.PlayerQueue.First(x => x.Name == "small").HoleCards =
         [
@@ -2738,32 +2739,32 @@ public class Tests
             new CardEntity(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five)
         ];
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out var isGameOver, out var isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out var isGameOver, out var isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(!isGameOver);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(!isGameOver);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(!isGameOver);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 2, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 2, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(!isGameOver);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(!isGameOver);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(!isGameOver);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(!isGameOver);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(isError);
         Assert.That(!isGameOver);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(!isGameOver);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.Showdown));
@@ -2797,8 +2798,8 @@ public class Tests
         
         sut.GameLogicManager.CreateQueue(players);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
 
         sut.GameLogicManager.PlayerQueue.First(x => x.Name == "small").HoleCards =
         [
@@ -2818,49 +2819,49 @@ public class Tests
             new CardEntity(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five)
         ];
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out var isGameOver, out var isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out var isGameOver, out var isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(!isGameOver);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(!isGameOver);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out isGameOver, out isError, out _);
-        Assert.That(!isError);
-        Assert.That(!isGameOver);
-        
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 1, out isGameOver, out isError, out _);
-        Assert.That(!isError);
-        Assert.That(!isGameOver);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
-        Assert.That(!isError);
-        Assert.That(!isGameOver);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(!isGameOver);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 1, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(!isGameOver);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(!isGameOver);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(!isGameOver);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 1, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(!isGameOver);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(!isGameOver);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 1, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(!isGameOver);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 1, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(!isGameOver);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
+        Assert.That(!isError);
+        Assert.That(!isGameOver);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 1, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
+        Assert.That(!isError);
+        Assert.That(!isGameOver);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
+        Assert.That(!isError);
+        Assert.That(!isGameOver);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(!isGameOver);
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.Showdown));
@@ -2906,8 +2907,8 @@ public class Tests
         
         sut.GameLogicManager.CreateQueue(players);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _, Guid.Empty, Guid.Empty);
 
         sut.GameLogicManager.PlayerQueue.First(x => x.Name == "small").HoleCards =
         [
@@ -2927,44 +2928,44 @@ public class Tests
             new CardEntity(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five)
         ];
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out var isGameOver, out var isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out var isGameOver, out var isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(!isGameOver);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(!isGameOver);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(!isGameOver);
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 1, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 1, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(!isGameOver);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 60, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 60, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(!isGameOver);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(!isGameOver);
         Assert.That(sut.GameLogicManager.Pots[0].PotAmount, Is.EqualTo(3));
         Assert.That(sut.GameLogicManager.Pots[1].PotAmount, Is.EqualTo(123));
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(!isGameOver);
         Assert.That(sut.GameLogicManager.Pots[0].PotAmount, Is.EqualTo(5));
         Assert.That(sut.GameLogicManager.Pots[1].PotAmount, Is.EqualTo(181));
         Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheTurn));
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 1, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 1, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(!isGameOver);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 2, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 2, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(!isGameOver);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(!isGameOver);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _, Guid.Empty, Guid.Empty);
         Assert.That(!isError);
         Assert.That(!isGameOver);
         Assert.That(sut.GameLogicManager.Pots[0].PotAmount, Is.EqualTo(42));

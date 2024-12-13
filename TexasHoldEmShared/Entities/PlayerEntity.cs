@@ -66,6 +66,12 @@ namespace THE.MagicOnion.Shared.Entities
         [Key(18)]
         public int AllInAmount { get; set; }
         
+        [Key(19)]
+        public List<JokerEntity> JokerCards { get; set; }
+        
+        [Key(20)]
+        public List<AbilityEffectEntity> ActiveEffects { get; set; }
+        
         public PlayerEntity(string name, Guid id, Enums.PlayerRoleEnum role)
         {
             Name = name;

@@ -54,13 +54,15 @@ namespace TexasHoldEmShared.Enums
         
         public enum CommandTypeEnum
         {
+            None,
             SmallBlindBet,
             BigBlindBet,
             Check,
             Fold,
             Call,
             Raise,
-            AllIn
+            AllIn,
+            UseJoker
         }
         
         public enum GameStateEnum
@@ -116,6 +118,25 @@ namespace TexasHoldEmShared.Enums
             Success,
             AllRoomsFull,
             Failed
+        }
+
+        public enum JokerTypeEnum
+        {
+            Hand,
+            Action,
+            Info,
+            Board
+        }
+
+        public enum EffectTargetTypeEnum
+        {
+            None,
+            Self,
+            LeftEnemy,
+            RightEnemy,
+            RandomEnemy,
+            ChooseEnemy,
+            AllEnemies
         }
     }
 }
