@@ -24,6 +24,7 @@ namespace TexasHoldEmServer.GameLogic
         public List<CardEntity> CommunityCards { get; set; } = new();
         public Enums.GameStateEnum GameState { get; private set; }
         public int CurrentRound { get; private set; }
+        public List<PlayerEntity> AllPlayers => allPlayerList;
 
         public void Reset()
         {
