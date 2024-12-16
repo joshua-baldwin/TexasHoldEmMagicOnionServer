@@ -27,12 +27,17 @@ namespace TexasHoldEmServer.GameLogic
 
         public void Reset()
         {
-            PlayerQueue?.Clear();
+            allInPlayersForRound?.Clear();
+            allPlayerList?.Clear();
+            allInPlayers?.Clear();
             smallBlindBetDone = false;
             bigBlindBetDone = false;
             previousBet = (0, false, false);
             cardPool?.Clear();
             isTie = false;
+            maxBetForTurn = 0;
+            currentRaise = (0, 0);
+            PlayerQueue?.Clear();
             PreviousPlayer = null;
             CurrentPlayer = null;
             Pots = [new PotEntity(Guid.Empty, 0, 0, false, null)];
@@ -40,7 +45,7 @@ namespace TexasHoldEmServer.GameLogic
             GameState = Enums.GameStateEnum.BlindBet;
             CurrentRound = 0;
         }
-        
+
         public void SetupGame(List<PlayerEntity> players, bool isFirstRound)
         {
             CurrentRound++;
@@ -357,19 +362,22 @@ namespace TexasHoldEmServer.GameLogic
 
         private void InitializeForNextRound()
         {
-            PlayerQueue.Clear();
+            allInPlayersForRound?.Clear();
+            allInPlayers?.Clear();
+            allPlayerList?.Clear();
             smallBlindBetDone = false;
             bigBlindBetDone = false;
             previousBet = (0, false, false);
+            cardPool?.Clear();
             isTie = false;
-            allInPlayersForRound.Clear();
-            allInPlayers.Clear();
+            maxBetForTurn = 0;
+            currentRaise = (0, 0);
+            PlayerQueue.Clear();
             PreviousPlayer = null;
             CurrentPlayer = null;
             Pots = [new PotEntity(Guid.Empty, 0, 0, false, null)];
             CommunityCards.Clear();
             GameState = Enums.GameStateEnum.BlindBet;
-            currentRaise = (0, 0);
         }
 
         private void UpdateGameState()
