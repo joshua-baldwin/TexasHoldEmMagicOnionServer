@@ -287,7 +287,7 @@ namespace TexasHoldEmServer.GameLogic
             var createNewPot = Pots.Any(x => x.AllInAmount != 0 && x.AllInAmount > CurrentPlayer.AllInAmount && !x.IsLocked);
             if (Pots.Count == 0 || createNewPot)
             {
-                var index = Pots.IndexOf(Pots.First(x => x.AllInAmount > CurrentPlayer.AllInAmount));
+                var index = Pots.IndexOf(Pots.Last(x => x.AllInAmount > CurrentPlayer.AllInAmount && !x.IsLocked));
                 var eligiblePlayers = PlayerQueue.Where(x => !x.IsAllIn).Concat(allInPlayersForRound.Where(x => x.CurrentBet >= CurrentPlayer.AllInAmount)).ToList();
                 //if two players go all in on same turn, and second all in is less, set the pot amount of the new pot to the amount in the previous pot before the first all in
                 //set the pot amount of the previous pot to 0 asince we recalculate in the while loop
