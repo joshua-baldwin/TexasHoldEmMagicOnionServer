@@ -284,15 +284,15 @@ namespace TexasHoldEmServer.GameLogic
         private void RecalculatePots()
         {
             PotEntity potEntity;
-            //if a second person goes all in for a lower amount need to create a new pot and insert to the bottom and recalculate pot amounts
+            //if another person goes all in for a lower amount need to create a new pot and insert to the bottom and recalculate pot amounts
             var createNewPot = Pots.Any(x => x.AllInAmount != 0 && x.AllInAmount > CurrentPlayer.AllInAmount && !x.IsLocked);
             if (Pots.Count == 0 || createNewPot)
             {
                 var index = Pots.IndexOf(Pots.Last(x => x.AllInAmount > CurrentPlayer.AllInAmount && !x.IsLocked));
                 var eligiblePlayers = PlayerQueue.Where(x => !x.IsAllIn).Concat(allInPlayersForRound.Where(x => x.CurrentBet >= CurrentPlayer.AllInAmount)).ToList();
-                //if two players go all in on same turn, and second all in is less, set the pot amount of the new pot to the amount in the previous pot before the first all in
-                //set the pot amount of the previous pot to 0 asince we recalculate in the while loop
-                Pots.Insert(index + 1, new PotEntity(CurrentPlayer.Id, Pots[index].PotAmount - Pots[index].AllInAmount, CurrentPlayer.AllInAmount, CurrentPlayer.AllInAmount <= previousBet.Amount, eligiblePlayers));
+                //if multiple players go all in on the same turn and multiple pots are created, set the amount of the new pot to the amount that was in the main pot before anyone went all in
+                //set the pot amount of the previous pot to 0 since we recalculate in the while loop
+                Pots.Insert(index + 1, new PotEntity(CurrentPlayer.Id, Pots[index].PotAmount - Pots.Where(x => !x.IsLocked).Sum(x => x.AllInAmount), CurrentPlayer.AllInAmount, CurrentPlayer.AllInAmount <= previousBet.Amount, eligiblePlayers));
                 Pots[index].PotAmount = 0;
                 var amounts = PlayerQueue.Where(x => x.IsAllIn).OrderByDescending(x => x.AllInAmount).Select(x => x.AllInAmount).ToList();
                 var potIndex = Pots.Count(x => !x.IsLocked) - 1;

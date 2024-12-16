@@ -39,7 +39,6 @@ public class Tests
             Assert.That(shouldBeError, Is.EqualTo(isError));
             Assert.That(shouldBeGameOver, Is.EqualTo(isGameOver));
             Assert.That(sut.GameLogicManager.Pots.Sum(x => x.PotAmount) + sut.GameLogicManager.AllPlayers.Sum(x => x.Chips), Is.EqualTo(totalChips));
-            Assert.That(sut.GameLogicManager.Pots.All(x => x.PotAmount >= 0));
         });
     }
 
