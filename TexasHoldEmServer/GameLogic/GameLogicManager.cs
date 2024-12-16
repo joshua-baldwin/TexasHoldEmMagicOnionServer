@@ -130,6 +130,7 @@ namespace TexasHoldEmServer.GameLogic
                 case Enums.CommandTypeEnum.Fold:
                     actionMessage = $"{CurrentPlayer.Name} folded.";
                     CurrentPlayer.HasFolded = true;
+                    RemoveFromPots();
                     if (PlayerQueue.Count(x => x.HasFolded) == PlayerQueue.Count + allInPlayers.Count - 1)
                     {
                         isGameOver = true;
@@ -227,6 +228,14 @@ namespace TexasHoldEmServer.GameLogic
             }
 
             UpdateGameState();
+        }
+
+        private void RemoveFromPots()
+        {
+            Pots.ForEach(pot =>
+            {
+                pot.EligiblePlayers?.RemoveAll(x => x.Id == CurrentPlayer.Id);
+            });
         }
 
         private void DistributeBetAmountToPots(int callAmount)
@@ -353,6 +362,7 @@ namespace TexasHoldEmServer.GameLogic
             bigBlindBetDone = false;
             previousBet = (0, false, false);
             isTie = false;
+            allInPlayersForRound.Clear();
             allInPlayers.Clear();
             PreviousPlayer = null;
             CurrentPlayer = null;
