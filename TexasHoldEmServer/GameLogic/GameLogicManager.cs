@@ -350,7 +350,7 @@ namespace TexasHoldEmServer.GameLogic
             foreach (var pot in Pots)
             {
                 if (pot.GoesToPlayer == Guid.Empty)
-                    pot.EligiblePlayers.RemoveAll(x => x.IsAllIn);
+                    pot.EligiblePlayers?.RemoveAll(x => x.IsAllIn);
                 else
                 {
                     var allInPlayer = PlayerQueue.FirstOrDefault(x => x.Id == pot.GoesToPlayer);
