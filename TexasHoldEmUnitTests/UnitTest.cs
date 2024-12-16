@@ -3318,10 +3318,10 @@ public class Tests
     }
     
     [Test]
-    [TestCase(Enums.PlayerRoleEnum.SmallBlind, 1000, Enums.PlayerRoleEnum.BigBlind, 1000,
-        Enums.PlayerRoleEnum.None, 1000, Enums.PlayerRoleEnum.None, 1000,
-        Enums.PlayerRoleEnum.None, 700, Enums.PlayerRoleEnum.None, 700,
-        Enums.PlayerRoleEnum.None, 501, Enums.PlayerRoleEnum.None, 400,
+    [TestCase(Enums.PlayerRoleEnum.SmallBlind, 3000, Enums.PlayerRoleEnum.BigBlind, 3000,
+        Enums.PlayerRoleEnum.None, 2400, Enums.PlayerRoleEnum.None, 2500,
+        Enums.PlayerRoleEnum.None, 1800, Enums.PlayerRoleEnum.None, 1400,
+        Enums.PlayerRoleEnum.None, 801, Enums.PlayerRoleEnum.None, 400,
         Enums.PlayerRoleEnum.None, 201, Enums.PlayerRoleEnum.None, 100)]
     public void TestTest(Enums.PlayerRoleEnum role1, int chip1, Enums.PlayerRoleEnum role2, int chip2,
         Enums.PlayerRoleEnum role3, int chip3, Enums.PlayerRoleEnum role4, int chip4,
@@ -3433,6 +3433,8 @@ public class Tests
         AssertAfterAction(sut, totalChips, false, false, false, false);
         sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
         AssertAfterAction(sut, totalChips, false, false, false, false);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
+        AssertAfterAction(sut, totalChips, false, false, false, false);
         sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _);
         AssertAfterAction(sut, totalChips, false, false, false, false);
         
@@ -3452,10 +3454,11 @@ public class Tests
         AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
         sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
         AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _);
         AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
         sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _);
         AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
+        Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheFlop));
         
         sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
         AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
@@ -3473,12 +3476,9 @@ public class Tests
         AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
         sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
         AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _);
-        AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
+        Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheTurn));
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
-        AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 1, out isGameOver, out isError, out _);
         AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
         sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
         AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
@@ -3492,10 +3492,9 @@ public class Tests
         AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
         sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _);
         AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
+        Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheTurn));
         
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
-        AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
-        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Fold, 0, out isGameOver, out isError, out _);
         AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
         sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
         AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
@@ -3507,5 +3506,28 @@ public class Tests
         AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
         sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _);
         AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
+        Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheTurn));
+        
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Fold, 0, out isGameOver, out isError, out _);
+        AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
+        Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.TheRiver));
+        
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 1, out isGameOver, out isError, out _);
+        AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
+        sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
+        AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
+        Assert.That(sut.GameLogicManager.GameState, Is.EqualTo(Enums.GameStateEnum.Showdown));
     }
 }
