@@ -110,14 +110,16 @@ namespace TexasHoldEmShared.Enums
             NotEnoughPlayers,
             GroupDoesNotExist,
             AlreadyPlayedMaxRounds,
-            Failed
+            Failed,
+            InternalServerError,
         }
 
         public enum JoinRoomResponseTypeEnum
         {
             Success,
             AllRoomsFull,
-            Failed
+            Failed,
+            InternalServerError,
         }
         
         public enum BuyJokerResponseTypeEnum

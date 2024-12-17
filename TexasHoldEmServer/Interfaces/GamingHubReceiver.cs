@@ -59,7 +59,7 @@ namespace TexasHoldEmServer.Interfaces
             }
             catch (Exception)
             {
-                return Enums.JoinRoomResponseTypeEnum.Failed;
+                return Enums.JoinRoomResponseTypeEnum.InternalServerError;
             }
 
             Console.WriteLine($"{userName} joined");
@@ -100,46 +100,56 @@ namespace TexasHoldEmServer.Interfaces
             
             if (group == null)
                 return Enums.StartResponseTypeEnum.GroupDoesNotExist;
-            
-            var players = storage.AllValues.ToList();
-            var currentPlayer = players.FirstOrDefault(player => player.Id == playerId);
-            if (currentPlayer.Chips < Constants.MinBet && !isFirstRound)
+
+            try
             {
-                //not enough chips to play
-                Broadcast(group).OnLeaveRoom(self, storage.AllValues.Count);
-                await group.RemoveAsync(Context);
-                roomManager.RemoveConnection(self.RoomId, self.Id);
-                if (storage.AllValues.Count == 0)
+                var players = storage.AllValues.ToList();
+                var currentPlayer = players.FirstOrDefault(player => player.Id == playerId);
+                if (currentPlayer.Chips < Constants.MinBet && !isFirstRound)
                 {
-                    roomManager.ClearRooms();
-                    gameLogicManager.Reset();
+                    //not enough chips to play
+                    Broadcast(group).OnLeaveRoom(self, storage.AllValues.Count);
+                    await group.RemoveAsync(Context);
+                    roomManager.RemoveConnection(self.RoomId, self.Id);
+                    if (storage.AllValues.Count == 0)
+                    {
+                        roomManager.ClearRooms();
+                        gameLogicManager.Reset();
+                    }
+
+                    return Enums.StartResponseTypeEnum.NotEnoughChips;
                 }
-                return Enums.StartResponseTypeEnum.NotEnoughChips;
+
+                if (currentPlayer != null)
+                    currentPlayer.IsReady = true;
+
+                if (!isFirstRound)
+                    players = players.Where(player => player.Chips > Constants.MinBet).ToList();
+
+                if (players.Any(player => !player.IsReady))
+                    return Enums.StartResponseTypeEnum.AllPlayersNotReady;
+
+                if (players.Count < Constants.MinimumPlayers)
+                    return Enums.StartResponseTypeEnum.NotEnoughPlayers;
+
+                players.ForEach(player => player.IsReady = false);
+
+                gameLogicManager.SetupGame(players.ToList(), isFirstRound);
+                gameLogicManager.CreateQueue(players.ToList());
+
+                var room = roomManager.GetRoomEntity(currentPlayer.RoomId);
+                var eligiblePlayers = room.Storage.AllValues.Where(player => players.Select(x => x.Id).Contains(player.Id));
+                var ids = new List<Guid>();
+                foreach (var player in eligiblePlayers)
+                    ids.Add(room.GetConnectionId(player.Id));
+
+                BroadcastTo(group, ids.ToArray()).OnGameStart(gameLogicManager.PlayerQueue.ToArray(), gameLogicManager.CurrentPlayer, gameLogicManager.GameState, gameLogicManager.CurrentRound, isFirstRound);
             }
-            if (currentPlayer != null)
-                currentPlayer.IsReady = true;
-            
-            if (!isFirstRound)
-                players = players.Where(player => player.Chips > Constants.MinBet).ToList();
-            
-            if (players.Any(player => !player.IsReady))
-                return Enums.StartResponseTypeEnum.AllPlayersNotReady;
+            catch (Exception)
+            {
+                return Enums.StartResponseTypeEnum.InternalServerError;
+            }
 
-            if (players.Count < Constants.MinimumPlayers)
-                return Enums.StartResponseTypeEnum.NotEnoughPlayers;
-            
-            players.ForEach(player => player.IsReady = false);
-            
-            gameLogicManager.SetupGame(players.ToList(), isFirstRound);
-            gameLogicManager.CreateQueue(players.ToList());
-
-            var room = roomManager.GetRoomEntity(currentPlayer.RoomId);
-            var eligiblePlayers = room.Storage.AllValues.Where(player => players.Select(x => x.Id).Contains(player.Id));
-            var ids = new List<Guid>();
-            foreach (var player in eligiblePlayers)
-                ids.Add(room.GetConnectionId(player.Id));
-            
-            BroadcastTo(group, ids.ToArray()).OnGameStart(gameLogicManager.PlayerQueue.ToArray(), gameLogicManager.CurrentPlayer, gameLogicManager.GameState, gameLogicManager.CurrentRound, isFirstRound);
             return Enums.StartResponseTypeEnum.Success;
         }
 
