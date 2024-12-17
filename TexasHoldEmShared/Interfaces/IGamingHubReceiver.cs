@@ -7,7 +7,7 @@ namespace THE.MagicOnion.Shared.Interfaces
 {
     public interface IGamingHubReceiver
     {
-        void OnJoinRoom(PlayerEntity player, int playerCount);
+        void OnJoinRoom(PlayerEntity player, int playerCount, List<JokerEntity> jokerEntities);
         void OnLeaveRoom(PlayerEntity player, int playerCount);
         void OnGetAllPlayers(PlayerEntity[] playerEntities);
         void OnGameStart(PlayerEntity[] playerEntities, PlayerEntity currentPlayer, Enums.GameStateEnum gameState, int roundNumber, bool isFirstRound);

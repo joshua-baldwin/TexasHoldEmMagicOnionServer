@@ -14,25 +14,24 @@ namespace THE.MagicOnion.Shared.Entities
         public string Description { get; set; }
         
         [Key(2)]
-        public List<int> AbilityEffectIds { get; set; }
+        public List<AbilityEffectEntity> AbilityEffects { get; set; }
 
-        private List<AbilityEffectEntity> abilityEffects;
-
-        public JokerAbilityEntity(int id, string description, List<int> abilityEffectIds)
+        public JokerAbilityEntity(int id, string description, List<AbilityEffectEntity> abilityEffects)
         {
             Id = id;
             Description = description;
-            AbilityEffectIds = abilityEffectIds;
+            AbilityEffects = abilityEffects;
         }
 
-        public List<AbilityEffectEntity> GetAbilityEffects(List<AbilityEffectEntity> allAbilityEffectEntities)
+        public string GetDescription()
         {
-            if (abilityEffects != null)
-                return abilityEffects;
-            
-            var effects = AbilityEffectIds.Select(id => allAbilityEffectEntities.First(x => x.Id == id)).ToList();
-            abilityEffects = effects;
-            return abilityEffects;
+            var newString = Description;
+            if (newString.Contains("{effectValue}"))
+                newString = newString.Replace("{effectValue}", AbilityEffects.First().EffectValue.ToString());
+            if (newString.Contains("{commandType}"))
+                newString = newString.Replace("{commandType}", AbilityEffects.First().CommandType.ToString());
+
+            return newString;
         }
     }
 }
