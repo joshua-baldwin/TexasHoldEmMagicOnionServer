@@ -246,9 +246,9 @@ namespace TexasHoldEmServer.GameLogic
         private void UseJoker(JokerEntity joker, PlayerEntity targetPlayer)
         {
             CurrentPlayer.JokerCards.RemoveAll(x => x.Id == joker.Id);
-            foreach (var ability in joker.GetAbilityEntities(JokerManager.GetJokerAbilities()))
+            foreach (var ability in joker.JokerAbilityEntities)
             {
-                foreach (var effect in ability.GetAbilityEffects(JokerManager.GetJokerAbilityEffects()))
+                foreach (var effect in ability.AbilityEffects)
                 {
                     
                 }

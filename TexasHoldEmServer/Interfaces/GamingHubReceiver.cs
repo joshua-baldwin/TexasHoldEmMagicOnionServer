@@ -19,6 +19,7 @@ namespace TexasHoldEmServer.Interfaces
         private IInMemoryStorage<PlayerEntity>? storage;
         private IRoomManager? roomManager;
         private GameLogicManager? gameLogicManager;
+        private IJokerManager? jokerManager;
         
         public async Task<Enums.JoinRoomResponseTypeEnum> JoinRoomAsync(string userName)
         {
@@ -29,6 +30,9 @@ namespace TexasHoldEmServer.Interfaces
 
                 if (gameLogicManager == null)
                     gameLogicManager = Context.ServiceProvider.GetService<GameLogicManager>();
+                
+                if (jokerManager == null)
+                    jokerManager = Context.ServiceProvider.GetService<IJokerManager>();
 
                 self = new PlayerEntity(userName, Guid.NewGuid(), Enums.PlayerRoleEnum.None);
                 var existingRoom = roomManager.GetNonFullRoomEntity();
@@ -51,7 +55,7 @@ namespace TexasHoldEmServer.Interfaces
                 }
 
                 self.RoomId = Guid.Parse(group.GroupName);
-                Broadcast(group).OnJoinRoom(self, storage.AllValues.Count);
+                Broadcast(group).OnJoinRoom(self, storage.AllValues.Count, jokerManager.GetJokerEntities());
             }
             catch (Exception)
             {
@@ -177,7 +181,29 @@ namespace TexasHoldEmServer.Interfaces
             }
         }
 
-        public async Task BuyJoker(Guid playerId, JokerEntity joker)
+        public async Task<Enums.BuyJokerResponseTypeEnum> BuyJoker(Guid playerId, Guid jokerId)
+        {
+            if (group == null)
+                return Enums.BuyJokerResponseTypeEnum.GroupDoesNotExist;
+
+            Enums.BuyJokerResponseTypeEnum response;
+            try
+            {
+                var player = storage.AllValues.First(x => x.Id == playerId);
+                var joker = jokerManager.GetJokerEntities().First(x => x.Id == jokerId);
+                response = jokerManager.PurchaseJoker(joker, player);
+                Console.WriteLine($"Player {player.Name} is purchasing {joker.JokerType} influence joker {joker.Id}, response: {response}");
+                BroadcastToSelf(group).OnBuyJoker(player, joker);
+            }
+            catch (Exception)
+            {
+                return Enums.BuyJokerResponseTypeEnum.InternalServerError;
+            }
+
+            return response;
+        }
+        
+        public async Task UseJoker(Guid playerId, Guid jokerId, Guid targetPlayerId)
         {
             if (group == null)
                 return;

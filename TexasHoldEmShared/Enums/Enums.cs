@@ -119,6 +119,15 @@ namespace TexasHoldEmShared.Enums
             AllRoomsFull,
             Failed
         }
+        
+        public enum BuyJokerResponseTypeEnum
+        {
+            Success,
+            NotEnoughChips,
+            GroupDoesNotExist,
+            Failed,
+            InternalServerError,
+        }
 
         public enum JokerTypeEnum
         {

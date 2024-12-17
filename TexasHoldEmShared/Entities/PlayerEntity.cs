@@ -67,7 +67,7 @@ namespace THE.MagicOnion.Shared.Entities
         public int AllInAmount { get; set; }
         
         [Key(19)]
-        public List<JokerEntity> JokerCards { get; set; }
+        public List<JokerEntity> JokerCards { get; set; } = new List<JokerEntity>();
         
         [Key(20)]
         public List<AbilityEffectEntity> ActiveEffects { get; set; }

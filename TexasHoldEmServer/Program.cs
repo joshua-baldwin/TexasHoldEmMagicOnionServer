@@ -23,6 +23,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddMagicOnion(); // Add this line(MagicOnion.Server)
 builder.Services.AddSingleton<IRoomManager>(new RoomManager());
 builder.Services.AddSingleton(new GameLogicManager());
+builder.Services.AddSingleton<IJokerManager>(new JokerManager());
 builder.WebHost
     .UseUrls("http://0.0.0.0:5137");
 
