@@ -166,29 +166,38 @@ namespace TexasHoldEmServer.Interfaces
             Broadcast(group).OnCancelGameStart();
         }
 
-        public async Task DoAction(Enums.CommandTypeEnum commandType, int betAmount, Guid selectedJoker, Guid targetPlayerId)
+        public async Task<Enums.DoActionResponseTypeEnum> DoAction(Enums.CommandTypeEnum commandType, int betAmount, Guid selectedJoker, Guid targetPlayerId)
         {
             if (group == null)
-                return;
-    
-            var previousPlayer = gameLogicManager.CurrentPlayer;
-            gameLogicManager.DoAction(commandType, betAmount, out bool isGameOver, out bool isError, out string actionMessage, selectedJoker, targetPlayerId);
-            Console.WriteLine(actionMessage);
-            if (isError)
-                BroadcastTo(group, ConnectionId).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pots, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, []);
-            else if (isGameOver)
+                return Enums.DoActionResponseTypeEnum.GroupDoesNotExist;
+
+            try
             {
-                var winnerList = gameLogicManager.DoShowdown();
-                Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pots, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, winnerList);
+                var previousPlayer = gameLogicManager.CurrentPlayer;
+                gameLogicManager.DoAction(commandType, betAmount, out bool isGameOver, out bool isError, out string actionMessage, selectedJoker, targetPlayerId);
+                Console.WriteLine(actionMessage);
+                if (isError)
+                    BroadcastTo(group, ConnectionId).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pots, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, []);
+                else if (isGameOver)
+                {
+                    var winnerList = gameLogicManager.DoShowdown();
+                    Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pots, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, winnerList);
+                }
+                else
+                {
+                    var winnerList = new List<WinningHandEntity>();
+                    if (gameLogicManager.GameState == Enums.GameStateEnum.Showdown)
+                        winnerList = gameLogicManager.DoShowdown();
+
+                    Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pots, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, winnerList);
+                }
             }
-            else
+            catch (Exception)
             {
-                var winnerList = new List<WinningHandEntity>();
-                if (gameLogicManager.GameState == Enums.GameStateEnum.Showdown)
-                    winnerList = gameLogicManager.DoShowdown();
-                
-                Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pots, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, winnerList);
+                return Enums.DoActionResponseTypeEnum.InternalServerError;
             }
+            
+            return Enums.DoActionResponseTypeEnum.Success;
         }
 
         public async Task<Enums.BuyJokerResponseTypeEnum> BuyJoker(Guid playerId, Guid jokerId)
@@ -211,13 +220,6 @@ namespace TexasHoldEmServer.Interfaces
             }
 
             return response;
-        }
-        
-        public async Task UseJoker(Guid playerId, Guid jokerId, Guid targetPlayerId)
-        {
-            if (group == null)
-                return;
-            
         }
 
         protected override ValueTask OnDisconnected()

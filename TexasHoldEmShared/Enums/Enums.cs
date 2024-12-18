@@ -131,6 +131,14 @@ namespace TexasHoldEmShared.Enums
             InternalServerError,
         }
 
+        public enum DoActionResponseTypeEnum
+        {
+            Success,
+            GroupDoesNotExist,
+            Failed,
+            InternalServerError,
+        }
+
         public enum JokerTypeEnum
         {
             Hand,
