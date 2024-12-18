@@ -70,7 +70,7 @@ namespace THE.MagicOnion.Shared.Entities
         public List<JokerEntity> JokerCards { get; set; } = new List<JokerEntity>();
         
         [Key(20)]
-        public List<AbilityEffectEntity> ActiveEffects { get; set; }
+        public List<AbilityEffectEntity> ActiveEffects { get; set; } = new List<AbilityEffectEntity>();
         
         public PlayerEntity(string name, Guid id, Enums.PlayerRoleEnum role)
         {

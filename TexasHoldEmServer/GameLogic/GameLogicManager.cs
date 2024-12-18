@@ -16,6 +16,7 @@ namespace TexasHoldEmServer.GameLogic
         private bool isTie;
         private int maxBetForTurn;
         private (int RaiseAmount, int TotalBet) currentRaise;
+        private int chipAmountBeforeAllIn;
 
         public Queue<PlayerEntity> PlayerQueue { get; } = new();
         public PlayerEntity PreviousPlayer { get; private set; }
@@ -24,23 +25,30 @@ namespace TexasHoldEmServer.GameLogic
         public List<CardEntity> CommunityCards { get; set; } = new();
         public Enums.GameStateEnum GameState { get; private set; }
         public int CurrentRound { get; private set; }
+        public List<PlayerEntity> AllPlayers => allPlayerList;
 
         public void Reset()
         {
-            PlayerQueue?.Clear();
+            allInPlayersForRound?.Clear();
+            allPlayerList?.Clear();
+            allInPlayers?.Clear();
             smallBlindBetDone = false;
             bigBlindBetDone = false;
             previousBet = (0, false, false);
             cardPool?.Clear();
             isTie = false;
+            maxBetForTurn = 0;
+            currentRaise = (0, 0);
+            PlayerQueue?.Clear();
             PreviousPlayer = null;
             CurrentPlayer = null;
             Pots = [new PotEntity(Guid.Empty, 0, 0, false, null)];
             CommunityCards?.Clear();
             GameState = Enums.GameStateEnum.BlindBet;
             CurrentRound = 0;
+            chipAmountBeforeAllIn = 0;
         }
-        
+
         public void SetupGame(List<PlayerEntity> players, bool isFirstRound)
         {
             CurrentRound++;
@@ -130,6 +138,7 @@ namespace TexasHoldEmServer.GameLogic
                 case Enums.CommandTypeEnum.Fold:
                     actionMessage = $"{CurrentPlayer.Name} folded.";
                     CurrentPlayer.HasFolded = true;
+                    RemoveFromPots();
                     if (PlayerQueue.Count(x => x.HasFolded) == PlayerQueue.Count + allInPlayers.Count - 1)
                     {
                         isGameOver = true;
@@ -145,6 +154,9 @@ namespace TexasHoldEmServer.GameLogic
                         isError = true;
                         return;
                     }
+                    //if there was a call after an all in, add it to the amount so we recalculate pots correctly
+                    if (chipAmountBeforeAllIn != 0)
+                        chipAmountBeforeAllIn += callAmount;
                     actionMessage = $"{CurrentPlayer.Name} called.";
                     previousBet = (callAmount, false, false);
                     CurrentPlayer.CurrentBet += callAmount;
@@ -181,6 +193,9 @@ namespace TexasHoldEmServer.GameLogic
                     DistributeBetAmountToPots(betAmount);
                     break;
                 case Enums.CommandTypeEnum.AllIn:
+                    if (allInPlayersForRound.Count == 0)
+                        chipAmountBeforeAllIn = Pots[0].PotAmount;
+                    
                     allInPlayersForRound.Add(CurrentPlayer);
                     actionMessage = $"{CurrentPlayer.Name} went all in.";
                     
@@ -243,6 +258,14 @@ namespace TexasHoldEmServer.GameLogic
             UpdateGameState();
         }
 
+        private void RemoveFromPots()
+        {
+            Pots.ForEach(pot =>
+            {
+                pot.EligiblePlayers?.RemoveAll(x => x.Id == CurrentPlayer.Id);
+            });
+        }
+
         private void UseJoker(JokerEntity joker, PlayerEntity targetPlayer)
         {
             CurrentPlayer.JokerCards.RemoveAll(x => x.Id == joker.Id);
@@ -291,20 +314,24 @@ namespace TexasHoldEmServer.GameLogic
                 Pots[0] = potEntity;
             }
         }
-
+        
         private void RecalculatePots()
         {
             PotEntity potEntity;
-            //if a second person goes all in for a lower amount need to create a new pot and insert to the bottom and recalculate pot amounts
+            //if another person goes all in for a lower amount need to create a new pot and insert to the bottom and recalculate pot amounts
             var createNewPot = Pots.Any(x => x.AllInAmount != 0 && x.AllInAmount > CurrentPlayer.AllInAmount && !x.IsLocked);
             if (Pots.Count == 0 || createNewPot)
             {
-                var index = Pots.IndexOf(Pots.First(x => x.AllInAmount > CurrentPlayer.AllInAmount));
+                var index = Pots.IndexOf(Pots.Last(x => x.AllInAmount > CurrentPlayer.AllInAmount && !x.IsLocked));
                 var eligiblePlayers = PlayerQueue.Where(x => !x.IsAllIn).Concat(allInPlayersForRound.Where(x => x.CurrentBet >= CurrentPlayer.AllInAmount)).ToList();
-                //if two players go all in on same turn, and second all in is less, set the pot amount of the new pot to the amount in the previous pot before the first all in
-                //set the pot amount of the previous pot to 0 asince we recalculate in the while loop
-                Pots.Insert(index + 1, new PotEntity(CurrentPlayer.Id, Pots[index].PotAmount - Pots[index].AllInAmount, CurrentPlayer.AllInAmount, CurrentPlayer.AllInAmount <= previousBet.Amount, eligiblePlayers));
-                Pots[index].PotAmount = 0;
+                //if multiple players go all in on the same turn and multiple pots are created, set the amount of the new pot to the amount that was in the main pot before anyone went all in
+                //set the pot amount of the other pots to 0 since we recalculate in the while loop
+                Pots.ForEach(pot =>
+                {
+                    if (!pot.IsLocked)
+                        pot.PotAmount = 0;
+                });
+                Pots.Insert(index + 1, new PotEntity(CurrentPlayer.Id, chipAmountBeforeAllIn, CurrentPlayer.AllInAmount, CurrentPlayer.AllInAmount <= previousBet.Amount, eligiblePlayers));
                 var amounts = PlayerQueue.Where(x => x.IsAllIn).OrderByDescending(x => x.AllInAmount).Select(x => x.AllInAmount).ToList();
                 var potIndex = Pots.Count(x => !x.IsLocked) - 1;
                 while (amounts.Count > 0)
@@ -361,7 +388,7 @@ namespace TexasHoldEmServer.GameLogic
             foreach (var pot in Pots)
             {
                 if (pot.GoesToPlayer == Guid.Empty)
-                    pot.EligiblePlayers.RemoveAll(x => x.IsAllIn);
+                    pot.EligiblePlayers?.RemoveAll(x => x.IsAllIn);
                 else
                 {
                     var allInPlayer = PlayerQueue.FirstOrDefault(x => x.Id == pot.GoesToPlayer);
@@ -374,18 +401,23 @@ namespace TexasHoldEmServer.GameLogic
 
         private void InitializeForNextRound()
         {
-            PlayerQueue.Clear();
+            allInPlayersForRound?.Clear();
+            allInPlayers?.Clear();
+            allPlayerList?.Clear();
             smallBlindBetDone = false;
             bigBlindBetDone = false;
             previousBet = (0, false, false);
+            cardPool?.Clear();
             isTie = false;
-            allInPlayers.Clear();
+            maxBetForTurn = 0;
+            currentRaise = (0, 0);
+            PlayerQueue.Clear();
             PreviousPlayer = null;
             CurrentPlayer = null;
             Pots = [new PotEntity(Guid.Empty, 0, 0, false, null)];
             CommunityCards.Clear();
             GameState = Enums.GameStateEnum.BlindBet;
-            currentRaise = (0, 0);
+            chipAmountBeforeAllIn = 0;
         }
 
         private void UpdateGameState()
@@ -487,6 +519,7 @@ namespace TexasHoldEmServer.GameLogic
             currentRaise = (0, 0);
             allInPlayersForRound.Clear();
             maxBetForTurn = 0;
+            chipAmountBeforeAllIn = 0;
             if (Pots[0].GoesToPlayer != Guid.Empty && GameState != Enums.GameStateEnum.Showdown && GameState != Enums.GameStateEnum.GameOver)
                 Pots.Insert(0, new PotEntity(Guid.Empty, 0, 0, false, null));
             if (Pots[^1].GoesToPlayer != Guid.Empty)
@@ -496,7 +529,6 @@ namespace TexasHoldEmServer.GameLogic
             {
                 for (var i = player.ActiveEffects.Count - 1; i >= 0; i--)
                 {
-                    
                     player.ActiveEffects.RemoveAt(i);
                     break;
                 }
