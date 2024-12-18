@@ -35,6 +35,7 @@ namespace TexasHoldEmServer.Interfaces
                     jokerManager = Context.ServiceProvider.GetService<IJokerManager>();
 
                 self = new PlayerEntity(userName, Guid.NewGuid(), Enums.PlayerRoleEnum.None);
+                self.Chips = Constants.StartingChips;
                 var existingRoom = roomManager.GetNonFullRoomEntity();
                 if (existingRoom == null)
                 {

@@ -54,9 +54,7 @@ namespace TexasHoldEmServer.GameLogic
             CurrentRound++;
             allPlayerList = players;
             cardPool = CreateDeck();
-            if (isFirstRound)
-                players.ForEach(player => player.Chips = Constants.StartingChips);
-            else
+            if (!isFirstRound)
             {
                 players.ForEach(player => player.InitializeForNextRound());
                 InitializeForNextRound();
