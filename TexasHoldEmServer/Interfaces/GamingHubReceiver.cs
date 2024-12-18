@@ -71,7 +71,7 @@ namespace TexasHoldEmServer.Interfaces
             if (group == null)
                 return null;
             
-            Broadcast(group).OnLeaveRoom(self, storage.AllValues.Count);
+            Broadcast(group).OnLeaveRoom(self, storage.AllValues.Count - 1);
             await group.RemoveAsync(Context);
             roomManager.RemoveConnection(self.RoomId, self.Id);
             if (storage.AllValues.Count == 0)
