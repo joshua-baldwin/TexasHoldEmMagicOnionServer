@@ -9,32 +9,36 @@ namespace THE.MagicOnion.Shared.Entities
     public class JokerEntity
     {
         [Key(0)]
-        public Guid Id { get; set; }
+        public Guid UniqueId { get; set; }
         
         [Key(1)]
-        public int BuyCost { get; set; }
+        public int JokerId { get; set; }
         
         [Key(2)]
-        public int UseCost { get; set; }
+        public int BuyCost { get; set; }
         
         [Key(3)]
-        public int MaxUses { get; set; }
+        public int UseCost { get; set; }
         
         [Key(4)]
-        public int CurrentUses { get; set; }
+        public int MaxUses { get; set; }
         
         [Key(5)]
-        public List<JokerAbilityEntity> JokerAbilityEntities { get; set; }
+        public int CurrentUses { get; set; }
         
         [Key(6)]
-        public bool CanUse { get; set; }
+        public List<JokerAbilityEntity> JokerAbilityEntities { get; set; }
         
         [Key(7)]
+        public bool CanUse { get; set; }
+        
+        [Key(8)]
         public Enums.JokerTypeEnum JokerType { get; set; }
         
-        public JokerEntity(Guid id, int buyCost, int useCost, int maxUses, int currentUses, List<JokerAbilityEntity> abilities, bool canUse, Enums.JokerTypeEnum jokerType)
+        public JokerEntity(Guid uniqueId, int jokerId, int buyCost, int useCost, int maxUses, int currentUses, List<JokerAbilityEntity> abilities, bool canUse, Enums.JokerTypeEnum jokerType)
         {
-            Id = id;
+            UniqueId = uniqueId;
+            JokerId = jokerId;
             BuyCost = buyCost;
             UseCost = useCost;
             MaxUses = maxUses;
@@ -46,7 +50,8 @@ namespace THE.MagicOnion.Shared.Entities
 
         public JokerEntity(JokerEntity jokerEntity)
         {
-            Id = jokerEntity.Id;
+            UniqueId = Guid.NewGuid();
+            JokerId = jokerEntity.JokerId;
             BuyCost = jokerEntity.BuyCost;
             UseCost = jokerEntity.UseCost;
             MaxUses = jokerEntity.MaxUses;

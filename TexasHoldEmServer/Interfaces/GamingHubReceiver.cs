@@ -167,7 +167,7 @@ namespace TexasHoldEmServer.Interfaces
             Broadcast(group).OnCancelGameStart();
         }
 
-        public async Task<Enums.DoActionResponseTypeEnum> DoAction(Enums.CommandTypeEnum commandType, int betAmount, Guid selectedJoker, Guid targetPlayerId)
+        public async Task<Enums.DoActionResponseTypeEnum> DoAction(Enums.CommandTypeEnum commandType, int betAmount)
         {
             if (group == null)
                 return Enums.DoActionResponseTypeEnum.GroupDoesNotExist;
@@ -175,14 +175,14 @@ namespace TexasHoldEmServer.Interfaces
             try
             {
                 var previousPlayer = gameLogicManager.CurrentPlayer;
-                gameLogicManager.DoAction(commandType, betAmount, out bool isGameOver, out bool isError, out string actionMessage, selectedJoker, targetPlayerId);
+                gameLogicManager.DoAction(commandType, betAmount, out bool isGameOver, out bool isError, out string actionMessage);
                 Console.WriteLine(actionMessage);
                 if (isError)
-                    BroadcastTo(group, ConnectionId).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pots, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, []);
+                    BroadcastTo(group, ConnectionId).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, gameLogicManager.Pots, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, []);
                 else if (isGameOver)
                 {
                     var winnerList = gameLogicManager.DoShowdown();
-                    Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pots, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, winnerList);
+                    Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, gameLogicManager.Pots, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, winnerList);
                 }
                 else
                 {
@@ -190,7 +190,7 @@ namespace TexasHoldEmServer.Interfaces
                     if (gameLogicManager.GameState == Enums.GameStateEnum.Showdown)
                         winnerList = gameLogicManager.DoShowdown();
 
-                    Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, targetPlayerId, gameLogicManager.Pots, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, winnerList);
+                    Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, gameLogicManager.Pots, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, winnerList);
                 }
             }
             catch (Exception)
@@ -201,7 +201,7 @@ namespace TexasHoldEmServer.Interfaces
             return Enums.DoActionResponseTypeEnum.Success;
         }
 
-        public async Task<Enums.BuyJokerResponseTypeEnum> BuyJoker(Guid playerId, Guid jokerId)
+        public async Task<Enums.BuyJokerResponseTypeEnum> BuyJoker(Guid playerId, int jokerId)
         {
             if (group == null)
                 return Enums.BuyJokerResponseTypeEnum.GroupDoesNotExist;
@@ -210,16 +210,40 @@ namespace TexasHoldEmServer.Interfaces
             try
             {
                 var player = storage.AllValues.First(x => x.Id == playerId);
-                var joker = jokerManager.GetJokerEntities().First(x => x.Id == jokerId);
-                response = jokerManager.PurchaseJoker(joker, player);
-                Console.WriteLine($"Player {player.Name} is purchasing {joker.JokerType} influence joker {joker.Id}, response: {response}");
-                BroadcastToSelf(group).OnBuyJoker(player, joker);
+                var jokerEntity = jokerManager.GetJokerEntities().First(x => x.JokerId == jokerId);
+                var jokerToAdd = new JokerEntity(jokerEntity);
+                response = jokerManager.PurchaseJoker(jokerToAdd, player);
+                Console.WriteLine($"Player {player.Name} is purchasing {jokerToAdd.JokerType} influence joker {jokerToAdd.JokerId}, response: {response}");
+                BroadcastToSelf(group).OnBuyJoker(player, jokerToAdd);
             }
             catch (Exception)
             {
                 return Enums.BuyJokerResponseTypeEnum.InternalServerError;
             }
 
+            return response;
+        }
+
+        public async Task<Enums.UseJokerResponseTypeEnum> UseJoker(Guid playerId, Guid targetPlayerId, Guid selectedJokerUniqueId)
+        {
+            if (group == null)
+                return Enums.UseJokerResponseTypeEnum.GroupDoesNotExist;
+
+            Enums.UseJokerResponseTypeEnum response;
+            try
+            {
+                var player = storage.AllValues.First(x => x.Id == playerId);
+                var targetPlayer = storage.AllValues.First(x => x.Id == targetPlayerId);
+                var jokerEntity = player.JokerCards.First(x => x.UniqueId == selectedJokerUniqueId);
+                response = jokerManager.UseJoker(player, targetPlayer, jokerEntity);
+                Console.WriteLine($"Player {player.Name} used {jokerEntity.JokerType} influence joker against player {targetPlayer.Name}, response: {response}");
+                BroadcastToSelf(group).OnUseJoker(player, targetPlayer, jokerEntity);
+            }
+            catch (Exception)
+            {
+                return Enums.UseJokerResponseTypeEnum.InternalServerError;
+            }
+            
             return response;
         }
 

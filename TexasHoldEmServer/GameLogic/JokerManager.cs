@@ -7,6 +7,7 @@ namespace TexasHoldEmServer.GameLogic
     {
         bool CanPurchaseJoker(JokerEntity joker, PlayerEntity player, out Enums.BuyJokerResponseTypeEnum response);
         Enums.BuyJokerResponseTypeEnum PurchaseJoker(JokerEntity joker, PlayerEntity player);
+        Enums.UseJokerResponseTypeEnum UseJoker(PlayerEntity player, PlayerEntity target, JokerEntity joker);
         List<JokerAbilityEntity> GetJokerAbilityEntities();
         List<AbilityEffectEntity> GetJokerAbilityEffectEntities();
         List<JokerEntity> GetJokerEntities();
@@ -41,30 +42,35 @@ namespace TexasHoldEmServer.GameLogic
             return true;
         }
 
-        public Enums.BuyJokerResponseTypeEnum PurchaseJoker(JokerEntity joker, PlayerEntity player)
+        public Enums.BuyJokerResponseTypeEnum PurchaseJoker(JokerEntity jokerToAdd, PlayerEntity player)
         {
-            if (!CanPurchaseJoker(joker, player, out var response))
+            if (!CanPurchaseJoker(jokerToAdd, player, out var response))
                 return response;
 
-            player.Chips -= joker.BuyCost;
-            player.JokerCards.Add(new JokerEntity(joker));
+            player.Chips -= jokerToAdd.BuyCost;
+            player.JokerCards.Add(jokerToAdd);
             return response;
+        }
+
+        public Enums.UseJokerResponseTypeEnum UseJoker(PlayerEntity player, PlayerEntity target, JokerEntity joker)
+        {
+            throw new NotImplementedException();
         }
         
         private void CreateJokers()
         {
             jokerEntities =
             [
-                new JokerEntity(Guid.NewGuid(), 2, 2, 3, 0, [jokerAbilityEntities[0]], true, Enums.JokerTypeEnum.Hand),
-                new JokerEntity(Guid.NewGuid(), 2, 2, 3, 0, [jokerAbilityEntities[1]], true, Enums.JokerTypeEnum.Hand),
-                new JokerEntity(Guid.NewGuid(), 2, 2, 3, 0, [jokerAbilityEntities[2]], true, Enums.JokerTypeEnum.Action),
-                new JokerEntity(Guid.NewGuid(), 2, 2, 3, 0, [jokerAbilityEntities[3]], true, Enums.JokerTypeEnum.Action),
-                new JokerEntity(Guid.NewGuid(), 2, 2, 3, 0, [jokerAbilityEntities[4]], true, Enums.JokerTypeEnum.Action),
-                new JokerEntity(Guid.NewGuid(), 2, 2, 3, 0, [jokerAbilityEntities[5]], true, Enums.JokerTypeEnum.Action),
-                new JokerEntity(Guid.NewGuid(), 2, 2, 3, 0, [jokerAbilityEntities[6]], true, Enums.JokerTypeEnum.Action),
-                new JokerEntity(Guid.NewGuid(), 2, 2, 3, 0, [jokerAbilityEntities[7]], true, Enums.JokerTypeEnum.Info),
-                new JokerEntity(Guid.NewGuid(), 2, 2, 3, 0, [jokerAbilityEntities[8]], true, Enums.JokerTypeEnum.Board),
-                new JokerEntity(Guid.NewGuid(), 2, 2, 3, 0, [jokerAbilityEntities[9]], true, Enums.JokerTypeEnum.Board),
+                new JokerEntity(Guid.NewGuid(), 101, 2, 2, 3, 0, [jokerAbilityEntities[0]], true, Enums.JokerTypeEnum.Hand),
+                new JokerEntity(Guid.NewGuid(), 102, 2, 2, 3, 0, [jokerAbilityEntities[1]], true, Enums.JokerTypeEnum.Hand),
+                new JokerEntity(Guid.NewGuid(), 103, 2, 2, 3, 0, [jokerAbilityEntities[2]], true, Enums.JokerTypeEnum.Action),
+                new JokerEntity(Guid.NewGuid(), 104, 2, 2, 3, 0, [jokerAbilityEntities[3]], true, Enums.JokerTypeEnum.Action),
+                new JokerEntity(Guid.NewGuid(), 105, 2, 2, 3, 0, [jokerAbilityEntities[4]], true, Enums.JokerTypeEnum.Action),
+                new JokerEntity(Guid.NewGuid(), 106, 2, 2, 3, 0, [jokerAbilityEntities[5]], true, Enums.JokerTypeEnum.Action),
+                new JokerEntity(Guid.NewGuid(), 107, 2, 2, 3, 0, [jokerAbilityEntities[6]], true, Enums.JokerTypeEnum.Action),
+                new JokerEntity(Guid.NewGuid(), 108, 2, 2, 3, 0, [jokerAbilityEntities[7]], true, Enums.JokerTypeEnum.Info),
+                new JokerEntity(Guid.NewGuid(), 109, 2, 2, 3, 0, [jokerAbilityEntities[8]], true, Enums.JokerTypeEnum.Board),
+                new JokerEntity(Guid.NewGuid(), 110, 2, 2, 3, 0, [jokerAbilityEntities[9]], true, Enums.JokerTypeEnum.Board),
             ];
         }
 

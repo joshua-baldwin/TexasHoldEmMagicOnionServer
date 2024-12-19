@@ -63,7 +63,7 @@ namespace TexasHoldEmServer.GameLogic
             SetRoles(players, isFirstRound);
         }
 
-        public void DoAction(Enums.CommandTypeEnum commandType, int chipsBet, out bool isGameOver, out bool isError, out string actionMessage, Guid selectedJoker, Guid targetPlayerId)
+        public void DoAction(Enums.CommandTypeEnum commandType, int chipsBet, out bool isGameOver, out bool isError, out string actionMessage)
         {
             PotEntity potEntity;
             isGameOver = false;
@@ -220,20 +220,6 @@ namespace TexasHoldEmServer.GameLogic
 
                     RecalculatePots();
                     break;
-                case Enums.CommandTypeEnum.UseJoker:
-                    var joker = CurrentPlayer.JokerCards.First(x => x.Id == selectedJoker);
-                    var targetPlayer = PlayerQueue.First(x => x.Id == targetPlayerId);
-                    if (!CanUseJoker(joker, targetPlayer, out message))
-                    {
-                        actionMessage = message;
-                        isError = true;
-                        return;
-                    }
-
-                    CurrentPlayer.Chips -= joker.UseCost;
-                    UseJoker(joker, targetPlayer);
-                    
-                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(commandType), commandType, null);
             }
@@ -256,6 +242,23 @@ namespace TexasHoldEmServer.GameLogic
             UpdateGameState();
         }
 
+        private void UseJoker(Guid selectedJokerUniqueId, Guid targetPlayerId, out string actionMessage, out bool isError)
+        {
+            var joker = CurrentPlayer.JokerCards.First(x => x.UniqueId == selectedJokerUniqueId);
+            var targetPlayer = PlayerQueue.First(x => x.Id == targetPlayerId);
+            if (!CanUseJoker(joker, targetPlayer, out var message))
+            {
+                actionMessage = message;
+                isError = true;
+                return;
+            }
+
+            CurrentPlayer.Chips -= joker.UseCost;
+            UseJoker(joker, targetPlayer);
+            actionMessage = "";
+            isError = false;
+        }
+
         private void RemoveFromPots()
         {
             Pots.ForEach(pot =>
@@ -266,7 +269,7 @@ namespace TexasHoldEmServer.GameLogic
 
         private void UseJoker(JokerEntity joker, PlayerEntity targetPlayer)
         {
-            CurrentPlayer.JokerCards.RemoveAll(x => x.Id == joker.Id);
+            CurrentPlayer.JokerCards.RemoveAll(x => x.UniqueId == joker.UniqueId);
             foreach (var ability in joker.JokerAbilityEntities)
             {
                 foreach (var effect in ability.AbilityEffects)

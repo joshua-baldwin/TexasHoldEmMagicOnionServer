@@ -61,8 +61,7 @@ namespace TexasHoldEmShared.Enums
             Fold,
             Call,
             Raise,
-            AllIn,
-            UseJoker
+            AllIn
         }
         
         public enum GameStateEnum
@@ -123,6 +122,15 @@ namespace TexasHoldEmShared.Enums
         }
         
         public enum BuyJokerResponseTypeEnum
+        {
+            Success,
+            NotEnoughChips,
+            GroupDoesNotExist,
+            Failed,
+            InternalServerError,
+        }
+        
+        public enum UseJokerResponseTypeEnum
         {
             Success,
             NotEnoughChips,
