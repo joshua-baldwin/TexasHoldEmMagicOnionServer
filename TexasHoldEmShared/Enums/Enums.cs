@@ -155,15 +155,11 @@ namespace TexasHoldEmShared.Enums
             Board
         }
 
-        public enum EffectTargetTypeEnum
+        public enum HandInfluenceTypeEnum
         {
             None,
-            Self,
-            LeftEnemy,
-            RightEnemy,
-            RandomEnemy,
-            ChooseEnemy,
-            AllEnemies
+            DrawThenDiscard,
+            DiscardThenDraw,
         }
     }
 }

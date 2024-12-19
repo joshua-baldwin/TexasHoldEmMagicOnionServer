@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using MagicOnion;
 using TexasHoldEmShared.Enums;
@@ -15,6 +16,6 @@ namespace THE.MagicOnion.Shared.Interfaces
         Task CancelStart(Guid playerId);
         Task<Enums.DoActionResponseTypeEnum> DoAction(Enums.CommandTypeEnum commandType, int betAmount);
         Task<Enums.BuyJokerResponseTypeEnum> BuyJoker(Guid playerId, int jokerId);
-        Task<Enums.UseJokerResponseTypeEnum> UseJoker(Guid playerId, Guid targetPlayerId, Guid selectedJokerUniqueId);
+        Task<Enums.UseJokerResponseTypeEnum> UseJoker(Guid playerId, Guid targetPlayerId, Guid selectedJokerUniqueId, List<CardEntity> cardsToDiscard);
     }
 }

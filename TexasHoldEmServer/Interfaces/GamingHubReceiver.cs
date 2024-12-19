@@ -224,7 +224,7 @@ namespace TexasHoldEmServer.Interfaces
             return response;
         }
 
-        public async Task<Enums.UseJokerResponseTypeEnum> UseJoker(Guid playerId, Guid targetPlayerId, Guid selectedJokerUniqueId)
+        public async Task<Enums.UseJokerResponseTypeEnum> UseJoker(Guid playerId, Guid targetPlayerId, Guid selectedJokerUniqueId, List<CardEntity> cardsToDiscard)
         {
             if (group == null)
                 return Enums.UseJokerResponseTypeEnum.GroupDoesNotExist;
@@ -235,7 +235,7 @@ namespace TexasHoldEmServer.Interfaces
                 var player = storage.AllValues.First(x => x.Id == playerId);
                 var targetPlayer = storage.AllValues.First(x => x.Id == targetPlayerId);
                 var jokerEntity = player.JokerCards.First(x => x.UniqueId == selectedJokerUniqueId);
-                response = jokerManager.UseJoker(player, targetPlayer, jokerEntity, out string message);
+                response = jokerManager.UseJoker(gameLogicManager, player, targetPlayer, jokerEntity, cardsToDiscard, out string message);
                 Console.WriteLine($"Player {player.Name} used {jokerEntity.JokerType} influence joker against player {targetPlayer.Name}, response: {response}");
                 Broadcast(group).OnUseJoker(player, targetPlayer, jokerEntity, message);
             }

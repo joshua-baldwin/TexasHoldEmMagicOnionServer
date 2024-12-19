@@ -7,7 +7,7 @@ namespace TexasHoldEmServer.GameLogic
     {
         bool CanPurchaseJoker(JokerEntity joker, PlayerEntity player, out Enums.BuyJokerResponseTypeEnum response);
         Enums.BuyJokerResponseTypeEnum PurchaseJoker(JokerEntity joker, PlayerEntity player);
-        Enums.UseJokerResponseTypeEnum UseJoker(PlayerEntity player, PlayerEntity target, JokerEntity joker, out string actionMessage);
+        Enums.UseJokerResponseTypeEnum UseJoker(GameLogicManager gameLogicManager, PlayerEntity player, PlayerEntity target, JokerEntity joker, List<CardEntity> cardsToDiscard, out string actionMessage);
         List<JokerAbilityEntity> GetJokerAbilityEntities();
         List<AbilityEffectEntity> GetJokerAbilityEffectEntities();
         List<JokerEntity> GetJokerEntities();
@@ -52,7 +52,7 @@ namespace TexasHoldEmServer.GameLogic
             return response;
         }
 
-        public Enums.UseJokerResponseTypeEnum UseJoker(PlayerEntity player, PlayerEntity target, JokerEntity jokerEntity, out string actionMessage)
+        public Enums.UseJokerResponseTypeEnum UseJoker(GameLogicManager gameLogicManager, PlayerEntity player, PlayerEntity target, JokerEntity jokerEntity, List<CardEntity> cardsToDiscard, out string actionMessage)
         {
             if (!CanUseJoker(player, target, jokerEntity, out var message))
             {
@@ -63,18 +63,66 @@ namespace TexasHoldEmServer.GameLogic
             player.Chips -= jokerEntity.UseCost;
             
             player.JokerCards.RemoveAll(x => x.UniqueId == jokerEntity.UniqueId);
-            foreach (var ability in jokerEntity.JokerAbilityEntities)
+            switch (jokerEntity.JokerType)
             {
-                foreach (var effect in ability.AbilityEffects)
-                {
-                    
-                }
+                case Enums.JokerTypeEnum.Hand:
+                    HandleHandInfluence(gameLogicManager, target == null ? player : target, jokerEntity, cardsToDiscard);
+                    break;
+                case Enums.JokerTypeEnum.Action:
+                    HandleActionInfluence(player, target, jokerEntity);
+                    break;
+                case Enums.JokerTypeEnum.Info:
+                    HandleInfoInfluence(player, target, jokerEntity);
+                    break;
+                case Enums.JokerTypeEnum.Board:
+                    HandleBoardInfluence(player, target, jokerEntity);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
             
             actionMessage = "";
             return Enums.UseJokerResponseTypeEnum.Success;
         }
+
+        private void HandleHandInfluence(GameLogicManager gameLogicManager, PlayerEntity player, JokerEntity jokerEntity, List<CardEntity> cardsToDiscard)
+        {
+            //currently assuming one ability and one effect
+            foreach (var ability in jokerEntity.JokerAbilityEntities)
+            {
+                foreach (var effect in ability.AbilityEffects)
+                {
+                    if (effect.HandInfluenceType == Enums.HandInfluenceTypeEnum.DiscardThenDraw)
+                    {
+                        player.HoleCards.Clear();
+                        gameLogicManager.DiscardToCardPool(cardsToDiscard);
+                        player.HoleCards = gameLogicManager.DrawFromCardPool(effect.EffectValue);
+                    }
+                    else
+                    {
+                        player.HoleCards.Clear();
+                        player.HoleCards = gameLogicManager.DrawFromCardPool(effect.EffectValue);
+                        gameLogicManager.DiscardToCardPool(cardsToDiscard);
+                    }
+                }
+            }
+        }
         
+        private void HandleActionInfluence(PlayerEntity player, PlayerEntity target, JokerEntity jokerEntity)
+        {
+            throw new NotImplementedException();
+        }
+        
+        private void HandleInfoInfluence(PlayerEntity player, PlayerEntity target, JokerEntity jokerEntity)
+        {
+            throw new NotImplementedException();
+        }
+        
+        private void HandleBoardInfluence(PlayerEntity player, PlayerEntity target, JokerEntity jokerEntity)
+        {
+            throw new NotImplementedException();
+        }
+
         private bool CanUseJoker(PlayerEntity player, PlayerEntity targetPlayer, JokerEntity joker, out string message)
         {
             if (joker.CurrentUses >= joker.MaxUses)
@@ -114,21 +162,21 @@ namespace TexasHoldEmServer.GameLogic
         {
             jokerAbilityEffectEntities =
             [
-                new AbilityEffectEntity(1, 1, 1, Enums.EffectTargetTypeEnum.Self, Enums.CommandTypeEnum.None, "Discard then draw"),
-                new AbilityEffectEntity(2, 1, 2, Enums.EffectTargetTypeEnum.Self, Enums.CommandTypeEnum.None, "Discard then draw"),
-                new AbilityEffectEntity(3, 2, 1, Enums.EffectTargetTypeEnum.Self, Enums.CommandTypeEnum.None, "Draw then discard"),
-                new AbilityEffectEntity(4, 2, 2, Enums.EffectTargetTypeEnum.Self, Enums.CommandTypeEnum.None, "Draw then discard"),
+                new AbilityEffectEntity(1, 1, 1, Enums.CommandTypeEnum.None, Enums.HandInfluenceTypeEnum.DiscardThenDraw, "Discard then draw"),
+                new AbilityEffectEntity(2, 1, 2, Enums.CommandTypeEnum.None, Enums.HandInfluenceTypeEnum.DiscardThenDraw, "Discard then draw"),
+                new AbilityEffectEntity(3, 2, 1, Enums.CommandTypeEnum.None, Enums.HandInfluenceTypeEnum.DrawThenDiscard, "Draw then discard"),
+                new AbilityEffectEntity(4, 2, 2, Enums.CommandTypeEnum.None, Enums.HandInfluenceTypeEnum.DrawThenDiscard, "Draw then discard"),
 
-                new AbilityEffectEntity(5, 3, 0, Enums.EffectTargetTypeEnum.LeftEnemy, Enums.CommandTypeEnum.Raise, "Make the target raise"),
-                new AbilityEffectEntity(6, 4, 0, Enums.EffectTargetTypeEnum.LeftEnemy, Enums.CommandTypeEnum.Check, "Prevent the target from checking"),
-                new AbilityEffectEntity(7, 5, 0, Enums.EffectTargetTypeEnum.Self, Enums.CommandTypeEnum.None, "Change position"),
-                new AbilityEffectEntity(8, 6, 0, Enums.EffectTargetTypeEnum.Self, Enums.CommandTypeEnum.None, "Change stack"),
-                new AbilityEffectEntity(9, 7, 0, Enums.EffectTargetTypeEnum.None, Enums.CommandTypeEnum.None, "Increase betting rounds"),
+                new AbilityEffectEntity(5, 3, 0, Enums.CommandTypeEnum.Raise, Enums.HandInfluenceTypeEnum.None, "Make the target raise"),
+                new AbilityEffectEntity(6, 4, 0, Enums.CommandTypeEnum.Check, Enums.HandInfluenceTypeEnum.None, "Prevent the target from checking"),
+                new AbilityEffectEntity(7, 5, 0, Enums.CommandTypeEnum.None, Enums.HandInfluenceTypeEnum.None, "Change position"),
+                new AbilityEffectEntity(8, 6, 0, Enums.CommandTypeEnum.None, Enums.HandInfluenceTypeEnum.None, "Change stack"),
+                new AbilityEffectEntity(9, 7, 0, Enums.CommandTypeEnum.None, Enums.HandInfluenceTypeEnum.None, "Increase betting rounds"),
 
-                new AbilityEffectEntity(10, 8, 0, Enums.EffectTargetTypeEnum.LeftEnemy, Enums.CommandTypeEnum.None, "Check the target's hand"),
+                new AbilityEffectEntity(10, 8, 0, Enums.CommandTypeEnum.None, Enums.HandInfluenceTypeEnum.None, "Check the target's hand"),
 
-                new AbilityEffectEntity(11, 9, 0, Enums.EffectTargetTypeEnum.Self, Enums.CommandTypeEnum.None, "Increase equity"),
-                new AbilityEffectEntity(12, 10, 0, Enums.EffectTargetTypeEnum.LeftEnemy, Enums.CommandTypeEnum.None, "Decrease target's equity"),
+                new AbilityEffectEntity(11, 9, 0, Enums.CommandTypeEnum.None, Enums.HandInfluenceTypeEnum.None, "Increase equity"),
+                new AbilityEffectEntity(12, 10, 0, Enums.CommandTypeEnum.None, Enums.HandInfluenceTypeEnum.None, "Decrease target's equity"),
 
                 // new(5, 1, 0, Enums.EffectTargetTypeEnum.Self, Enums.CommandTypeEnum.None, "Check even if there was a call or raise"),
                 // new(6, 1, 0, Enums.EffectTargetTypeEnum.Self, Enums.CommandTypeEnum.None, "Add another community card"),
