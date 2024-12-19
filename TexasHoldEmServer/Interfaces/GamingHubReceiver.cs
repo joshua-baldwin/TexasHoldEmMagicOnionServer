@@ -235,9 +235,9 @@ namespace TexasHoldEmServer.Interfaces
                 var player = storage.AllValues.First(x => x.Id == playerId);
                 var targetPlayer = storage.AllValues.First(x => x.Id == targetPlayerId);
                 var jokerEntity = player.JokerCards.First(x => x.UniqueId == selectedJokerUniqueId);
-                response = jokerManager.UseJoker(player, targetPlayer, jokerEntity);
+                response = jokerManager.UseJoker(player, targetPlayer, jokerEntity, out string message);
                 Console.WriteLine($"Player {player.Name} used {jokerEntity.JokerType} influence joker against player {targetPlayer.Name}, response: {response}");
-                BroadcastToSelf(group).OnUseJoker(player, targetPlayer, jokerEntity);
+                Broadcast(group).OnUseJoker(player, targetPlayer, jokerEntity, message);
             }
             catch (Exception)
             {

@@ -7,7 +7,7 @@ namespace TexasHoldEmServer.GameLogic
     {
         bool CanPurchaseJoker(JokerEntity joker, PlayerEntity player, out Enums.BuyJokerResponseTypeEnum response);
         Enums.BuyJokerResponseTypeEnum PurchaseJoker(JokerEntity joker, PlayerEntity player);
-        Enums.UseJokerResponseTypeEnum UseJoker(PlayerEntity player, PlayerEntity target, JokerEntity joker);
+        Enums.UseJokerResponseTypeEnum UseJoker(PlayerEntity player, PlayerEntity target, JokerEntity joker, out string actionMessage);
         List<JokerAbilityEntity> GetJokerAbilityEntities();
         List<AbilityEffectEntity> GetJokerAbilityEffectEntities();
         List<JokerEntity> GetJokerEntities();
@@ -52,9 +52,45 @@ namespace TexasHoldEmServer.GameLogic
             return response;
         }
 
-        public Enums.UseJokerResponseTypeEnum UseJoker(PlayerEntity player, PlayerEntity target, JokerEntity joker)
+        public Enums.UseJokerResponseTypeEnum UseJoker(PlayerEntity player, PlayerEntity target, JokerEntity jokerEntity, out string actionMessage)
         {
-            throw new NotImplementedException();
+            if (!CanUseJoker(player, target, jokerEntity, out var message))
+            {
+                actionMessage = message;
+                return Enums.UseJokerResponseTypeEnum.Failed;
+            }
+
+            player.Chips -= jokerEntity.UseCost;
+            
+            player.JokerCards.RemoveAll(x => x.UniqueId == jokerEntity.UniqueId);
+            foreach (var ability in jokerEntity.JokerAbilityEntities)
+            {
+                foreach (var effect in ability.AbilityEffects)
+                {
+                    
+                }
+            }
+            
+            actionMessage = "";
+            return Enums.UseJokerResponseTypeEnum.Success;
+        }
+        
+        private bool CanUseJoker(PlayerEntity player, PlayerEntity targetPlayer, JokerEntity joker, out string message)
+        {
+            if (joker.CurrentUses >= joker.MaxUses)
+            {
+                message = "You've reached the max use count for this Joker .\nこのジョーカーの利用上限数を超えた。";
+                return false;
+            }
+
+            if (player.Chips <= joker.UseCost)
+            {
+                message = "You don't have enough chips to use this Joker.\nこのジョーカーを使うには必要なチップが足りない。";
+                return false;
+            }
+            
+            message = "";
+            return true;
         }
         
         private void CreateJokers()

@@ -242,41 +242,12 @@ namespace TexasHoldEmServer.GameLogic
             UpdateGameState();
         }
 
-        private void UseJoker(Guid selectedJokerUniqueId, Guid targetPlayerId, out string actionMessage, out bool isError)
-        {
-            var joker = CurrentPlayer.JokerCards.First(x => x.UniqueId == selectedJokerUniqueId);
-            var targetPlayer = PlayerQueue.First(x => x.Id == targetPlayerId);
-            if (!CanUseJoker(joker, targetPlayer, out var message))
-            {
-                actionMessage = message;
-                isError = true;
-                return;
-            }
-
-            CurrentPlayer.Chips -= joker.UseCost;
-            UseJoker(joker, targetPlayer);
-            actionMessage = "";
-            isError = false;
-        }
-
         private void RemoveFromPots()
         {
             Pots.ForEach(pot =>
             {
                 pot.EligiblePlayers?.RemoveAll(x => x.Id == CurrentPlayer.Id);
             });
-        }
-
-        private void UseJoker(JokerEntity joker, PlayerEntity targetPlayer)
-        {
-            CurrentPlayer.JokerCards.RemoveAll(x => x.UniqueId == joker.UniqueId);
-            foreach (var ability in joker.JokerAbilityEntities)
-            {
-                foreach (var effect in ability.AbilityEffects)
-                {
-                    
-                }
-            }
         }
 
         private void DistributeBetAmountToPots(int callAmount)
@@ -803,24 +774,6 @@ namespace TexasHoldEmServer.GameLogic
                 return false;
             }
 
-            message = "";
-            return true;
-        }
-
-        private bool CanUseJoker(JokerEntity joker, PlayerEntity targetPlayer, out string message)
-        {
-            if (joker.CurrentUses >= joker.MaxUses)
-            {
-                message = "You've reached the max use count for this Joker .\nこのジョーカーの利用上限数を超えた。";
-                return false;
-            }
-
-            if (CurrentPlayer.Chips <= joker.UseCost)
-            {
-                message = "You don't have enough chips to use this Joker.\nこのジョーカーを使うには必要なチップが足りない。";
-                return false;
-            }
-            
             message = "";
             return true;
         }
