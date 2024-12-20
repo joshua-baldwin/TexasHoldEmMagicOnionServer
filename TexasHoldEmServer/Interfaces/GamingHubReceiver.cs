@@ -19,7 +19,7 @@ namespace TexasHoldEmServer.Interfaces
         private PlayerEntity? self;
         private IInMemoryStorage<PlayerEntity>? storage;
         private IRoomManager? roomManager;
-        private GameLogicManager? gameLogicManager;
+        private IGameLogicManager? gameLogicManager;
         private IJokerManager? jokerManager;
         
         public async Task<Enums.JoinRoomResponseTypeEnum> JoinRoomAsync(string userName)
@@ -30,7 +30,7 @@ namespace TexasHoldEmServer.Interfaces
                     roomManager = Context.ServiceProvider.GetService<IRoomManager>();
 
                 if (gameLogicManager == null)
-                    gameLogicManager = Context.ServiceProvider.GetService<GameLogicManager>();
+                    gameLogicManager = Context.ServiceProvider.GetService<IGameLogicManager>();
                 
                 if (jokerManager == null)
                     jokerManager = Context.ServiceProvider.GetService<IJokerManager>();
@@ -97,7 +97,7 @@ namespace TexasHoldEmServer.Interfaces
 
         public async Task<Enums.StartResponseTypeEnum> StartGame(Guid playerId, bool isFirstRound)
         {
-            if (gameLogicManager.CurrentRound > Constants.MaxRounds)
+            if (gameLogicManager.GetCurrentRound() > Constants.MaxRounds)
                 return Enums.StartResponseTypeEnum.AlreadyPlayedMaxRounds;
             
             if (group == null)
@@ -145,7 +145,7 @@ namespace TexasHoldEmServer.Interfaces
                 foreach (var player in eligiblePlayers)
                     ids.Add(room.GetConnectionId(player.Id));
 
-                BroadcastTo(group, ids.ToArray()).OnGameStart(gameLogicManager.PlayerQueue.ToArray(), gameLogicManager.CurrentPlayer, gameLogicManager.GameState, gameLogicManager.CurrentRound, isFirstRound);
+                BroadcastTo(group, ids.ToArray()).OnGameStart(gameLogicManager.GetPlayerQueue().ToArray(), gameLogicManager.GetCurrentPlayer(), gameLogicManager.GetGameState(), gameLogicManager.GetCurrentRound(), isFirstRound);
             }
             catch (Exception)
             {
@@ -175,23 +175,23 @@ namespace TexasHoldEmServer.Interfaces
 
             try
             {
-                var previousPlayer = gameLogicManager.CurrentPlayer;
+                var previousPlayer = gameLogicManager.GetCurrentPlayer();
                 gameLogicManager.DoAction(commandType, betAmount, out bool isGameOver, out bool isError, out string actionMessage);
                 Console.WriteLine(actionMessage);
                 if (isError)
-                    BroadcastToSelf(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, gameLogicManager.Pots, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, []);
+                    BroadcastToSelf(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.GetCurrentPlayer().Id, gameLogicManager.GetPots(), gameLogicManager.GetCommunityCards(), gameLogicManager.GetGameState(), isError, actionMessage, []);
                 else if (isGameOver)
                 {
                     var winnerList = gameLogicManager.DoShowdown();
-                    Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, gameLogicManager.Pots, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, winnerList);
+                    Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.GetCurrentPlayer().Id, gameLogicManager.GetPots(), gameLogicManager.GetCommunityCards(), gameLogicManager.GetGameState(), isError, actionMessage, winnerList);
                 }
                 else
                 {
                     var winnerList = new List<WinningHandEntity>();
-                    if (gameLogicManager.GameState == Enums.GameStateEnum.Showdown)
+                    if (gameLogicManager.GetGameState() == Enums.GameStateEnum.Showdown)
                         winnerList = gameLogicManager.DoShowdown();
 
-                    Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, gameLogicManager.Pots, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, winnerList);
+                    Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.GetCurrentPlayer().Id, gameLogicManager.GetPots(), gameLogicManager.GetCommunityCards(), gameLogicManager.GetGameState(), isError, actionMessage, winnerList);
                 }
             }
             catch (Exception)

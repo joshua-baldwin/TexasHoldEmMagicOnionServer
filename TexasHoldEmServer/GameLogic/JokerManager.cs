@@ -4,16 +4,6 @@ using THE.MagicOnion.Shared.Entities;
 
 namespace TexasHoldEmServer.GameLogic
 {
-    public interface IJokerManager
-    {
-        bool CanPurchaseJoker(JokerEntity joker, PlayerEntity player, out Enums.BuyJokerResponseTypeEnum response);
-        Enums.BuyJokerResponseTypeEnum PurchaseJoker(JokerEntity joker, PlayerEntity player);
-        Enums.UseJokerResponseTypeEnum UseJoker(GameLogicManager gameLogicManager, PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity joker, List<int> holeCardIndicesToDiscard, out bool isError, out string actionMessage);
-        List<JokerAbilityEntity> GetJokerAbilityEntities();
-        List<AbilityEffectEntity> GetJokerAbilityEffectEntities();
-        List<JokerEntity> GetJokerEntities();
-    }
-
     public class JokerManager : IJokerManager
     {
         private List<JokerAbilityEntity> jokerAbilityEntities;
@@ -53,7 +43,7 @@ namespace TexasHoldEmServer.GameLogic
             return response;
         }
 
-        public Enums.UseJokerResponseTypeEnum UseJoker(GameLogicManager gameLogicManager, PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, List<int> holeCardIndicesToDiscard, out bool isError, out string actionMessage)
+        public Enums.UseJokerResponseTypeEnum UseJoker(IGameLogicManager gameLogicManager, PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, List<int> holeCardIndicesToDiscard, out bool isError, out string actionMessage)
         {
             if (!CanUseJoker(jokerUser, targets, jokerEntity, out var message))
             {
@@ -92,7 +82,7 @@ namespace TexasHoldEmServer.GameLogic
             return Enums.UseJokerResponseTypeEnum.Success;
         }
 
-        private void HandleHandInfluence(GameLogicManager gameLogicManager, PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, List<int> holeCardIndicesToDiscard, out bool isError, out string message)
+        private void HandleHandInfluence(IGameLogicManager gameLogicManager, PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, List<int> holeCardIndicesToDiscard, out bool isError, out string message)
         {
             var sb = new StringBuilder();
             //currently assuming one ability and one effect
