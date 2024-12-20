@@ -181,6 +181,9 @@ namespace TexasHoldEmServer.GameLogic
                         isError = true;
                         return;
                     }
+                    //if there was a bet after an all in, add it to the amount so we recalculate pots correctly
+                    if (chipAmountBeforeAllIn != 0)
+                        chipAmountBeforeAllIn += betAmount;
                     actionMessage = $"{currentPlayer.Name} raised {chipsBet}.";
                     previousBet = (betAmount, false, betAmount > currentRaise.TotalBet);
                     currentPlayer.CurrentBet += betAmount;
@@ -203,7 +206,7 @@ namespace TexasHoldEmServer.GameLogic
                 case Enums.CommandTypeEnum.AllIn:
                     if (allInPlayersForRound.Count == 0)
                         chipAmountBeforeAllIn = pots[0].PotAmount;
-                    
+
                     allInPlayersForRound.Add(currentPlayer);
                     actionMessage = $"{currentPlayer.Name} went all in.";
                     
@@ -569,8 +572,14 @@ namespace TexasHoldEmServer.GameLogic
             chipAmountBeforeAllIn = 0;
             if (pots[0].GoesToPlayer != Guid.Empty && gameState != Enums.GameStateEnum.Showdown && gameState != Enums.GameStateEnum.GameOver)
                 pots.Insert(0, new PotEntity(Guid.Empty, 0, 0, false, null));
-            if (pots[^1].GoesToPlayer != Guid.Empty)
-                pots[^1].IsLocked = true;
+
+            for (var i = 0; i < pots.Count; i++)
+            {
+                var potEntity = pots[i];
+                if (potEntity.GoesToPlayer != Guid.Empty)
+                    potEntity.IsLocked = true;
+                pots[i] = potEntity;
+            }
 
             foreach (var player in playerQueue)
             {
