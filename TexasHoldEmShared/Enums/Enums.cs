@@ -161,5 +161,14 @@ namespace TexasHoldEmShared.Enums
             DrawThenDiscard,
             DiscardThenDraw,
         }
+
+        public enum TargetTypeEnum
+        {
+            None,
+            Self,
+            SinglePlayer,
+            MultiPlayers,
+            All
+        }
     }
 }

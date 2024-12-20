@@ -1,3 +1,4 @@
+using System.Text;
 using TexasHoldEmShared.Enums;
 using THE.MagicOnion.Shared.Entities;
 
@@ -7,7 +8,7 @@ namespace TexasHoldEmServer.GameLogic
     {
         bool CanPurchaseJoker(JokerEntity joker, PlayerEntity player, out Enums.BuyJokerResponseTypeEnum response);
         Enums.BuyJokerResponseTypeEnum PurchaseJoker(JokerEntity joker, PlayerEntity player);
-        Enums.UseJokerResponseTypeEnum UseJoker(GameLogicManager gameLogicManager, PlayerEntity player, PlayerEntity target, JokerEntity joker, List<CardEntity> cardsToDiscard, out string actionMessage);
+        Enums.UseJokerResponseTypeEnum UseJoker(GameLogicManager gameLogicManager, PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity joker, List<int> holeCardIndicesToDiscard, out string actionMessage);
         List<JokerAbilityEntity> GetJokerAbilityEntities();
         List<AbilityEffectEntity> GetJokerAbilityEffectEntities();
         List<JokerEntity> GetJokerEntities();
@@ -52,78 +53,82 @@ namespace TexasHoldEmServer.GameLogic
             return response;
         }
 
-        public Enums.UseJokerResponseTypeEnum UseJoker(GameLogicManager gameLogicManager, PlayerEntity player, PlayerEntity target, JokerEntity jokerEntity, List<CardEntity> cardsToDiscard, out string actionMessage)
+        public Enums.UseJokerResponseTypeEnum UseJoker(GameLogicManager gameLogicManager, PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, List<int> holeCardIndicesToDiscard, out string actionMessage)
         {
-            if (!CanUseJoker(player, target, jokerEntity, out var message))
+            if (!CanUseJoker(jokerUser, targets, jokerEntity, out var message))
             {
                 actionMessage = message;
                 return Enums.UseJokerResponseTypeEnum.Failed;
             }
 
-            player.Chips -= jokerEntity.UseCost;
-            
-            player.JokerCards.RemoveAll(x => x.UniqueId == jokerEntity.UniqueId);
+            jokerUser.Chips -= jokerEntity.UseCost;
+            jokerEntity.CurrentUses++;
+            if (jokerEntity.CurrentUses >= jokerEntity.MaxUses)
+                jokerUser.JokerCards.RemoveAll(x => x.UniqueId == jokerEntity.UniqueId);
             switch (jokerEntity.JokerType)
             {
                 case Enums.JokerTypeEnum.Hand:
-                    HandleHandInfluence(gameLogicManager, target == null ? player : target, jokerEntity, cardsToDiscard);
+                    HandleHandInfluence(gameLogicManager, jokerUser, targets, jokerEntity, holeCardIndicesToDiscard, out actionMessage);
                     break;
                 case Enums.JokerTypeEnum.Action:
-                    HandleActionInfluence(player, target, jokerEntity);
+                    HandleActionInfluence(jokerUser, targets, jokerEntity, out actionMessage);
                     break;
                 case Enums.JokerTypeEnum.Info:
-                    HandleInfoInfluence(player, target, jokerEntity);
+                    HandleInfoInfluence(jokerUser, targets, jokerEntity, out actionMessage);
                     break;
                 case Enums.JokerTypeEnum.Board:
-                    HandleBoardInfluence(player, target, jokerEntity);
+                    HandleBoardInfluence(jokerUser, targets, jokerEntity, out actionMessage);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
             
-            actionMessage = "";
             return Enums.UseJokerResponseTypeEnum.Success;
         }
 
-        private void HandleHandInfluence(GameLogicManager gameLogicManager, PlayerEntity player, JokerEntity jokerEntity, List<CardEntity> cardsToDiscard)
+        private void HandleHandInfluence(GameLogicManager gameLogicManager, PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, List<int> holeCardIndicesToDiscard, out string message)
         {
+            var sb = new StringBuilder();
             //currently assuming one ability and one effect
-            foreach (var ability in jokerEntity.JokerAbilityEntities)
+            foreach (var target in targets)
             {
-                foreach (var effect in ability.AbilityEffects)
+                foreach (var ability in jokerEntity.JokerAbilityEntities)
                 {
-                    if (effect.HandInfluenceType == Enums.HandInfluenceTypeEnum.DiscardThenDraw)
+                    foreach (var effect in ability.AbilityEffects)
                     {
-                        player.HoleCards.Clear();
-                        gameLogicManager.DiscardToCardPool(cardsToDiscard);
-                        player.HoleCards = gameLogicManager.DrawFromCardPool(effect.EffectValue);
-                    }
-                    else
-                    {
-                        player.HoleCards.Clear();
-                        player.HoleCards = gameLogicManager.DrawFromCardPool(effect.EffectValue);
-                        gameLogicManager.DiscardToCardPool(cardsToDiscard);
+                        if (effect.HandInfluenceType == Enums.HandInfluenceTypeEnum.DiscardThenDraw)
+                        {
+                            gameLogicManager.DiscardToCardPool(target, holeCardIndicesToDiscard);
+                            target.HoleCards.AddRange(gameLogicManager.DrawFromCardPool(effect.EffectValue));
+                        }
+                        else
+                        {
+                            target.HoleCards.AddRange(gameLogicManager.DrawFromCardPool(effect.EffectValue));
+                            gameLogicManager.DiscardToCardPool(target, holeCardIndicesToDiscard);
+                        }
+                        sb.Append($"Player {target.Name} drew {effect.EffectValue} new card(s).\nプレイヤー{target.Name}が{effect.EffectValue}カードを引いた");
                     }
                 }
             }
+            message = sb.ToString();
         }
         
-        private void HandleActionInfluence(PlayerEntity player, PlayerEntity target, JokerEntity jokerEntity)
+        private void HandleActionInfluence(PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, out string actionMessage)
         {
             throw new NotImplementedException();
         }
         
-        private void HandleInfoInfluence(PlayerEntity player, PlayerEntity target, JokerEntity jokerEntity)
+        private void HandleInfoInfluence(PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, out string actionMessage)
         {
             throw new NotImplementedException();
         }
         
-        private void HandleBoardInfluence(PlayerEntity player, PlayerEntity target, JokerEntity jokerEntity)
+        private void HandleBoardInfluence(PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, out string actionMessage)
         {
             throw new NotImplementedException();
         }
 
-        private bool CanUseJoker(PlayerEntity player, PlayerEntity targetPlayer, JokerEntity joker, out string message)
+        private bool CanUseJoker(PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity joker, out string message)
         {
             if (joker.CurrentUses >= joker.MaxUses)
             {
@@ -131,7 +136,7 @@ namespace TexasHoldEmServer.GameLogic
                 return false;
             }
 
-            if (player.Chips <= joker.UseCost)
+            if (jokerUser.Chips <= joker.UseCost)
             {
                 message = "You don't have enough chips to use this Joker.\nこのジョーカーを使うには必要なチップが足りない。";
                 return false;
@@ -145,16 +150,16 @@ namespace TexasHoldEmServer.GameLogic
         {
             jokerEntities =
             [
-                new JokerEntity(Guid.NewGuid(), 101, 2, 2, 3, 0, [jokerAbilityEntities[0]], true, Enums.JokerTypeEnum.Hand),
-                new JokerEntity(Guid.NewGuid(), 102, 2, 2, 3, 0, [jokerAbilityEntities[1]], true, Enums.JokerTypeEnum.Hand),
-                new JokerEntity(Guid.NewGuid(), 103, 2, 2, 3, 0, [jokerAbilityEntities[2]], true, Enums.JokerTypeEnum.Action),
-                new JokerEntity(Guid.NewGuid(), 104, 2, 2, 3, 0, [jokerAbilityEntities[3]], true, Enums.JokerTypeEnum.Action),
-                new JokerEntity(Guid.NewGuid(), 105, 2, 2, 3, 0, [jokerAbilityEntities[4]], true, Enums.JokerTypeEnum.Action),
-                new JokerEntity(Guid.NewGuid(), 106, 2, 2, 3, 0, [jokerAbilityEntities[5]], true, Enums.JokerTypeEnum.Action),
-                new JokerEntity(Guid.NewGuid(), 107, 2, 2, 3, 0, [jokerAbilityEntities[6]], true, Enums.JokerTypeEnum.Action),
-                new JokerEntity(Guid.NewGuid(), 108, 2, 2, 3, 0, [jokerAbilityEntities[7]], true, Enums.JokerTypeEnum.Info),
-                new JokerEntity(Guid.NewGuid(), 109, 2, 2, 3, 0, [jokerAbilityEntities[8]], true, Enums.JokerTypeEnum.Board),
-                new JokerEntity(Guid.NewGuid(), 110, 2, 2, 3, 0, [jokerAbilityEntities[9]], true, Enums.JokerTypeEnum.Board),
+                new JokerEntity(Guid.NewGuid(), 101, 2, 2, 3, 0, [jokerAbilityEntities[0]], true, Enums.JokerTypeEnum.Hand, Enums.TargetTypeEnum.Self),
+                new JokerEntity(Guid.NewGuid(), 102, 2, 2, 3, 0, [jokerAbilityEntities[1]], true, Enums.JokerTypeEnum.Hand, Enums.TargetTypeEnum.Self),
+                new JokerEntity(Guid.NewGuid(), 103, 2, 2, 3, 0, [jokerAbilityEntities[2]], true, Enums.JokerTypeEnum.Action, Enums.TargetTypeEnum.SinglePlayer),
+                new JokerEntity(Guid.NewGuid(), 104, 2, 2, 3, 0, [jokerAbilityEntities[3]], true, Enums.JokerTypeEnum.Action, Enums.TargetTypeEnum.SinglePlayer),
+                new JokerEntity(Guid.NewGuid(), 105, 2, 2, 3, 0, [jokerAbilityEntities[4]], true, Enums.JokerTypeEnum.Action, Enums.TargetTypeEnum.Self),
+                new JokerEntity(Guid.NewGuid(), 106, 2, 2, 3, 0, [jokerAbilityEntities[5]], true, Enums.JokerTypeEnum.Action, Enums.TargetTypeEnum.SinglePlayer),
+                new JokerEntity(Guid.NewGuid(), 107, 2, 2, 3, 0, [jokerAbilityEntities[6]], true, Enums.JokerTypeEnum.Action, Enums.TargetTypeEnum.None),
+                new JokerEntity(Guid.NewGuid(), 108, 2, 2, 3, 0, [jokerAbilityEntities[7]], true, Enums.JokerTypeEnum.Info, Enums.TargetTypeEnum.SinglePlayer),
+                new JokerEntity(Guid.NewGuid(), 109, 2, 2, 3, 0, [jokerAbilityEntities[8]], true, Enums.JokerTypeEnum.Board, Enums.TargetTypeEnum.Self),
+                new JokerEntity(Guid.NewGuid(), 110, 2, 2, 3, 0, [jokerAbilityEntities[9]], true, Enums.JokerTypeEnum.Board, Enums.TargetTypeEnum.SinglePlayer),
             ];
         }
 

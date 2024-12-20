@@ -242,9 +242,12 @@ namespace TexasHoldEmServer.GameLogic
             UpdateGameState();
         }
 
-        public void DiscardToCardPool(List<CardEntity> cards)
+        public void DiscardToCardPool(PlayerEntity target, List<int> holeCardIndicesToDiscard)
         {
-            cardPool.AddRange(cards);
+            var cardsToDiscard = holeCardIndicesToDiscard.Select(index => target.HoleCards[index]).ToList();
+            foreach (var card in cardsToDiscard)
+                target.HoleCards.Remove(card);
+            cardPool.AddRange(cardsToDiscard);
         }
 
         public List<CardEntity> DrawFromCardPool(int numberOfCardsToDraw)

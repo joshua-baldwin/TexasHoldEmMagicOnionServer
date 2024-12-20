@@ -1,3 +1,4 @@
+using System.Text;
 using MagicOnion.Server.Hubs;
 using TexasHoldEmServer.GameLogic;
 using TexasHoldEmServer.Managers;
@@ -224,7 +225,7 @@ namespace TexasHoldEmServer.Interfaces
             return response;
         }
 
-        public async Task<Enums.UseJokerResponseTypeEnum> UseJoker(Guid playerId, Guid targetPlayerId, Guid selectedJokerUniqueId, List<CardEntity> cardsToDiscard)
+        public async Task<Enums.UseJokerResponseTypeEnum> UseJoker(Guid jokerUserId, Guid selectedJokerUniqueId, List<Guid> targetPlayerIds, List<int> holeCardIndicesToDiscard)
         {
             if (group == null)
                 return Enums.UseJokerResponseTypeEnum.GroupDoesNotExist;
@@ -232,12 +233,18 @@ namespace TexasHoldEmServer.Interfaces
             Enums.UseJokerResponseTypeEnum response;
             try
             {
-                var player = storage.AllValues.First(x => x.Id == playerId);
-                var targetPlayer = storage.AllValues.First(x => x.Id == targetPlayerId);
-                var jokerEntity = player.JokerCards.First(x => x.UniqueId == selectedJokerUniqueId);
-                response = jokerManager.UseJoker(gameLogicManager, player, targetPlayer, jokerEntity, cardsToDiscard, out string message);
-                Console.WriteLine($"Player {player.Name} used {jokerEntity.JokerType} influence joker against player {targetPlayer.Name}, response: {response}");
-                Broadcast(group).OnUseJoker(player, targetPlayer, jokerEntity, message);
+                var jokerUser = storage.AllValues.First(x => x.Id == jokerUserId);
+                var targetPlayers = new List<PlayerEntity>();
+                foreach (var id in targetPlayerIds)
+                    targetPlayers.Add(storage.AllValues.First(x => x.Id == id));
+                
+                var jokerEntity = jokerUser.JokerCards.First(x => x.UniqueId == selectedJokerUniqueId);
+                response = jokerManager.UseJoker(gameLogicManager, jokerUser, targetPlayers, jokerEntity, holeCardIndicesToDiscard, out string message);
+                var targetNames = targetPlayers.Select(x => x.Name).ToList();
+                var sb = new StringBuilder();
+                targetNames.ForEach(x => sb.Append($"{x} "));
+                Console.WriteLine($"Player {jokerUser.Name} used {jokerEntity.JokerType} influence joker against player(s) {sb}, response: {response}");
+                Broadcast(group).OnUseJoker(jokerUser, targetPlayers, jokerEntity, message);
             }
             catch (Exception)
             {

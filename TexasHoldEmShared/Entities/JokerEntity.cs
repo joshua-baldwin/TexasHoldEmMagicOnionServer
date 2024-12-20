@@ -35,7 +35,10 @@ namespace THE.MagicOnion.Shared.Entities
         [Key(8)]
         public Enums.JokerTypeEnum JokerType { get; set; }
         
-        public JokerEntity(Guid uniqueId, int jokerId, int buyCost, int useCost, int maxUses, int currentUses, List<JokerAbilityEntity> abilities, bool canUse, Enums.JokerTypeEnum jokerType)
+        [Key(9)]
+        public Enums.TargetTypeEnum TargetType { get; set; }
+        
+        public JokerEntity(Guid uniqueId, int jokerId, int buyCost, int useCost, int maxUses, int currentUses, List<JokerAbilityEntity> abilities, bool canUse, Enums.JokerTypeEnum jokerType, Enums.TargetTypeEnum targetType)
         {
             UniqueId = uniqueId;
             JokerId = jokerId;
@@ -46,6 +49,7 @@ namespace THE.MagicOnion.Shared.Entities
             JokerAbilityEntities = abilities;
             CanUse = canUse;
             JokerType = jokerType;
+            TargetType = targetType;
         }
 
         public JokerEntity(JokerEntity jokerEntity)
@@ -59,6 +63,7 @@ namespace THE.MagicOnion.Shared.Entities
             JokerAbilityEntities = jokerEntity.JokerAbilityEntities;
             CanUse = jokerEntity.CanUse;
             JokerType = jokerEntity.JokerType;
+            TargetType = jokerEntity.TargetType;
         }
     }
 }
