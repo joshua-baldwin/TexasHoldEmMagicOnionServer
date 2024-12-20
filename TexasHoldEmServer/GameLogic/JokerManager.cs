@@ -8,7 +8,7 @@ namespace TexasHoldEmServer.GameLogic
     {
         bool CanPurchaseJoker(JokerEntity joker, PlayerEntity player, out Enums.BuyJokerResponseTypeEnum response);
         Enums.BuyJokerResponseTypeEnum PurchaseJoker(JokerEntity joker, PlayerEntity player);
-        Enums.UseJokerResponseTypeEnum UseJoker(GameLogicManager gameLogicManager, PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity joker, List<int> holeCardIndicesToDiscard, out string actionMessage);
+        Enums.UseJokerResponseTypeEnum UseJoker(GameLogicManager gameLogicManager, PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity joker, List<int> holeCardIndicesToDiscard, out bool isError, out string actionMessage);
         List<JokerAbilityEntity> GetJokerAbilityEntities();
         List<AbilityEffectEntity> GetJokerAbilityEffectEntities();
         List<JokerEntity> GetJokerEntities();
@@ -53,40 +53,46 @@ namespace TexasHoldEmServer.GameLogic
             return response;
         }
 
-        public Enums.UseJokerResponseTypeEnum UseJoker(GameLogicManager gameLogicManager, PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, List<int> holeCardIndicesToDiscard, out string actionMessage)
+        public Enums.UseJokerResponseTypeEnum UseJoker(GameLogicManager gameLogicManager, PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, List<int> holeCardIndicesToDiscard, out bool isError, out string actionMessage)
         {
             if (!CanUseJoker(jokerUser, targets, jokerEntity, out var message))
             {
                 actionMessage = message;
+                isError = true;
                 return Enums.UseJokerResponseTypeEnum.Failed;
             }
-
-            jokerUser.Chips -= jokerEntity.UseCost;
-            jokerEntity.CurrentUses++;
-            if (jokerEntity.CurrentUses >= jokerEntity.MaxUses)
-                jokerUser.JokerCards.RemoveAll(x => x.UniqueId == jokerEntity.UniqueId);
+            
             switch (jokerEntity.JokerType)
             {
                 case Enums.JokerTypeEnum.Hand:
-                    HandleHandInfluence(gameLogicManager, jokerUser, targets, jokerEntity, holeCardIndicesToDiscard, out actionMessage);
+                    HandleHandInfluence(gameLogicManager, jokerUser, targets, jokerEntity, holeCardIndicesToDiscard, out isError, out actionMessage);
                     break;
                 case Enums.JokerTypeEnum.Action:
-                    HandleActionInfluence(jokerUser, targets, jokerEntity, out actionMessage);
+                    HandleActionInfluence(jokerUser, targets, jokerEntity, out isError, out actionMessage);
                     break;
                 case Enums.JokerTypeEnum.Info:
-                    HandleInfoInfluence(jokerUser, targets, jokerEntity, out actionMessage);
+                    HandleInfoInfluence(jokerUser, targets, jokerEntity, out isError, out actionMessage);
                     break;
                 case Enums.JokerTypeEnum.Board:
-                    HandleBoardInfluence(jokerUser, targets, jokerEntity, out actionMessage);
+                    HandleBoardInfluence(jokerUser, targets, jokerEntity, out isError, out actionMessage);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+
+            if (isError)
+                return Enums.UseJokerResponseTypeEnum.Failed;
             
+            //TODO add to pot
+            jokerUser.Chips -= jokerEntity.UseCost;
+            jokerEntity.CurrentUses++;
+            if (jokerEntity.CurrentUses >= jokerEntity.MaxUses)
+                jokerUser.JokerCards.RemoveAll(x => x.UniqueId == jokerEntity.UniqueId);
+            isError = false;
             return Enums.UseJokerResponseTypeEnum.Success;
         }
 
-        private void HandleHandInfluence(GameLogicManager gameLogicManager, PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, List<int> holeCardIndicesToDiscard, out string message)
+        private void HandleHandInfluence(GameLogicManager gameLogicManager, PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, List<int> holeCardIndicesToDiscard, out bool isError, out string message)
         {
             var sb = new StringBuilder();
             //currently assuming one ability and one effect
@@ -96,6 +102,11 @@ namespace TexasHoldEmServer.GameLogic
                 {
                     foreach (var effect in ability.AbilityEffects)
                     {
+                        if (holeCardIndicesToDiscard.Count > effect.EffectValue)
+                        {
+                            message = "Too many cards selected.";
+                            isError = true;
+                        }
                         if (effect.HandInfluenceType == Enums.HandInfluenceTypeEnum.DiscardThenDraw)
                         {
                             gameLogicManager.DiscardToCardPool(target, holeCardIndicesToDiscard);
@@ -111,19 +122,20 @@ namespace TexasHoldEmServer.GameLogic
                 }
             }
             message = sb.ToString();
+            isError = false;
         }
         
-        private void HandleActionInfluence(PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, out string actionMessage)
+        private void HandleActionInfluence(PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, out bool isError, out string actionMessage)
         {
             throw new NotImplementedException();
         }
         
-        private void HandleInfoInfluence(PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, out string actionMessage)
+        private void HandleInfoInfluence(PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, out bool isError, out string actionMessage)
         {
             throw new NotImplementedException();
         }
         
-        private void HandleBoardInfluence(PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, out string actionMessage)
+        private void HandleBoardInfluence(PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, out bool isError, out string actionMessage)
         {
             throw new NotImplementedException();
         }

@@ -395,11 +395,9 @@ namespace TexasHoldEmServer.GameLogic
         {
             allInPlayersForRound?.Clear();
             allInPlayers?.Clear();
-            allPlayerList?.Clear();
             smallBlindBetDone = false;
             bigBlindBetDone = false;
             previousBet = (0, false, false);
-            cardPool?.Clear();
             isTie = false;
             maxBetForTurn = 0;
             currentRaise = (0, 0);

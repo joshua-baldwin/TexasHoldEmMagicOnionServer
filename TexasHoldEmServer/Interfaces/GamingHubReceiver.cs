@@ -179,7 +179,7 @@ namespace TexasHoldEmServer.Interfaces
                 gameLogicManager.DoAction(commandType, betAmount, out bool isGameOver, out bool isError, out string actionMessage);
                 Console.WriteLine(actionMessage);
                 if (isError)
-                    BroadcastTo(group, ConnectionId).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, gameLogicManager.Pots, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, []);
+                    BroadcastToSelf(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.CurrentPlayer.Id, gameLogicManager.Pots, gameLogicManager.CommunityCards, gameLogicManager.GameState, isError, actionMessage, []);
                 else if (isGameOver)
                 {
                     var winnerList = gameLogicManager.DoShowdown();
@@ -239,12 +239,16 @@ namespace TexasHoldEmServer.Interfaces
                     targetPlayers.Add(storage.AllValues.First(x => x.Id == id));
                 
                 var jokerEntity = jokerUser.JokerCards.First(x => x.UniqueId == selectedJokerUniqueId);
-                response = jokerManager.UseJoker(gameLogicManager, jokerUser, targetPlayers, jokerEntity, holeCardIndicesToDiscard, out string message);
-                var targetNames = targetPlayers.Select(x => x.Name).ToList();
-                var sb = new StringBuilder();
-                targetNames.ForEach(x => sb.Append($"{x} "));
-                Console.WriteLine($"Player {jokerUser.Name} used {jokerEntity.JokerType} influence joker against player(s) {sb}, response: {response}");
-                Broadcast(group).OnUseJoker(jokerUser, targetPlayers, jokerEntity, message);
+                response = jokerManager.UseJoker(gameLogicManager, jokerUser, targetPlayers, jokerEntity, holeCardIndicesToDiscard, out bool isError, out string message);
+                if (!isError)
+                {
+                    var targetNames = targetPlayers.Select(x => x.Name).ToList();
+                    var sb = new StringBuilder();
+                    targetNames.ForEach(x => sb.Append($"{x} "));
+                    Console.WriteLine($"Player {jokerUser.Name} used {jokerEntity.JokerType} influence joker against player(s) {sb}, response: {response}");
+                    Broadcast(group).OnUseJoker(jokerUser, targetPlayers, jokerEntity, message);
+                }
+                BroadcastToSelf(group).OnUseJoker(jokerUser, targetPlayers, jokerEntity, message);
             }
             catch (Exception)
             {
