@@ -91,7 +91,7 @@ namespace TexasHoldEmServer.Interfaces
             if (group == null)
                 return null;
             
-            Broadcast(group).OnGetAllPlayers(storage.AllValues.ToArray());
+            Broadcast(group).OnGetAllPlayers(storage.AllValues.ToList());
             return storage.AllValues.ToArray();
         }
 
@@ -145,7 +145,7 @@ namespace TexasHoldEmServer.Interfaces
                 foreach (var player in eligiblePlayers)
                     ids.Add(room.GetConnectionId(player.Id));
 
-                BroadcastTo(group, ids.ToArray()).OnGameStart(gameLogicManager.GetPlayerQueue().ToArray(), gameLogicManager.GetCurrentPlayer(), gameLogicManager.GetGameState(), gameLogicManager.GetCurrentRound(), isFirstRound);
+                BroadcastTo(group, ids.ToArray()).OnGameStart(gameLogicManager.GetPlayerQueue().ToList(), gameLogicManager.GetCurrentPlayer(), gameLogicManager.GetGameState(), gameLogicManager.GetCurrentRound(), isFirstRound);
             }
             catch (Exception)
             {
@@ -179,11 +179,11 @@ namespace TexasHoldEmServer.Interfaces
                 gameLogicManager.DoAction(commandType, betAmount, out bool isGameOver, out bool isError, out string actionMessage);
                 Console.WriteLine(actionMessage);
                 if (isError)
-                    BroadcastToSelf(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.GetCurrentPlayer().Id, gameLogicManager.GetPots(), gameLogicManager.GetCommunityCards(), gameLogicManager.GetGameState(), isError, actionMessage, []);
+                    BroadcastToSelf(group).OnDoAction(commandType, storage.AllValues.ToList(), previousPlayer.Id, gameLogicManager.GetCurrentPlayer().Id, gameLogicManager.GetPots(), gameLogicManager.GetCommunityCards(), gameLogicManager.GetGameState(), isError, actionMessage, []);
                 else if (isGameOver)
                 {
                     var winnerList = gameLogicManager.DoShowdown();
-                    Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.GetCurrentPlayer().Id, gameLogicManager.GetPots(), gameLogicManager.GetCommunityCards(), gameLogicManager.GetGameState(), isError, actionMessage, winnerList);
+                    Broadcast(group).OnDoAction(commandType, storage.AllValues.ToList(), previousPlayer.Id, gameLogicManager.GetCurrentPlayer().Id, gameLogicManager.GetPots(), gameLogicManager.GetCommunityCards(), gameLogicManager.GetGameState(), isError, actionMessage, winnerList);
                 }
                 else
                 {
@@ -191,7 +191,7 @@ namespace TexasHoldEmServer.Interfaces
                     if (gameLogicManager.GetGameState() == Enums.GameStateEnum.Showdown)
                         winnerList = gameLogicManager.DoShowdown();
 
-                    Broadcast(group).OnDoAction(commandType, storage.AllValues.ToArray(), previousPlayer.Id, gameLogicManager.GetCurrentPlayer().Id, gameLogicManager.GetPots(), gameLogicManager.GetCommunityCards(), gameLogicManager.GetGameState(), isError, actionMessage, winnerList);
+                    Broadcast(group).OnDoAction(commandType, storage.AllValues.ToList(), previousPlayer.Id, gameLogicManager.GetCurrentPlayer().Id, gameLogicManager.GetPots(), gameLogicManager.GetCommunityCards(), gameLogicManager.GetGameState(), isError, actionMessage, winnerList);
                 }
             }
             catch (Exception)
