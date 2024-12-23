@@ -247,9 +247,9 @@ namespace TexasHoldEmServer.Interfaces
                     var sb = new StringBuilder();
                     targetNames.ForEach(x => sb.Append($"{x} "));
                     Console.WriteLine($"Player {jokerUser.Name} used {jokerEntity.JokerType} influence joker against player(s) {sb}, response: {response}");
-                    Broadcast(group).OnUseJoker(jokerUser, targetPlayers, jokerEntity, message);
+                    Broadcast(group).OnUseJoker(jokerUser, targetPlayers, jokerEntity, gameLogicManager.GetPots(), message);
                 }
-                BroadcastToSelf(group).OnUseJoker(jokerUser, targetPlayers, jokerEntity, message);
+                BroadcastToSelf(group).OnUseJoker(jokerUser, targetPlayers, jokerEntity, gameLogicManager.GetPots(), message);
             }
             catch (Exception)
             {
