@@ -319,7 +319,16 @@ namespace TexasHoldEmServer.GameLogic
             
             return winnerList;
         }
-        
+
+        public void AddJokerCostToPot(int cost)
+        {
+            var potEntity = pots[0];
+            potEntity.PotAmount += cost;
+            pots[0] = potEntity;
+            if (chipAmountBeforeAllIn != 0)
+                chipAmountBeforeAllIn += cost;
+        }
+
         #endregion
 
         private void RemoveFromPots()

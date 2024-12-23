@@ -74,6 +74,7 @@ namespace TexasHoldEmServer.GameLogic
                 return Enums.UseJokerResponseTypeEnum.Failed;
             
             //TODO add to pot
+            gameLogicManager.AddJokerCostToPot(jokerEntity.UseCost);
             jokerUser.Chips -= jokerEntity.UseCost;
             jokerEntity.CurrentUses++;
             if (jokerEntity.CurrentUses >= jokerEntity.MaxUses)

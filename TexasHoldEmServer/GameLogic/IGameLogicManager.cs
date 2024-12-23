@@ -20,6 +20,7 @@ namespace TexasHoldEmServer.GameLogic
         List<CardEntity> DrawFromCardPool(int numberOfCardsToDraw);
         void CreateQueue(List<PlayerEntity> players);
         List<WinningHandEntity> DoShowdown();
+        void AddJokerCostToPot(int cost);
     }
 
     public interface IGameLogicManagerForTesting
