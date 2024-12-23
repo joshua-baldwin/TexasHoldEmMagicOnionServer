@@ -265,9 +265,10 @@ namespace TexasHoldEmServer.Interfaces
             return response;
         }
 
-        public async Task DiscardHoleCard(Guid jokerUserId, List<CardEntity> cardsToDiscard)
+        public async Task DiscardHoleCard(Guid jokerUserId, Guid jokerUniqueId, List<CardEntity> cardsToDiscard)
         {
             var player = storage.AllValues.First(x => x.Id == jokerUserId);
+            var joker = jokerManager.GetJokerEntities().First(x => x.UniqueId == jokerUniqueId);
             gameLogicManager.DiscardToCardPool(player, cardsToDiscard);
             if (player.TempHoleCards.Count > 0)
             {
@@ -275,7 +276,10 @@ namespace TexasHoldEmServer.Interfaces
                 player.TempHoleCards.Clear();
                 player.MaxHoleCards = player.HoleCards.Count;
             }
-            Broadcast(group).OnDiscardHoleCard(player, cardsToDiscard);
+
+            var effect = joker.JokerAbilityEntities.First().AbilityEffects.First();
+            var message = $"Player {player.Name} discarded {effect.EffectValue} new card(s).\nプレイヤー{player.Name}が{effect.EffectValue}カードを引いた";
+            Broadcast(group).OnDiscardHoleCard(player, cardsToDiscard, message);
         }
 
         protected override ValueTask OnDisconnected()

@@ -17,6 +17,6 @@ namespace THE.MagicOnion.Shared.Interfaces
         Task<Enums.DoActionResponseTypeEnum> DoAction(Enums.CommandTypeEnum commandType, int betAmount);
         Task<Enums.BuyJokerResponseTypeEnum> BuyJoker(Guid playerId, int jokerId);
         Task<Enums.UseJokerResponseTypeEnum> UseJoker(Guid jokerUserId, Guid selectedJokerUniqueId, List<Guid> targetPlayerIds, List<CardEntity> holeCardsToDiscard);
-        Task DiscardHoleCard(Guid jokerUserId, List<CardEntity> card);
+        Task DiscardHoleCard(Guid jokerUserId, Guid selectedJokerUniqueId, List<CardEntity> card);
     }
 }
