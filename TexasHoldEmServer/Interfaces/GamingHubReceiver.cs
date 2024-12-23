@@ -211,11 +211,12 @@ namespace TexasHoldEmServer.Interfaces
             try
             {
                 var player = storage.AllValues.First(x => x.Id == playerId);
-                response = jokerManager.PurchaseJoker(jokerId, player, out var addedJoker);
+                response = jokerManager.PurchaseJoker(jokerId, player, out bool isError, out JokerEntity addedJoker);
                 if (response == Enums.BuyJokerResponseTypeEnum.Success)
+                {
                     Console.WriteLine($"Player {player.Name} is purchasing {addedJoker.JokerType} influence joker {addedJoker.JokerId}, response: {response}");
-
-                BroadcastToSelf(group).OnBuyJoker(player, addedJoker);
+                    BroadcastToSelf(group).OnBuyJoker(player, addedJoker);
+                }
             }
             catch (Exception)
             {

@@ -33,12 +33,13 @@ namespace TexasHoldEmServer.GameLogic
             return true;
         }
 
-        public Enums.BuyJokerResponseTypeEnum PurchaseJoker(int jokerId, PlayerEntity player, out JokerEntity addedJoker)
+        public Enums.BuyJokerResponseTypeEnum PurchaseJoker(int jokerId, PlayerEntity player, out bool isError, out JokerEntity addedJoker)
         {
             var jokerEntity = GetJokerEntities().First(x => x.JokerId == jokerId);
             if (!CanPurchaseJoker(jokerEntity, player, out var response))
             {
                 addedJoker = null;
+                isError = true;
                 return response;
             }
             
@@ -46,6 +47,7 @@ namespace TexasHoldEmServer.GameLogic
             player.Chips -= jokerToAdd.BuyCost;
             player.JokerCards.Add(jokerToAdd);
             addedJoker = jokerToAdd;
+            isError = false;
             return response;
         }
 
