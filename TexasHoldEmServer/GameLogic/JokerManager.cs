@@ -83,9 +83,13 @@ namespace TexasHoldEmServer.GameLogic
             
             gameLogicManager.AddJokerCostToPot(jokerEntity.UseCost);
             jokerUser.Chips -= jokerEntity.UseCost;
-            jokerEntity.CurrentUses++;
-            if (jokerEntity.CurrentUses >= jokerEntity.MaxUses)
-                jokerUser.JokerCards.RemoveAll(x => x.UniqueId == jokerEntity.UniqueId);
+            if (jokerEntity.JokerAbilityEntities.First().AbilityEffects.First().HandInfluenceType != Enums.HandInfluenceTypeEnum.DrawThenDiscard)
+            {
+                jokerEntity.CurrentUses++;
+                if (jokerEntity.CurrentUses >= jokerEntity.MaxUses)
+                    jokerUser.JokerCards.RemoveAll(x => x.UniqueId == jokerEntity.UniqueId);
+            }
+
             isError = false;
             return Enums.UseJokerResponseTypeEnum.Success;
         }
