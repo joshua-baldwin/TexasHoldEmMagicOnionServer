@@ -172,6 +172,9 @@ namespace TexasHoldEmServer.Interfaces
         {
             if (group == null)
                 return Enums.DoActionResponseTypeEnum.GroupDoesNotExist;
+            
+            if (storage.AllValues.Any(player => !player.CardsAreValid()))
+                return Enums.DoActionResponseTypeEnum.PlayerHasInvalidCardData;
 
             try
             {
@@ -226,10 +229,13 @@ namespace TexasHoldEmServer.Interfaces
             return response;
         }
 
-        public async Task<Enums.UseJokerResponseTypeEnum> UseJoker(Guid jokerUserId, Guid selectedJokerUniqueId, List<Guid> targetPlayerIds, List<int> holeCardIndicesToDiscard)
+        public async Task<Enums.UseJokerResponseTypeEnum> UseJoker(Guid jokerUserId, Guid selectedJokerUniqueId, List<Guid> targetPlayerIds, List<CardEntity> holeCardsToDiscard)
         {
             if (group == null)
                 return Enums.UseJokerResponseTypeEnum.GroupDoesNotExist;
+            
+            if (storage.AllValues.Any(player => !player.CardsAreValid()))
+                return Enums.UseJokerResponseTypeEnum.PlayerHasInvalidCardData;
 
             Enums.UseJokerResponseTypeEnum response;
             try
@@ -240,7 +246,7 @@ namespace TexasHoldEmServer.Interfaces
                     targetPlayers.Add(storage.AllValues.First(x => x.Id == id));
                 
                 var jokerEntity = jokerUser.JokerCards.First(x => x.UniqueId == selectedJokerUniqueId);
-                response = jokerManager.UseJoker(gameLogicManager, jokerUser, targetPlayers, jokerEntity, holeCardIndicesToDiscard, out bool isError, out string message);
+                response = jokerManager.UseJoker(gameLogicManager, jokerUser, targetPlayers, jokerEntity, holeCardsToDiscard, out bool isError, out string message);
                 if (!isError)
                 {
                     var targetNames = targetPlayers.Select(x => x.Name).ToList();
@@ -257,6 +263,19 @@ namespace TexasHoldEmServer.Interfaces
             }
             
             return response;
+        }
+
+        public async Task DiscardHoleCard(Guid jokerUserId, List<CardEntity> cardsToDiscard)
+        {
+            var player = storage.AllValues.First(x => x.Id == jokerUserId);
+            gameLogicManager.DiscardToCardPool(player, cardsToDiscard);
+            if (player.TempHoleCards.Count > 0)
+            {
+                player.HoleCards.AddRange(player.TempHoleCards);
+                player.TempHoleCards.Clear();
+                player.MaxHoleCards = player.HoleCards.Count;
+            }
+            Broadcast(group).OnDiscardHoleCard(player, cardsToDiscard);
         }
 
         protected override ValueTask OnDisconnected()

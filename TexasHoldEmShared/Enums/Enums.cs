@@ -22,8 +22,6 @@ namespace TexasHoldEmShared.Enums
         
         public enum CardRankEnum
         {
-            [Description("JK")]
-            Joker = 0,
             [Description("2")]
             Two = 2,
             [Description("3")]
@@ -136,6 +134,7 @@ namespace TexasHoldEmShared.Enums
             NotEnoughChips,
             GroupDoesNotExist,
             Failed,
+            PlayerHasInvalidCardData,
             InternalServerError,
         }
 
@@ -144,6 +143,7 @@ namespace TexasHoldEmShared.Enums
             Success,
             GroupDoesNotExist,
             Failed,
+            PlayerHasInvalidCardData,
             InternalServerError,
         }
 

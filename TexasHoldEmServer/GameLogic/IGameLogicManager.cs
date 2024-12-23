@@ -16,7 +16,7 @@ namespace TexasHoldEmServer.GameLogic
         void Reset();
         void SetupGame(List<PlayerEntity> players, bool isFirstRound);
         void DoAction(Enums.CommandTypeEnum commandType, int chipsBet, out bool isGameOver, out bool isError, out string actionMessage);
-        void DiscardToCardPool(PlayerEntity target, List<int> holeCardIndicesToDiscard);
+        void DiscardToCardPool(PlayerEntity target, List<CardEntity> cardsToDiscard);
         List<CardEntity> DrawFromCardPool(int numberOfCardsToDraw);
         void CreateQueue(List<PlayerEntity> players);
         List<WinningHandEntity> DoShowdown();

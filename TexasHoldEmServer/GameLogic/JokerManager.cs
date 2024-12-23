@@ -51,7 +51,7 @@ namespace TexasHoldEmServer.GameLogic
             return response;
         }
 
-        public Enums.UseJokerResponseTypeEnum UseJoker(IGameLogicManager gameLogicManager, PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, List<int> holeCardIndicesToDiscard, out bool isError, out string actionMessage)
+        public Enums.UseJokerResponseTypeEnum UseJoker(IGameLogicManager gameLogicManager, PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, List<CardEntity> holeCardsToDiscard, out bool isError, out string actionMessage)
         {
             if (!CanUseJoker(jokerUser, targets, jokerEntity, out var message))
             {
@@ -63,7 +63,7 @@ namespace TexasHoldEmServer.GameLogic
             switch (jokerEntity.JokerType)
             {
                 case Enums.JokerTypeEnum.Hand:
-                    HandleHandInfluence(gameLogicManager, jokerUser, targets, jokerEntity, holeCardIndicesToDiscard, out isError, out actionMessage);
+                    HandleHandInfluence(gameLogicManager, jokerUser, targets, jokerEntity, holeCardsToDiscard, out isError, out actionMessage);
                     break;
                 case Enums.JokerTypeEnum.Action:
                     HandleActionInfluence(jokerUser, targets, jokerEntity, out isError, out actionMessage);
@@ -90,7 +90,7 @@ namespace TexasHoldEmServer.GameLogic
             return Enums.UseJokerResponseTypeEnum.Success;
         }
 
-        private void HandleHandInfluence(IGameLogicManager gameLogicManager, PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, List<int> holeCardIndicesToDiscard, out bool isError, out string message)
+        private void HandleHandInfluence(IGameLogicManager gameLogicManager, PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, List<CardEntity> holeCardsToDiscard, out bool isError, out string message)
         {
             var sb = new StringBuilder();
             //currently assuming one ability and one effect
@@ -100,22 +100,27 @@ namespace TexasHoldEmServer.GameLogic
                 {
                     foreach (var effect in ability.AbilityEffects)
                     {
-                        if (holeCardIndicesToDiscard.Count > effect.EffectValue)
+                        if (holeCardsToDiscard.Count > effect.EffectValue)
                         {
                             message = "Too many cards selected.";
                             isError = true;
+                            return;
                         }
+                        
+                        sb.Append($"Player {target.Name} drew {effect.EffectValue} new card(s).\nプレイヤー{target.Name}が{effect.EffectValue}カードを引いた");
                         if (effect.HandInfluenceType == Enums.HandInfluenceTypeEnum.DiscardThenDraw)
                         {
-                            gameLogicManager.DiscardToCardPool(target, holeCardIndicesToDiscard);
+                            gameLogicManager.DiscardToCardPool(target, holeCardsToDiscard);
                             target.HoleCards.AddRange(gameLogicManager.DrawFromCardPool(effect.EffectValue));
                         }
                         else
                         {
-                            target.HoleCards.AddRange(gameLogicManager.DrawFromCardPool(effect.EffectValue));
-                            gameLogicManager.DiscardToCardPool(target, holeCardIndicesToDiscard);
+                            target.TempHoleCards.AddRange(gameLogicManager.DrawFromCardPool(effect.EffectValue));
+                            sb.AppendLine();
+                            sb.Append($"Choose {effect.EffectValue} hole card to discard.\n{effect.EffectValue}枚のカードを捨てるので選んでください。");
+                            //discard is a different api
                         }
-                        sb.Append($"Player {target.Name} drew {effect.EffectValue} new card(s).\nプレイヤー{target.Name}が{effect.EffectValue}カードを引いた");
+                        
                     }
                 }
             }

@@ -255,12 +255,21 @@ namespace TexasHoldEmServer.GameLogic
             UpdateGameState();
         }
 
-        public void DiscardToCardPool(PlayerEntity target, List<int> holeCardIndicesToDiscard)
+        public void DiscardToCardPool(PlayerEntity target, List<CardEntity> cardsToDiscard)
         {
-            var cardsToDiscard = holeCardIndicesToDiscard.Select(index => target.HoleCards[index]).ToList();
             foreach (var card in cardsToDiscard)
-                target.HoleCards.Remove(card);
-            cardPool.AddRange(cardsToDiscard);
+            {
+                var playerCard = target.HoleCards.FirstOrDefault(x => x.Rank == card.Rank && x.Suit == card.Suit);
+                if (playerCard == null)
+                {
+                    playerCard = target.TempHoleCards.First(x => x.Rank == card.Rank && x.Suit == card.Suit);
+                    target.TempHoleCards.Remove(playerCard);    
+                }
+                else
+                    target.HoleCards.Remove(playerCard);
+
+                cardPool.Add(playerCard);
+            }
         }
 
         public List<CardEntity> DrawFromCardPool(int numberOfCardsToDraw)
@@ -643,7 +652,6 @@ namespace TexasHoldEmServer.GameLogic
             var dealt = 0;
             while (dealt < players.Count)
             {
-                players[startIndex].HoleCards = new List<CardEntity>();
                 for (var i = 0; i < Constants.MaxHoleCards; i++)
                 {
                     var card = shuffled.GetRandomElement();
@@ -661,14 +669,14 @@ namespace TexasHoldEmServer.GameLogic
             cardPool = shuffled;
         }
         
-        private List<CardEntity> CreateDeck(bool useJokers = false)
+        private List<CardEntity> CreateDeck()
         {
             var suits = Enum.GetValues<Enums.CardSuitEnum>();
             var ranks = Enum.GetValues<Enums.CardRankEnum>();
             var deck = new List<CardEntity>();
             foreach (var suit in suits.Where(x => x != Enums.CardSuitEnum.None))
             {
-                deck.AddRange(ranks.Where(rank => rank != Enums.CardRankEnum.Joker).Select(rank => new CardEntity(suit, rank)));
+                deck.AddRange(ranks.Select(rank => new CardEntity(suit, rank)));
             }
 
             return deck;

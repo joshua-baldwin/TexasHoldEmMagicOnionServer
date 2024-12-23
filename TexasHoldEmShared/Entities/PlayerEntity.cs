@@ -27,7 +27,7 @@ namespace THE.MagicOnion.Shared.Entities
         public bool IsDealer { get; set; }
         
         [Key(6)]
-        public List<CardEntity> HoleCards { get; set; }
+        public List<CardEntity> HoleCards { get; set; } = new List<CardEntity>();
         
         [Key(7)]
         public bool IsReady { get; set; }
@@ -72,6 +72,12 @@ namespace THE.MagicOnion.Shared.Entities
         [Key(20)]
         public List<AbilityEffectEntity> ActiveEffects { get; set; } = new List<AbilityEffectEntity>();
         
+        [Key(21)]
+        public List<CardEntity> TempHoleCards { get; set; } = new List<CardEntity>();
+
+        [Key(22)]
+        public int MaxHoleCards { get; set; } = 2;
+        
         public PlayerEntity(string name, Guid id, Enums.PlayerRoleEnum role)
         {
             Name = name;
@@ -92,6 +98,16 @@ namespace THE.MagicOnion.Shared.Entities
             RaiseAmount = 0;
             CurrentBestHand = null;
             AllInAmount = 0;
+            TempHoleCards.Clear();
+            MaxHoleCards = 2;
+        }
+
+        public bool CardsAreValid()
+        {
+            if (HoleCards.Count == 0)
+                return true;
+            
+            return TempHoleCards.Count == 0 && HoleCards.Count == MaxHoleCards;
         }
     }
 }
