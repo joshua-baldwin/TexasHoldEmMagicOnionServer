@@ -116,8 +116,6 @@ namespace TexasHoldEmServer.GameLogic
                         else
                         {
                             target.TempHoleCards.AddRange(gameLogicManager.DrawFromCardPool(effect.EffectValue));
-                            sb.AppendLine();
-                            sb.Append($"Choose {effect.EffectValue} hole card to discard.\n{effect.EffectValue}枚のカードを捨てるので選んでください。");
                             //discard is a different api
                         }
                         
