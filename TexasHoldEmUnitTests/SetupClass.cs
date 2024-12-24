@@ -47,6 +47,41 @@ namespace TexasHoldEmUnitTests
             sb.MaxHoleCards = 2;
         }
 
+        public static TestSystem SetupAndDoBlindBet(List<Enums.PlayerRoleEnum> roles, List<int> chips, List<List<CardEntity>> cards)
+        {
+            var sut = new TestSystem();
+            var sb = SetupTestHand("small", Enums.PlayerRoleEnum.SmallBlind, Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.King, Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Nine);
+            var bb = SetupTestHand("big", Enums.PlayerRoleEnum.BigBlind, Enums.CardSuitEnum.Club, Enums.CardRankEnum.Ten, Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Nine);
+            var none3 = SetupTestHand("none3", Enums.PlayerRoleEnum.None, Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Eight, Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five);
+            var none4 = SetupTestHand("none4", Enums.PlayerRoleEnum.None, Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Eight, Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five);
+            var none5 = SetupTestHand("none5", Enums.PlayerRoleEnum.None, Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Eight, Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five);
+            var none6 = SetupTestHand("none6", Enums.PlayerRoleEnum.None, Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Eight, Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five);
+            
+            
+            var players = new List<PlayerEntity> { sb, bb, none3, none4, none5, none6 };
+            sut.GameLogicManager.SetupGame(players, true);
+
+            for (var i = 0; i < players.Count; i++)
+            {
+                var player = players[i];
+                player.IsDealer = false;
+                player.PlayerRole = roles[i];
+                player.Chips = chips[i];
+                SetNewHoleCards(player, cards[i][0], cards[i][1]);
+            }
+
+            var totalChips = chips.Sum();
+            sut.GameLogicManager.CreateQueue(players);
+
+            sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _);
+            sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _);
+
+            SetNewHoleCards(sb, new CardEntity(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.King), new CardEntity(Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Nine));
+            SetNewHoleCards(bb, new CardEntity(Enums.CardSuitEnum.Club, Enums.CardRankEnum.Jack), new CardEntity(Enums.CardSuitEnum.Club, Enums.CardRankEnum.Nine));
+            SetNewHoleCards(none3, new CardEntity(Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Two), new CardEntity(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five));
+            return sut;
+        }
+
         public static void AssertAfterAction(TestSystem sut, int totalChips, bool shouldBeError, bool isError, bool shouldBeGameOver, bool isGameOver)
         {
             Assert.That(shouldBeError, Is.EqualTo(isError));
