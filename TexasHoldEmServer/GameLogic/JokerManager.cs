@@ -96,10 +96,10 @@ namespace TexasHoldEmServer.GameLogic
 
         private void HandleHandInfluence(IGameLogicManager gameLogicManager, PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, List<CardEntity> holeCardsToDiscard, out bool isError, out string message)
         {
-            var sb = new StringBuilder();
-            sb.Append($"Player {jokerUser.Name} used a hand influence joker.\nプレイヤー{jokerUser.Name}がhand influenceジョーカーを使いました。");
-            sb.AppendLine();
-            sb.Append($"{jokerEntity.UseCost} chips were added to the pot.\n{jokerEntity.UseCost}チップがポットに追加された。");
+            var sbEng = new StringBuilder();
+            var sbJap = new StringBuilder();
+            sbEng.Append($"Player {jokerUser.Name} used a hand influence joker. {jokerEntity.UseCost} chips were added to the pot.");
+            sbJap.Append($"プレイヤー{jokerUser.Name}がhand influenceジョーカーを使いました。{jokerEntity.UseCost}チップがポットに追加された。");
             //currently assuming one ability and one effect
             foreach (var target in targets)
             {
@@ -114,7 +114,8 @@ namespace TexasHoldEmServer.GameLogic
                             return;
                         }
                         
-                        sb.Append($"Player {target.Name} drew {effect.EffectValue} new card(s).\nプレイヤー{target.Name}が{effect.EffectValue}カードを引いた");
+                        sbEng.Append($"Player {target.Name} drew {effect.EffectValue} new card(s).");
+                        sbJap.Append($"プレイヤー{target.Name}が{effect.EffectValue}カードを引いた。");
                         if (effect.HandInfluenceType == Enums.HandInfluenceTypeEnum.DiscardThenDraw)
                         {
                             gameLogicManager.DiscardToCardPool(target, holeCardsToDiscard);
@@ -129,16 +130,19 @@ namespace TexasHoldEmServer.GameLogic
                     }
                 }
             }
-            message = sb.ToString();
+            var full = new StringBuilder(sbEng.ToString());
+            full.AppendLine();
+            full.Append(sbJap);
+            message = full.ToString();
             isError = false;
         }
         
         private void HandleActionInfluence(PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, out bool isError, out string message)
         {
-            var sb = new StringBuilder();
-            sb.Append($"Player {jokerUser.Name} used an action influence joker.\nプレイヤー{jokerUser.Name}がaction influenceジョーカーを使いました。");
-            sb.AppendLine();
-            sb.Append($"{jokerEntity.UseCost} chips were added to the pot.\n{jokerEntity.UseCost}チップがポットに追加された。");
+            var sbEng = new StringBuilder();
+            var sbJp = new StringBuilder();
+            sbEng.Append($"Player {jokerUser.Name} used an action influence joker. {jokerEntity.UseCost} chips were added to the pot.");
+            sbJp.Append($"プレイヤー{jokerUser.Name}がaction influenceジョーカーを使いました。{jokerEntity.UseCost}チップがポットに追加された。");
             foreach (var target in targets)
             {
                 foreach (var ability in jokerEntity.JokerAbilityEntities)
@@ -151,16 +155,18 @@ namespace TexasHoldEmServer.GameLogic
                             isError = true;
                             return;
                         }
-                        sb.AppendLine();
+                        
                         switch (effect.ActionInfluenceType)
                         {
                             case Enums.ActionInfluenceTypeEnum.Force:
                                 target.ActiveEffects.Add(effect);
-                                sb.Append($"Player {target.Name} must {effect.CommandType} on their next turn.\nプレイヤー{target.Name}は次のターンに{effect.CommandType}をしないといけない。");
+                                sbEng.Append($"Player {target.Name} must {effect.CommandType} on their next turn.");
+                                sbJp.Append($"プレイヤー{target.Name}は次のターンに{effect.CommandType}をしないといけない。");
                                 break;
                             case Enums.ActionInfluenceTypeEnum.Prevent:
                                 target.ActiveEffects.Add(effect);
-                                sb.Append($"Player {target.Name} cannot {effect.CommandType} on their next turn.\nプレイヤー{target.Name}は次のターンに{effect.CommandType}ができなくなりました。");
+                                sbEng.Append($"Player {target.Name} cannot {effect.CommandType} on their next turn.");
+                                sbJp.Append($"プレイヤー{target.Name}は次のターンに{effect.CommandType}ができなくなりました。");
                                 break;
                             case Enums.ActionInfluenceTypeEnum.ChangePosition:
                                 break;
@@ -174,7 +180,11 @@ namespace TexasHoldEmServer.GameLogic
                     }
                 }
             }
-            message = sb.ToString();
+
+            var full = new StringBuilder(sbEng.ToString());
+            full.AppendLine();
+            full.Append(sbJp);
+            message = full.ToString();
             isError = false;
         }
         
