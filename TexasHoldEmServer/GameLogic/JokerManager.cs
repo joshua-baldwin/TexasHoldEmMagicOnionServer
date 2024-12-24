@@ -97,6 +97,9 @@ namespace TexasHoldEmServer.GameLogic
         private void HandleHandInfluence(IGameLogicManager gameLogicManager, PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, List<CardEntity> holeCardsToDiscard, out bool isError, out string message)
         {
             var sb = new StringBuilder();
+            sb.Append($"Player {jokerUser.Name} used a hand influence joker.\nプレイヤー{jokerUser.Name}がhand influenceジョーカーを使いました。");
+            sb.AppendLine();
+            sb.Append($"{jokerEntity.UseCost} chips were added to the pot.\n{jokerEntity.UseCost}チップがポットに追加された。");
             //currently assuming one ability and one effect
             foreach (var target in targets)
             {
@@ -134,6 +137,8 @@ namespace TexasHoldEmServer.GameLogic
         {
             var sb = new StringBuilder();
             sb.Append($"Player {jokerUser.Name} used an action influence joker.\nプレイヤー{jokerUser.Name}がaction influenceジョーカーを使いました。");
+            sb.AppendLine();
+            sb.Append($"{jokerEntity.UseCost} chips were added to the pot.\n{jokerEntity.UseCost}チップがポットに追加された。");
             foreach (var target in targets)
             {
                 foreach (var ability in jokerEntity.JokerAbilityEntities)
@@ -261,8 +266,8 @@ namespace TexasHoldEmServer.GameLogic
                 new AbilityEffectEntity(3, 2, 1, Enums.CommandTypeEnum.None, Enums.HandInfluenceTypeEnum.DrawThenDiscard, Enums.ActionInfluenceTypeEnum.None, "Draw then discard"),
                 new AbilityEffectEntity(4, 2, 2, Enums.CommandTypeEnum.None, Enums.HandInfluenceTypeEnum.DrawThenDiscard, Enums.ActionInfluenceTypeEnum.None, "Draw then discard"),
 
-                new AbilityEffectEntity(5, 3, 0, Enums.CommandTypeEnum.Raise, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.Force, "Make the target raise"),
-                new AbilityEffectEntity(6, 4, 0, Enums.CommandTypeEnum.Check, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.Prevent, "Prevent the target from checking"),
+                new AbilityEffectEntity(5, 3, 1, Enums.CommandTypeEnum.Raise, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.Force, "Make the target raise"),
+                new AbilityEffectEntity(6, 4, 1, Enums.CommandTypeEnum.Check, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.Prevent, "Prevent the target from checking"),
                 new AbilityEffectEntity(7, 5, 0, Enums.CommandTypeEnum.None, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.ChangePosition, "Change position"),
                 new AbilityEffectEntity(8, 6, 0, Enums.CommandTypeEnum.None, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.ChangeStack, "Change stack"),
                 new AbilityEffectEntity(9, 7, 0, Enums.CommandTypeEnum.None, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.IncreaseBettingRounds, "Increase betting rounds"),
