@@ -161,6 +161,16 @@ namespace TexasHoldEmShared.Enums
             DrawThenDiscard,
             DiscardThenDraw,
         }
+        
+        public enum ActionInfluenceTypeEnum
+        {
+            None,
+            Force,
+            Prevent,
+            ChangePosition,
+            ChangeStack,
+            IncreaseBettingRounds,
+        }
 
         public enum TargetTypeEnum
         {

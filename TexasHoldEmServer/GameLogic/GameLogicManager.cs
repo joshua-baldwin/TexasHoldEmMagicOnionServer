@@ -79,11 +79,19 @@ namespace TexasHoldEmServer.GameLogic
             isGameOver = false;
             isError = false;
             actionMessage = string.Empty;
+
+            if (!PlayerCanDoAction(commandType, out var message))
+            {
+                actionMessage = message;
+                isError = true;
+                return;
+            }
+            
             switch (commandType)
             {
                 case Enums.CommandTypeEnum.SmallBlindBet:
                     var betAmount = Constants.MinBet / 2;
-                    if (!CanPlaceBet((betAmount, 0), out var message))
+                    if (!CanPlaceBet((betAmount, 0), out message))
                     {
                         actionMessage = message;
                         isError = true;
@@ -127,16 +135,9 @@ namespace TexasHoldEmServer.GameLogic
                     
                     break;
                 case Enums.CommandTypeEnum.Check:
-                    var canCheck = (previousPlayer.LastCommand is not Enums.CommandTypeEnum.Call &&
-                                    currentPlayer.LastCommand is not Enums.CommandTypeEnum.Raise)
-                                   ||
-                                   (gameState == Enums.GameStateEnum.PreFlop &&
-                                    currentPlayer.PlayerRole == Enums.PlayerRoleEnum.BigBlind &&
-                                    playerQueue.All(x => x.LastCommand is not Enums.CommandTypeEnum.Raise &&
-                                                         x.LastCommand is not Enums.CommandTypeEnum.AllIn));
-                    if (!canCheck)
+                    if (!CanCheck(out message))
                     {
-                        actionMessage = "You can't check because a bet has been placed.\n誰かがベットしたのでチェックできない。";
+                        actionMessage = message;
                         isError = true;
                         return;
                     }
@@ -657,6 +658,7 @@ namespace TexasHoldEmServer.GameLogic
                     var card = shuffled.GetRandomElement();
                     shuffled.Remove(card);
                     players[startIndex].HoleCards.Add(card);
+                    players[startIndex].MaxHoleCards++;
                 }
                 
                 dealt++;
@@ -830,6 +832,45 @@ namespace TexasHoldEmServer.GameLogic
                 return false;
             }
 
+            message = "";
+            return true;
+        }
+
+        private bool CanCheck(out string message)
+        {
+            var previousPlayerBet = previousPlayer.LastCommand is Enums.CommandTypeEnum.Call ||
+                                    currentPlayer.LastCommand is Enums.CommandTypeEnum.Raise;
+            var bigBlindCheck = gameState == Enums.GameStateEnum.PreFlop &&
+                                currentPlayer.PlayerRole == Enums.PlayerRoleEnum.BigBlind &&
+                                playerQueue.All(x => x.LastCommand is not Enums.CommandTypeEnum.Raise &&
+                                                     x.LastCommand is not Enums.CommandTypeEnum.AllIn);
+            if (previousPlayerBet && !bigBlindCheck)
+            {
+                message = "You can't check because a bet has been placed.\n誰かがベットしたのでチェックできない。";
+                return false;
+            }
+            
+            message = "";
+            return true;
+        }
+
+        private bool PlayerCanDoAction(Enums.CommandTypeEnum command, out string message)
+        {
+            foreach (var effect in currentPlayer.ActiveEffects)
+            {
+                if (effect.ActionInfluenceType == Enums.ActionInfluenceTypeEnum.Prevent && effect.CommandType == command)
+                {
+                    message = $"You can't {command} because of the Joker's effects.\nジョーカーの効果で{command}はできない。";
+                    return false;    
+                }
+
+                if (effect.ActionInfluenceType == Enums.ActionInfluenceTypeEnum.Force && effect.CommandType != command)
+                {
+                    message = $"You must {effect.CommandType} because of the Joker's effects.\nジョーカーの効果で{effect.CommandType}をしないといけない。";
+                    return false;
+                }
+            }
+            
             message = "";
             return true;
         }

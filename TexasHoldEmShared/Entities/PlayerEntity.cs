@@ -21,62 +21,65 @@ namespace THE.MagicOnion.Shared.Entities
         public int OrderInQueue { get; set; }
         
         [Key(4)]
-        public Guid RoomId { get; set; }
+        public int OriginalOrderInQueue { get; set; }
         
         [Key(5)]
-        public bool IsDealer { get; set; }
+        public Guid RoomId { get; set; }
         
         [Key(6)]
-        public List<CardEntity> HoleCards { get; set; } = new List<CardEntity>();
+        public bool IsDealer { get; set; }
         
         [Key(7)]
-        public bool IsReady { get; set; }
+        public List<CardEntity> HoleCards { get; set; } = new List<CardEntity>();
         
         [Key(8)]
-        public int Chips { get; set; }
+        public bool IsReady { get; set; }
         
         [Key(9)]
-        public int CurrentBet { get; set; }
+        public int Chips { get; set; }
         
         [Key(10)]
-        public int CurrentBetIndex { get; set; }
+        public int CurrentBet { get; set; }
         
         [Key(11)]
-        public bool HasTakenAction { get; set; }
+        public int CurrentBetIndex { get; set; }
         
         [Key(12)]
-        public bool HasFolded { get; set; }
+        public bool HasTakenAction { get; set; }
         
         [Key(13)]
-        public Enums.CommandTypeEnum LastCommand { get; set; }
+        public bool HasFolded { get; set; }
         
         [Key(14)]
-        public bool IsAllIn { get; set; }
+        public Enums.CommandTypeEnum LastCommand { get; set; }
         
         [Key(15)]
-        public BestHandEntity? BestHand { get; set; }
+        public bool IsAllIn { get; set; }
         
         [Key(16)]
+        public BestHandEntity? BestHand { get; set; }
+        
+        [Key(17)]
         public int RaiseAmount { get; set; }
         
         //currently held cards; use to show if player is bluffing with a raise or all in
-        [Key(17)]
+        [Key(18)]
         public BestHandEntity CurrentBestHand { get; set; }
         
-        [Key(18)]
+        [Key(19)]
         public int AllInAmount { get; set; }
         
-        [Key(19)]
+        [Key(20)]
         public List<JokerEntity> JokerCards { get; set; } = new List<JokerEntity>();
         
-        [Key(20)]
+        [Key(21)]
         public List<AbilityEffectEntity> ActiveEffects { get; set; } = new List<AbilityEffectEntity>();
         
-        [Key(21)]
+        [Key(22)]
         public List<CardEntity> TempHoleCards { get; set; } = new List<CardEntity>();
 
-        [Key(22)]
-        public int MaxHoleCards { get; set; } = 2;
+        [Key(23)]
+        public int MaxHoleCards { get; set; }
         
         public PlayerEntity(string name, Guid id, Enums.PlayerRoleEnum role)
         {

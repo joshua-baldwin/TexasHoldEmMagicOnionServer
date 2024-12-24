@@ -316,7 +316,7 @@ namespace TexasHoldEmUnitTests
             var jokerEntity = sut.JokerManager.GetJokerEntities().First(x => x.JokerId == 103);
             sut.JokerManager.PurchaseJoker(jokerEntity.JokerId, p1, out _, out var addedJoker);
             totalChips -= addedJoker.BuyCost;
-            sut.JokerManager.UseJoker(sut.GameLogicManager, p1, [p1], p1.JokerCards.First(), new List<CardEntity>(), out var isJokerError, out _);
+            sut.JokerManager.UseJoker(sut.GameLogicManager, p1, [p2], p1.JokerCards.First(), new List<CardEntity>(), out var isJokerError, out _);
             SetupClass.AssertAfterJokerAction(sut, totalChips, false, isJokerError);
             sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 1, out var isGameOver, out var isError, out _);
             SetupClass.AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
@@ -359,7 +359,7 @@ namespace TexasHoldEmUnitTests
             none3.Chips = chip3;
 
             var none4 = players.First(x => x.Name == "none4");
-            none4.IsDealer = false;
+            none4.IsDealer = true;
             none4.PlayerRole = role4;
             none4.Chips = chip4;
 
@@ -386,7 +386,7 @@ namespace TexasHoldEmUnitTests
             var jokerEntity = sut.JokerManager.GetJokerEntities().First(x => x.JokerId == 103);
             sut.JokerManager.PurchaseJoker(jokerEntity.JokerId, p1, out _, out var addedJoker);
             totalChips -= addedJoker.BuyCost;
-            sut.JokerManager.UseJoker(sut.GameLogicManager, p1, [p1], p1.JokerCards.First(), new List<CardEntity>(), out var isJokerError, out _);
+            sut.JokerManager.UseJoker(sut.GameLogicManager, p1, [p2], p1.JokerCards.First(), new List<CardEntity>(), out var isJokerError, out _);
             SetupClass.AssertAfterJokerAction(sut, totalChips, false, isJokerError);
             sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out var isGameOver, out var isError, out _);
             SetupClass.AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
