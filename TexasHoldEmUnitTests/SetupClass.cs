@@ -36,8 +36,15 @@ namespace TexasHoldEmUnitTests
                 [
                     new CardEntity(holeCard1Suit, holeCard1Rank),
                     new CardEntity(holeCard2Suit, holeCard2Rank)
-                ]
+                ],
+                MaxHoleCards = 2,
             };
+        }
+        
+        public static void SetNewHoleCards(PlayerEntity sb, CardEntity card1, CardEntity card2)
+        {
+            sb.HoleCards = [ card1, card2 ];
+            sb.MaxHoleCards = 2;
         }
 
         public static void AssertAfterAction(TestSystem sut, int totalChips, bool shouldBeError, bool isError, bool shouldBeGameOver, bool isGameOver)
@@ -45,11 +52,13 @@ namespace TexasHoldEmUnitTests
             Assert.That(shouldBeError, Is.EqualTo(isError));
             Assert.That(shouldBeGameOver, Is.EqualTo(isGameOver));
             Assert.That(sut.GameLogicManager.GetPots().Sum(x => x.PotAmount) + sut.GameLogicManager.GetAllPlayers().Sum(x => x.Chips), Is.EqualTo(totalChips));
+            Assert.That(sut.GameLogicManager.GetAllPlayers().All(x => x.TempHoleCards.Count == 0 && x.MaxHoleCards == x.HoleCards.Count));
         }
 
         public static void AssertAfterJokerAction(TestSystem sut, int totalChips, bool shouldBeError, bool isError)
         {
             Assert.That(shouldBeError, Is.EqualTo(isError));
+            Assert.That(sut.GameLogicManager.GetAllPlayers().All(x => x.TempHoleCards.Count == 0 && x.MaxHoleCards == x.HoleCards.Count));
             Assert.That(sut.GameLogicManager.GetPots().Sum(x => x.PotAmount) + sut.GameLogicManager.GetAllPlayers().Sum(x => x.Chips), Is.EqualTo(totalChips));
         }
     }
