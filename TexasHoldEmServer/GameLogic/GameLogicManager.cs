@@ -238,6 +238,8 @@ namespace TexasHoldEmServer.GameLogic
                     throw new ArgumentOutOfRangeException(nameof(commandType), commandType, null);
             }
 
+            currentPlayer.ActiveEffects.RemoveAll(x => x.ActionInfluenceType is Enums.ActionInfluenceTypeEnum.Force or Enums.ActionInfluenceTypeEnum.Prevent);
+
             previousPlayer = playerQueue.Dequeue();
             previousPlayer.LastCommand = commandType;
             if (!currentPlayer.HasFolded && (currentPlayer.Chips > 0 || currentPlayer.Chips == 0 && currentPlayer.IsAllIn))
