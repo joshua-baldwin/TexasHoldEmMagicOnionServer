@@ -66,7 +66,7 @@ namespace TexasHoldEmServer.GameLogic
                     HandleHandInfluence(gameLogicManager, jokerUser, targets, jokerEntity, holeCardsToDiscard, out isError, out actionMessage);
                     break;
                 case Enums.JokerTypeEnum.Action:
-                    HandleActionInfluence(jokerUser, targets, jokerEntity, out isError, out actionMessage);
+                    HandleActionInfluence(gameLogicManager, jokerUser, targets, jokerEntity, out isError, out actionMessage);
                     break;
                 case Enums.JokerTypeEnum.Info:
                     HandleInfoInfluence(jokerUser, targets, jokerEntity, out isError, out actionMessage);
@@ -137,7 +137,7 @@ namespace TexasHoldEmServer.GameLogic
             isError = false;
         }
         
-        private void HandleActionInfluence(PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, out bool isError, out string message)
+        private void HandleActionInfluence(IGameLogicManager gameLogicManager, PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, out bool isError, out string message)
         {
             var sbEng = new StringBuilder();
             var sbJp = new StringBuilder();
@@ -171,6 +171,9 @@ namespace TexasHoldEmServer.GameLogic
                                 sbJp.Append($"プレイヤー{target.Name}は次のターンに{effect.CommandType}ができなくなりました。");
                                 break;
                             case Enums.ActionInfluenceTypeEnum.ChangePosition:
+                                gameLogicManager.UpdateQueue(target);
+                                sbEng.Append($"Player {jokerUser.Name} is acting last for this turn.");
+                                sbJp.Append($"このターンにプレイヤー{jokerUser.Name}が最後にアクションを行う。");
                                 break;
                             case Enums.ActionInfluenceTypeEnum.ChangeStack:
                                 break;

@@ -22,6 +22,7 @@ namespace TexasHoldEmServer.GameLogic
         void CreateQueue(List<PlayerEntity> players);
         List<WinningHandEntity> DoShowdown();
         void AddJokerCostToPot(int cost);
+        void UpdateQueue(PlayerEntity playerToChange);
     }
 
     public interface IGameLogicManagerForTesting

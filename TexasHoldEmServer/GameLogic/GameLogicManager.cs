@@ -156,7 +156,6 @@ namespace TexasHoldEmServer.GameLogic
                     break;
                 case Enums.CommandTypeEnum.Call:
                     var callAmount = maxBetForTurn - currentPlayer.CurrentBet;
-
                     if (!CanPlaceBet((callAmount, 0), out message))
                     {
                         actionMessage = message;
@@ -315,6 +314,7 @@ namespace TexasHoldEmServer.GameLogic
             foreach (var player in playerQueue)
             {
                 player.OrderInQueue = order;
+                player.OriginalOrderInQueue = order;
                 order++;
             }
             
@@ -354,6 +354,38 @@ namespace TexasHoldEmServer.GameLogic
             pots[0] = potEntity;
             if (chipAmountBeforeAllIn != 0)
                 chipAmountBeforeAllIn += cost;
+        }
+
+        public void UpdateQueue(PlayerEntity playerToChange)
+        {
+            var activePlayers = playerQueue.ToList();
+            var numberOfPlayersToChange = playerQueue.Count - playerToChange.OrderInQueue + 1;
+            for (var i = 0; i < numberOfPlayersToChange; i++)
+            {
+                if (activePlayers[i].Id == playerToChange.Id)
+                {
+                    playerToChange.OriginalOrderInQueue = playerToChange.OrderInQueue;
+                    playerToChange.OrderInQueue = playerQueue.Count;
+                }
+                else
+                {
+                    activePlayers[i].OriginalOrderInQueue = activePlayers[i].OrderInQueue;
+                    activePlayers[i].OrderInQueue -= 1;
+                }
+            }
+            
+            var players = activePlayers.OrderBy(x => x.OrderInQueue).ToList();
+            playerQueue.Clear();
+            foreach (var player in players)
+                playerQueue.Enqueue(player);
+
+            while (playerQueue.Peek().HasTakenAction)
+            {
+                var player = playerQueue.Dequeue();
+                playerQueue.Enqueue(player);
+            }
+            
+            currentPlayer = playerQueue.Peek();
         }
 
         #endregion
@@ -582,6 +614,9 @@ namespace TexasHoldEmServer.GameLogic
                     player.CurrentBet = 0;
                 previousBet = (0, false, false);
             }
+
+            foreach (var player in playerQueue)
+                player.OrderInQueue = player.OriginalOrderInQueue;
 
             var players = playerQueue.Where(x => !x.IsAllIn).OrderBy(x => x.OrderInQueue).ToList();
             allInPlayers = playerQueue.Where(x => x.IsAllIn).ToList();

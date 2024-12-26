@@ -103,6 +103,8 @@ namespace THE.MagicOnion.Shared.Entities
             AllInAmount = 0;
             TempHoleCards.Clear();
             MaxHoleCards = 2;
+            OrderInQueue = 0;
+            OriginalOrderInQueue = 0;
         }
 
         public bool CardsAreValid()
