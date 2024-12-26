@@ -258,6 +258,21 @@ namespace TexasHoldEmServer.GameLogic
             UpdateGameState();
         }
 
+        public void DiscardAndFinishUsingJoker(PlayerEntity target, JokerEntity joker, List<CardEntity> cardsToDiscard)
+        {
+            DiscardToCardPool(target, cardsToDiscard);
+            if (target.TempHoleCards.Count > 0)
+            {
+                target.HoleCards.AddRange(target.TempHoleCards);
+                target.TempHoleCards.Clear();
+                target.MaxHoleCards = target.HoleCards.Count;
+            }
+            
+            joker.CurrentUses++;
+            if (joker.CurrentUses >= joker.MaxUses)
+                target.JokerCards.RemoveAll(x => x.UniqueId == joker.UniqueId);
+        }
+
         public void DiscardToCardPool(PlayerEntity target, List<CardEntity> cardsToDiscard)
         {
             foreach (var card in cardsToDiscard)
