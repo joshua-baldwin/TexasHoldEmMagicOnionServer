@@ -192,7 +192,7 @@ namespace TexasHoldEmServer.GameLogic
                     currentPlayer.RaiseAmount = chipsBet;
                     if (betAmount > currentRaise.TotalBet)
                     {
-                        foreach (var player in playerQueue)
+                        foreach (var player in playerQueue.Where(x => !x.IsAllIn))
                             player.HasTakenAction = false;
                     }
                     
@@ -214,10 +214,11 @@ namespace TexasHoldEmServer.GameLogic
                     var isRaise = previousBet.Amount != 0 && currentPlayer.Chips - currentRaise.TotalBet > currentRaise.RaiseAmount;
 
                     currentPlayer.HasTakenAction = true;
+                    currentPlayer.IsAllIn = true;
                     if (isRaise)
                     {
                         currentRaise = (currentPlayer.Chips - currentRaise.TotalBet, currentPlayer.Chips);
-                        foreach (var player in playerQueue)
+                        foreach (var player in playerQueue.Where(x => !x.IsAllIn))
                             player.HasTakenAction = false;
                     }
                     else if (currentPlayer.Chips - currentRaise.TotalBet > currentRaise.RaiseAmount)
@@ -228,7 +229,6 @@ namespace TexasHoldEmServer.GameLogic
                     currentPlayer.AllInAmount = currentPlayer.Chips;
                     currentPlayer.CurrentBet += currentPlayer.Chips;
                     currentPlayer.Chips = 0;
-                    currentPlayer.IsAllIn = true;
                     if (currentPlayer.AllInAmount > maxBetForTurn)
                         maxBetForTurn = currentPlayer.AllInAmount;
 
@@ -509,7 +509,7 @@ namespace TexasHoldEmServer.GameLogic
         private void UpdateGameState()
         {
             var gameStateChanged = false;
-            if (playerQueue.Count == 1 || playerQueue.All(x => x.IsAllIn) || (playerQueue.Count(x => x.IsAllIn) == playerQueue.Count - 1 && playerQueue.All(x => x.HasTakenAction || x.IsAllIn)))
+            if (playerQueue.Count == 1 || playerQueue.All(x => x.IsAllIn) || (playerQueue.Count(x => x.IsAllIn) == playerQueue.Count - 1 && playerQueue.All(x => x.HasTakenAction)))
             {
                 if (gameState == Enums.GameStateEnum.GameOver)
                     gameStateChanged = true;
@@ -534,7 +534,7 @@ namespace TexasHoldEmServer.GameLogic
 
                         break;
                     case Enums.GameStateEnum.PreFlop:
-                        if (playerQueue.All(x => x.HasTakenAction || x.IsAllIn))
+                        if (playerQueue.All(x => x.HasTakenAction))
                         {
                             gameState = Enums.GameStateEnum.TheFlop;
                             SetTheFlop();
@@ -543,7 +543,7 @@ namespace TexasHoldEmServer.GameLogic
 
                         break;
                     case Enums.GameStateEnum.TheFlop:
-                        if (playerQueue.All(x => x.HasTakenAction || x.IsAllIn))
+                        if (playerQueue.All(x => x.HasTakenAction))
                         {
                             gameState = Enums.GameStateEnum.TheTurn;
                             SetTheTurn();
@@ -552,7 +552,7 @@ namespace TexasHoldEmServer.GameLogic
 
                         break;
                     case Enums.GameStateEnum.TheTurn:
-                        if (playerQueue.All(x => x.HasTakenAction || x.IsAllIn))
+                        if (playerQueue.All(x => x.HasTakenAction))
                         {
                             gameState = Enums.GameStateEnum.TheRiver;
                             SetTheRiver();
@@ -561,7 +561,7 @@ namespace TexasHoldEmServer.GameLogic
 
                         break;
                     case Enums.GameStateEnum.TheRiver:
-                        if (playerQueue.All(x => x.HasTakenAction || x.IsAllIn))
+                        if (playerQueue.All(x => x.HasTakenAction))
                         {
                             gameState = Enums.GameStateEnum.Showdown;
                             gameStateChanged = true;
