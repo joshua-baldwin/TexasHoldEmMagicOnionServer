@@ -20,22 +20,14 @@ namespace THE.MagicOnion.Shared.Entities
         public Enums.CommandTypeEnum CommandType { get; set; }
         
         [Key(4)]
-        public Enums.HandInfluenceTypeEnum HandInfluenceType { get; set; }
-        
-        [Key(5)]
-        public Enums.ActionInfluenceTypeEnum ActionInfluenceType { get; set; }
-        
-        [Key(6)]
         public string Description { get; set; }
 
-        public AbilityEffectEntity(int id, int abilityId, int effectValue, Enums.CommandTypeEnum commandType, Enums.HandInfluenceTypeEnum handInfluenceType, Enums.ActionInfluenceTypeEnum actionInfluenceType, string description)
+        public AbilityEffectEntity(int id, int abilityId, int effectValue, Enums.CommandTypeEnum commandType, string description)
         {
             Id = id;
             AbilityId = abilityId;
             EffectValue = effectValue;
             CommandType = commandType;
-            HandInfluenceType = handInfluenceType;
-            ActionInfluenceType = actionInfluenceType;
             Description = description;
         }
     }

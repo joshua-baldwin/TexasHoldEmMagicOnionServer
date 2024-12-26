@@ -172,6 +172,19 @@ namespace TexasHoldEmShared.Enums
             IncreaseBettingRounds,
         }
 
+        public enum InfoInfluenceTypeEnum
+        {
+            None,
+            CheckHand,
+        }
+
+        public enum BoardInfluenceTypeEnum
+        {
+            None,
+            IncreaseEquity,
+            DecreaseEquity,
+        }
+
         public enum TargetTypeEnum
         {
             None,

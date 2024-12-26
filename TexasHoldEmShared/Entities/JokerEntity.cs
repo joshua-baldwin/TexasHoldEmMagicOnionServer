@@ -36,9 +36,21 @@ namespace THE.MagicOnion.Shared.Entities
         public Enums.JokerTypeEnum JokerType { get; set; }
         
         [Key(9)]
+        public Enums.HandInfluenceTypeEnum HandInfluenceType { get; set; }
+        
+        [Key(10)]
+        public Enums.ActionInfluenceTypeEnum ActionInfluenceType { get; set; }
+        
+        [Key(11)]
+        public Enums.InfoInfluenceTypeEnum InfoInfluenceType { get; set; }
+        
+        [Key(12)]
+        public Enums.BoardInfluenceTypeEnum BoardInfluenceType { get; set; }
+        
+        [Key(13)]
         public Enums.TargetTypeEnum TargetType { get; set; }
         
-        public JokerEntity(Guid uniqueId, int jokerId, int buyCost, int useCost, int maxUses, int currentUses, List<JokerAbilityEntity> abilities, bool canUse, Enums.JokerTypeEnum jokerType, Enums.TargetTypeEnum targetType)
+        public JokerEntity(Guid uniqueId, int jokerId, int buyCost, int useCost, int maxUses, int currentUses, List<JokerAbilityEntity> abilities, bool canUse, Enums.JokerTypeEnum jokerType, Enums.HandInfluenceTypeEnum handInfluenceType, Enums.ActionInfluenceTypeEnum actionInfluenceType, Enums.InfoInfluenceTypeEnum infoInfluenceType, Enums.BoardInfluenceTypeEnum boardInfluenceType, Enums.TargetTypeEnum targetType)
         {
             UniqueId = uniqueId;
             JokerId = jokerId;
@@ -49,6 +61,10 @@ namespace THE.MagicOnion.Shared.Entities
             JokerAbilityEntities = abilities;
             CanUse = canUse;
             JokerType = jokerType;
+            HandInfluenceType = handInfluenceType;
+            ActionInfluenceType = actionInfluenceType;
+            InfoInfluenceType = infoInfluenceType;
+            BoardInfluenceType = boardInfluenceType;
             TargetType = targetType;
         }
 
@@ -63,6 +79,10 @@ namespace THE.MagicOnion.Shared.Entities
             JokerAbilityEntities = jokerEntity.JokerAbilityEntities;
             CanUse = jokerEntity.CanUse;
             JokerType = jokerEntity.JokerType;
+            HandInfluenceType = jokerEntity.HandInfluenceType;
+            ActionInfluenceType = jokerEntity.ActionInfluenceType;
+            InfoInfluenceType = jokerEntity.InfoInfluenceType;
+            BoardInfluenceType = jokerEntity.BoardInfluenceType;
             TargetType = jokerEntity.TargetType;
         }
     }
