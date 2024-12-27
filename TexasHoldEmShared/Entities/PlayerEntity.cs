@@ -105,6 +105,7 @@ namespace THE.MagicOnion.Shared.Entities
             HasHighestRaise = false;
             CurrentBestHand = null;
             AllInAmount = 0;
+            ActiveEffects.Clear();
             TempHoleCards.Clear();
             MaxHoleCards = 0;
             OrderInQueue = 0;

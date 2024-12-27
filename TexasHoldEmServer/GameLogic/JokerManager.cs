@@ -175,6 +175,11 @@ namespace TexasHoldEmServer.GameLogic
                         case Enums.ActionInfluenceTypeEnum.ChangeStack:
                             break;
                         case Enums.ActionInfluenceTypeEnum.IncreaseBettingRounds:
+                            jokerEffect = new ActiveJokerEffectEntity(jokerEntity.JokerId, jokerEntity.JokerType, jokerEntity.HandInfluenceType, jokerEntity.ActionInfluenceType, jokerEntity.InfoInfluenceType, jokerEntity.BoardInfluenceType, effect.Id, effect.EffectValue, effect.CommandType);
+                            target.ActiveEffects.Add(jokerEffect);
+                            gameLogicManager.IncreaseNumberOfBettingRounds();
+                            sbEng.Append("The number of betting turns has increased by one.");
+                            sbJp.Append("ベットラウンドの数が１つに増えた。");
                             break;
                         default:
                             throw new ArgumentOutOfRangeException();

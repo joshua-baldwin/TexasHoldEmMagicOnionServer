@@ -24,6 +24,8 @@ namespace TexasHoldEmServer.GameLogic
         private PlayerEntity currentPlayer;
         private List<PotEntity> pots = [new (Guid.Empty, 0, 0, false, null)];
         private Enums.GameStateEnum gameState;
+        private int currentExtraBettingRound;
+        private int extraBettingRoundCount;
         private int currentRound;
 
         #region Interface methods
@@ -35,6 +37,8 @@ namespace TexasHoldEmServer.GameLogic
         public List<CardEntity> GetCommunityCards() => communityCards;
         public Enums.GameStateEnum GetGameState() => gameState;
         public int GetCurrentRound() => currentRound;
+        public int GetCurrentExtraBettingRound() => currentExtraBettingRound;
+        public int GetExtraBettingRoundsCount() => extraBettingRoundCount;
         public List<PlayerEntity> GetAllPlayers() => allPlayerList;
 
         public void Reset()
@@ -56,6 +60,8 @@ namespace TexasHoldEmServer.GameLogic
             communityCards?.Clear();
             gameState = Enums.GameStateEnum.BlindBet;
             currentRound = 0;
+            currentExtraBettingRound = 0;
+            extraBettingRoundCount = 0;
             chipAmountBeforeAllIn = 0;
         }
 
@@ -389,6 +395,11 @@ namespace TexasHoldEmServer.GameLogic
             currentPlayer = playerQueue.Peek();
         }
 
+        public void IncreaseNumberOfBettingRounds()
+        {
+            extraBettingRoundCount++;
+        }
+
         #endregion
 
         private void RemoveFromPots()
@@ -596,7 +607,18 @@ namespace TexasHoldEmServer.GameLogic
                     case Enums.GameStateEnum.TheRiver:
                         if (playerQueue.All(x => x.HasTakenAction))
                         {
-                            gameState = Enums.GameStateEnum.Showdown;
+                            if (extraBettingRoundCount > 0)
+                            {
+                                if (currentExtraBettingRound >= extraBettingRoundCount)
+                                {
+                                    currentExtraBettingRound = 0;
+                                    gameState = Enums.GameStateEnum.Showdown;
+                                }
+                                else
+                                    currentExtraBettingRound++;
+                            }
+                            else
+                                gameState = Enums.GameStateEnum.Showdown;
                             gameStateChanged = true;
                         }
 
@@ -658,6 +680,12 @@ namespace TexasHoldEmServer.GameLogic
             {
                 for (var i = player.ActiveEffects.Count - 1; i >= 0; i--)
                 {
+                    if (player.ActiveEffects[i].ActionInfluenceType == Enums.ActionInfluenceTypeEnum.IncreaseBettingRounds)
+                    {
+                        i--;
+                        continue;
+                    }
+
                     player.ActiveEffects.RemoveAt(i);
                     break;
                 }

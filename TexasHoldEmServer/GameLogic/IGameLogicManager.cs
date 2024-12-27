@@ -12,6 +12,8 @@ namespace TexasHoldEmServer.GameLogic
         List<CardEntity> GetCommunityCards();
         Enums.GameStateEnum GetGameState();
         int GetCurrentRound();
+        int GetCurrentExtraBettingRound();
+        int GetExtraBettingRoundsCount();
         List<PlayerEntity> GetAllPlayers();
         void Reset();
         void SetupGame(List<PlayerEntity> players, bool isFirstRound);
@@ -23,6 +25,7 @@ namespace TexasHoldEmServer.GameLogic
         List<WinningHandEntity> DoShowdown();
         void AddJokerCostToPot(int cost);
         void UpdateQueue(PlayerEntity playerToChange);
+        void IncreaseNumberOfBettingRounds();
     }
 
     public interface IGameLogicManagerForTesting
