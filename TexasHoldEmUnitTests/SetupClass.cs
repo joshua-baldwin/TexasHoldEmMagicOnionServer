@@ -18,7 +18,7 @@ namespace TexasHoldEmUnitTests
         {
             public TestGameLogicManager GameLogicManager { get; } = new TestGameLogicManager();
             public JokerManager JokerManager { get; } = new JokerManager();
-            public List<PlayerEntity> Players { get; } = new List<PlayerEntity>(); 
+            public List<PlayerEntity> Players { get; set; } 
 
             public List<CardEntity> GetHand(PlayerEntity player)
             {
@@ -29,35 +29,41 @@ namespace TexasHoldEmUnitTests
             }
         }
 
-        public static PlayerEntity SetupTestHand(string name, Enums.PlayerRoleEnum role, Enums.CardSuitEnum holeCard1Suit, Enums.CardRankEnum holeCard1Rank, Enums.CardSuitEnum holeCard2Suit, Enums.CardRankEnum holeCard2Rank)
+        public static PlayerEntity SetupTestHand(string name, Enums.PlayerRoleEnum role)
         {
-            return new PlayerEntity(name, Guid.NewGuid(), role)
-            {
-                HoleCards =
-                [
-                    new CardEntity(holeCard1Suit, holeCard1Rank),
-                    new CardEntity(holeCard2Suit, holeCard2Rank)
-                ],
-                MaxHoleCards = 2,
-            };
+            return new PlayerEntity(name, Guid.NewGuid(), role);
         }
         
-        public static void SetNewHoleCards(PlayerEntity sb, CardEntity card1, CardEntity card2)
+        public static void SetNewHoleCards(PlayerEntity sb, List<CardEntity> cards)
         {
-            sb.HoleCards = [ card1, card2 ];
-            sb.MaxHoleCards = 2;
+            sb.HoleCards.Clear();
+            sb.MaxHoleCards = 0;
+            foreach (var card in cards)
+            {
+                sb.HoleCards.Add(card);
+                sb.MaxHoleCards++;
+            }
         }
 
-        public static TestSystem SetupAndDoBlindBet(List<(string Name, Enums.PlayerRoleEnum Role, Enums.CardSuitEnum Suit1, Enums.CardRankEnum Rank1, Enums.CardSuitEnum Suit2, Enums.CardRankEnum Rank2, int Chips)> playersToCreate, out int totalChips)
+        public static TestSystem SetupAndDoBlindBet(List<(string Name, Enums.PlayerRoleEnum Role, Enums.CardSuitEnum Suit1, Enums.CardRankEnum Rank1, Enums.CardSuitEnum Suit2, Enums.CardRankEnum Rank2, int Chips)> playersToCreate, bool isFirstRound, out int totalChips, TestSystem sut = null)
         {
-            var sut = new TestSystem();
-            foreach (var player in playersToCreate)
+            var players = new List<PlayerEntity>();
+            if (isFirstRound)
             {
-                var p = SetupTestHand(player.Name, player.Role, player.Suit1, player.Rank1, player.Suit2, player.Rank2);
-                sut.Players.Add(p);
+                sut = new TestSystem();
+                foreach (var player in playersToCreate)
+                {
+                    var p = SetupTestHand(player.Name, player.Role);
+                    players.Add(p);
+                }
             }
-            
-            sut.GameLogicManager.SetupGame(sut.Players, true);
+            else
+            {
+                players = sut.Players;
+            }
+
+            sut.GameLogicManager.SetupGame(players, isFirstRound);
+            sut.Players = sut.GameLogicManager.GetAllPlayers();
 
             for (var i = 0; i < sut.Players.Count; i++)
             {
@@ -65,7 +71,6 @@ namespace TexasHoldEmUnitTests
                 player.IsDealer = i == sut.Players.Count - 1;
                 player.PlayerRole = playersToCreate[i].Role;
                 player.Chips = playersToCreate[i].Chips;
-                SetNewHoleCards(player, new CardEntity(playersToCreate[i].Suit1, playersToCreate[i].Rank1), new CardEntity(playersToCreate[i].Suit2, playersToCreate[i].Rank2));
             }
 
             totalChips = playersToCreate.Select(x => x.Chips).Sum();
@@ -73,11 +78,18 @@ namespace TexasHoldEmUnitTests
 
             sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _);
             sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _);
+            
+            Assert.That(sut.Players.All(player => player.CardsAreValid()));
 
-            foreach (var player in sut.Players)
-                SetNewHoleCards(player, player.HoleCards[0], player.HoleCards[1]);
+            for (var i = 0; i < sut.Players.Count; i++)
+                SetNewHoleCards(sut.Players[i], [new CardEntity(playersToCreate[i].Suit1, playersToCreate[i].Rank1), new CardEntity(playersToCreate[i].Suit2, playersToCreate[i].Rank2)]);
 
             return sut;
+        }
+
+        public static void AssertBeforeAction(TestSystem sut)
+        {
+            Assert.That(sut.Players.All(player => player.CardsAreValid()));
         }
 
         public static void AssertAfterAction(TestSystem sut, int totalChips, bool shouldBeError, bool isError, bool shouldBeGameOver, bool isGameOver)
