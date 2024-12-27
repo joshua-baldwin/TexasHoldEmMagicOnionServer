@@ -106,7 +106,7 @@ namespace THE.MagicOnion.Shared.Entities
             CurrentBestHand = null;
             AllInAmount = 0;
             TempHoleCards.Clear();
-            MaxHoleCards = 2;
+            MaxHoleCards = 0;
             OrderInQueue = 0;
             OriginalOrderInQueue = 0;
         }
