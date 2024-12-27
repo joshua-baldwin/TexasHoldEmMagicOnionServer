@@ -18,7 +18,7 @@ namespace TexasHoldEmServer.GameLogic
         private List<CardEntity> cardPool;
         private bool isTie;
         private int maxBetForTurn;
-        private (int RaiseAmount, int TotalBet) currentRaise;
+        private int currentRaise;
         private int chipAmountBeforeAllIn;
         private PlayerEntity previousPlayer;
         private PlayerEntity currentPlayer;
@@ -48,7 +48,7 @@ namespace TexasHoldEmServer.GameLogic
             cardPool?.Clear();
             isTie = false;
             maxBetForTurn = 0;
-            currentRaise = (0, 0);
+            currentRaise = 0;
             playerQueue?.Clear();
             previousPlayer = null;
             currentPlayer = null;
@@ -185,20 +185,21 @@ namespace TexasHoldEmServer.GameLogic
                     if (chipAmountBeforeAllIn != 0)
                         chipAmountBeforeAllIn += betAmount;
                     actionMessage = $"{currentPlayer.Name} raised {chipsBet}.";
-                    previousBet = (betAmount, false, betAmount > currentRaise.TotalBet);
+                    previousBet = (betAmount, false, betAmount > currentRaise);
                     currentPlayer.CurrentBet += betAmount;
                     currentPlayer.Chips -= betAmount;
                     currentPlayer.RaiseAmount = chipsBet;
-                    if (betAmount > currentRaise.TotalBet)
+                    if (betAmount > currentRaise)
                     {
                         foreach (var player in playerQueue.Where(x => !x.IsAllIn))
+                        {
                             player.HasTakenAction = false;
+                            player.HasHighestRaise = player.Id == currentPlayer.Id;
+                        }
                     }
                     
                     currentPlayer.HasTakenAction = true;
-                    currentRaise = currentRaise.RaiseAmount == 0 
-                        ? (0, betAmount)
-                        : (chipsBet, betAmount);
+                    currentRaise = betAmount;
                     maxBetForTurn = betAmount;
                     
                     DistributeBetAmountToPots(betAmount);
@@ -210,18 +211,24 @@ namespace TexasHoldEmServer.GameLogic
                     allInPlayersForRound.Add(currentPlayer);
                     actionMessage = $"{currentPlayer.Name} went all in.";
                     
-                    var isRaise = previousBet.Amount != 0 && currentPlayer.Chips - currentRaise.TotalBet > currentRaise.RaiseAmount;
+                    var isRaise = previousBet.Amount != 0 &&
+                                  currentPlayer.Chips > previousBet.Amount &&
+                                  currentPlayer.Chips > currentRaise;
 
                     currentPlayer.HasTakenAction = true;
                     currentPlayer.IsAllIn = true;
                     if (isRaise)
                     {
-                        currentRaise = (currentPlayer.Chips - currentRaise.TotalBet, currentPlayer.Chips);
+                        currentRaise = currentPlayer.Chips;
+                        currentPlayer.HasHighestRaise = true;
                         foreach (var player in playerQueue.Where(x => !x.IsAllIn))
+                        {
                             player.HasTakenAction = false;
+                            player.HasHighestRaise = false;
+                        }
                     }
-                    else if (currentPlayer.Chips - currentRaise.TotalBet > currentRaise.RaiseAmount)
-                        currentRaise = (currentPlayer.Chips - currentRaise.TotalBet, currentPlayer.Chips);
+                    else if (currentPlayer.Chips > previousBet.Amount && currentPlayer.Chips > currentRaise)
+                        currentRaise = currentPlayer.Chips;
 
                     previousBet = (currentPlayer.Chips, true, isRaise);
                     
@@ -528,7 +535,7 @@ namespace TexasHoldEmServer.GameLogic
             previousBet = (0, false, false);
             isTie = false;
             maxBetForTurn = 0;
-            currentRaise = (0, 0);
+            currentRaise = 0;
             playerQueue.Clear();
             previousPlayer = null;
             currentPlayer = null;
@@ -631,13 +638,14 @@ namespace TexasHoldEmServer.GameLogic
                 {
                     player.HasTakenAction = false;
                     player.LastCommand = 0;
+                    player.HasHighestRaise = false;
                 }
             }
 
             allInPlayers.ForEach(x => x.LastCommand = 0);
 
             previousBet = (0, false, false);
-            currentRaise = (0, 0);
+            currentRaise = 0;
             allInPlayersForRound.Clear();
             maxBetForTurn = 0;
             chipAmountBeforeAllIn = 0;
@@ -890,16 +898,31 @@ namespace TexasHoldEmServer.GameLogic
 
         private bool CanCheck(out string message)
         {
-            var previousPlayerBet = previousPlayer.LastCommand is Enums.CommandTypeEnum.Call ||
-                                    currentPlayer.LastCommand is Enums.CommandTypeEnum.Raise;
-            var bigBlindCheck = gameState == Enums.GameStateEnum.PreFlop &&
-                                currentPlayer.PlayerRole == Enums.PlayerRoleEnum.BigBlind &&
-                                playerQueue.All(x => x.LastCommand is not Enums.CommandTypeEnum.Raise &&
-                                                     x.LastCommand is not Enums.CommandTypeEnum.AllIn);
-            if (previousPlayerBet && !bigBlindCheck)
+            var anyPlayerHasRaised = playerQueue.Any(x => x.HasTakenAction &&
+                                                          x.LastCommand == Enums.CommandTypeEnum.Raise ||
+                                                          (x.LastCommand == Enums.CommandTypeEnum.AllIn && x.HasHighestRaise));
+
+            if (gameState == Enums.GameStateEnum.PreFlop)
             {
-                message = "You can't check because a bet has been placed.\n誰かがベットしたのでチェックできない。";
-                return false;
+                if (currentPlayer.PlayerRole != Enums.PlayerRoleEnum.BigBlind)
+                {
+                    message = "Only the big blind can check during pre-flop\nPre-Flopの時にチェックできるのはビッグブラインドのみ。";
+                    return false;
+                }
+
+                if (anyPlayerHasRaised)
+                {
+                    message = "You can't check because a player has raised.\n他のプレイヤーがレイズしたのでチェックできない。";
+                    return false;
+                }
+            }
+            else
+            {
+                if (anyPlayerHasRaised)
+                {
+                    message = "You can't check because a player has raised.\n他のプレイヤーがレイズしたのでチェックできない。";
+                    return false;
+                }
             }
             
             message = "";

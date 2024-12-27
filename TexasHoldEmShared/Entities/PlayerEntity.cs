@@ -62,23 +62,26 @@ namespace THE.MagicOnion.Shared.Entities
         [Key(17)]
         public int RaiseAmount { get; set; }
         
-        //currently held cards; use to show if player is bluffing with a raise or all in
         [Key(18)]
+        public bool HasHighestRaise { get; set; }
+        
+        //currently held cards; use to show if player is bluffing with a raise or all in
+        [Key(19)]
         public BestHandEntity CurrentBestHand { get; set; }
         
-        [Key(19)]
+        [Key(20)]
         public int AllInAmount { get; set; }
         
-        [Key(20)]
+        [Key(21)]
         public List<JokerEntity> JokerCards { get; set; } = new List<JokerEntity>();
         
-        [Key(21)]
+        [Key(22)]
         public List<ActiveJokerEffectEntity> ActiveEffects { get; set; } = new List<ActiveJokerEffectEntity>();
         
-        [Key(22)]
+        [Key(23)]
         public List<CardEntity> TempHoleCards { get; set; } = new List<CardEntity>();
 
-        [Key(23)]
+        [Key(24)]
         public int MaxHoleCards { get; set; }
         
         public PlayerEntity(string name, Guid id, Enums.PlayerRoleEnum role)
@@ -99,6 +102,7 @@ namespace THE.MagicOnion.Shared.Entities
             IsAllIn = false;
             BestHand = null;
             RaiseAmount = 0;
+            HasHighestRaise = false;
             CurrentBestHand = null;
             AllInAmount = 0;
             TempHoleCards.Clear();
