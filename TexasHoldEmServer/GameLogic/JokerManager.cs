@@ -171,6 +171,8 @@ namespace TexasHoldEmServer.GameLogic
                                 sbJp.Append($"プレイヤー{target.Name}は次のターンに{effect.CommandType}ができなくなりました。");
                                 break;
                             case Enums.ActionInfluenceTypeEnum.ChangePosition:
+                                jokerEffect = new ActiveJokerEffectEntity(jokerEntity.JokerId, jokerEntity.JokerType, jokerEntity.HandInfluenceType, jokerEntity.ActionInfluenceType, jokerEntity.InfoInfluenceType, jokerEntity.BoardInfluenceType, effect.Id, effect.EffectValue, effect.CommandType);
+                                target.ActiveEffects.Add(jokerEffect);
                                 gameLogicManager.UpdateQueue(target);
                                 sbEng.Append($"Player {jokerUser.Name} is acting last for this turn.");
                                 sbJp.Append($"このターンにプレイヤー{jokerUser.Name}が最後にアクションを行う。");
@@ -216,7 +218,22 @@ namespace TexasHoldEmServer.GameLogic
                 message = "You don't have enough chips to use this Joker.\nこのジョーカーを使うには必要なチップが足りない。";
                 return false;
             }
-            
+
+            foreach (var target in targets)
+            {
+                foreach (var ability in joker.JokerAbilityEntities)
+                {
+                    foreach (var effect in ability.AbilityEffects)
+                    {
+                        if (target.ActiveEffects.Select(activeEffect => activeEffect.EffectId).Contains(effect.Id))
+                        {
+                            message = "This effect is already active.\nこの効果はもう既に発揮されている。";
+                            return false;
+                        }
+                    }
+                }
+            }
+
             message = "";
             return true;
         }
