@@ -27,7 +27,7 @@ namespace THE.MagicOnion.Shared.Entities
         public int CurrentUses { get; set; }
         
         [Key(6)]
-        public List<JokerAbilityEntity> JokerAbilityEntities { get; set; }
+        public JokerAbilityEntity JokerAbilityEntity { get; set; }
         
         [Key(7)]
         public bool CanUse { get; set; }
@@ -50,7 +50,7 @@ namespace THE.MagicOnion.Shared.Entities
         [Key(13)]
         public Enums.TargetTypeEnum TargetType { get; set; }
         
-        public JokerEntity(Guid uniqueId, int jokerId, int buyCost, int useCost, int maxUses, int currentUses, List<JokerAbilityEntity> abilities, bool canUse, Enums.JokerTypeEnum jokerType, Enums.HandInfluenceTypeEnum handInfluenceType, Enums.ActionInfluenceTypeEnum actionInfluenceType, Enums.InfoInfluenceTypeEnum infoInfluenceType, Enums.BoardInfluenceTypeEnum boardInfluenceType, Enums.TargetTypeEnum targetType)
+        public JokerEntity(Guid uniqueId, int jokerId, int buyCost, int useCost, int maxUses, int currentUses, JokerAbilityEntity ability, bool canUse, Enums.JokerTypeEnum jokerType, Enums.HandInfluenceTypeEnum handInfluenceType, Enums.ActionInfluenceTypeEnum actionInfluenceType, Enums.InfoInfluenceTypeEnum infoInfluenceType, Enums.BoardInfluenceTypeEnum boardInfluenceType, Enums.TargetTypeEnum targetType)
         {
             UniqueId = uniqueId;
             JokerId = jokerId;
@@ -58,7 +58,7 @@ namespace THE.MagicOnion.Shared.Entities
             UseCost = useCost;
             MaxUses = maxUses;
             CurrentUses = currentUses;
-            JokerAbilityEntities = abilities;
+            JokerAbilityEntity = ability;
             CanUse = canUse;
             JokerType = jokerType;
             HandInfluenceType = handInfluenceType;
@@ -76,7 +76,7 @@ namespace THE.MagicOnion.Shared.Entities
             UseCost = jokerEntity.UseCost;
             MaxUses = jokerEntity.MaxUses;
             CurrentUses = jokerEntity.CurrentUses;
-            JokerAbilityEntities = jokerEntity.JokerAbilityEntities;
+            JokerAbilityEntity = jokerEntity.JokerAbilityEntity;
             CanUse = jokerEntity.CanUse;
             JokerType = jokerEntity.JokerType;
             HandInfluenceType = jokerEntity.HandInfluenceType;

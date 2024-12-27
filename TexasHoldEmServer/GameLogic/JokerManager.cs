@@ -103,31 +103,28 @@ namespace TexasHoldEmServer.GameLogic
             //currently assuming one ability and one effect
             foreach (var target in targets)
             {
-                foreach (var ability in jokerEntity.JokerAbilityEntities)
+                foreach (var effect in jokerEntity.JokerAbilityEntity.AbilityEffects)
                 {
-                    foreach (var effect in ability.AbilityEffects)
+                    if (holeCardsToDiscard.Count > effect.EffectValue)
                     {
-                        if (holeCardsToDiscard.Count > effect.EffectValue)
-                        {
-                            message = "Too many cards selected.\n選択されたカードが多すぎる。";
-                            isError = true;
-                            return;
-                        }
-                        
-                        sbEng.Append($"Player {target.Name} drew {effect.EffectValue} new card(s).");
-                        sbJap.Append($"プレイヤー{target.Name}が{effect.EffectValue}カードを引いた。");
-                        if (jokerEntity.HandInfluenceType == Enums.HandInfluenceTypeEnum.DiscardThenDraw)
-                        {
-                            gameLogicManager.DiscardToCardPool(target, holeCardsToDiscard);
-                            target.HoleCards.AddRange(gameLogicManager.DrawFromCardPool(effect.EffectValue));
-                        }
-                        else
-                        {
-                            target.TempHoleCards.AddRange(gameLogicManager.DrawFromCardPool(effect.EffectValue));
-                            //discard is a different api
-                        }
-                        
+                        message = "Too many cards selected.\n選択されたカードが多すぎる。";
+                        isError = true;
+                        return;
                     }
+
+                    sbEng.Append($"Player {target.Name} drew {effect.EffectValue} new card(s).");
+                    sbJap.Append($"プレイヤー{target.Name}が{effect.EffectValue}カードを引いた。");
+                    if (jokerEntity.HandInfluenceType == Enums.HandInfluenceTypeEnum.DiscardThenDraw)
+                    {
+                        gameLogicManager.DiscardToCardPool(target, holeCardsToDiscard);
+                        target.HoleCards.AddRange(gameLogicManager.DrawFromCardPool(effect.EffectValue));
+                    }
+                    else
+                    {
+                        target.TempHoleCards.AddRange(gameLogicManager.DrawFromCardPool(effect.EffectValue));
+                        //discard is a different api
+                    }
+
                 }
             }
             var full = new StringBuilder(sbEng.ToString());
@@ -145,45 +142,42 @@ namespace TexasHoldEmServer.GameLogic
             sbJp.Append($"プレイヤー{jokerUser.Name}がaction influenceジョーカーを使いました。{jokerEntity.UseCost}チップがポットに追加された。");
             foreach (var target in targets)
             {
-                foreach (var ability in jokerEntity.JokerAbilityEntities)
+                foreach (var effect in jokerEntity.JokerAbilityEntity.AbilityEffects)
                 {
-                    foreach (var effect in ability.AbilityEffects)
+                    if (target.ActiveEffects.Any(x => x.EffectId == effect.Id))
                     {
-                        if (target.ActiveEffects.Any(x => x.EffectId == effect.Id))
-                        {
-                            message = "This effect is already active.\nこの効果はもう既に付与されている。";
-                            isError = true;
-                            return;
-                        }
-                        
-                        switch (jokerEntity.ActionInfluenceType)
-                        {
-                            case Enums.ActionInfluenceTypeEnum.Force:
-                                var jokerEffect = new ActiveJokerEffectEntity(jokerEntity.JokerId, jokerEntity.JokerType, jokerEntity.HandInfluenceType, jokerEntity.ActionInfluenceType, jokerEntity.InfoInfluenceType, jokerEntity.BoardInfluenceType, effect.Id, effect.EffectValue, effect.CommandType);
-                                target.ActiveEffects.Add(jokerEffect);
-                                sbEng.Append($"Player {target.Name} must {effect.CommandType} on their next turn.");
-                                sbJp.Append($"プレイヤー{target.Name}は次のターンに{effect.CommandType}をしないといけない。");
-                                break;
-                            case Enums.ActionInfluenceTypeEnum.Prevent:
-                                jokerEffect = new ActiveJokerEffectEntity(jokerEntity.JokerId, jokerEntity.JokerType, jokerEntity.HandInfluenceType, jokerEntity.ActionInfluenceType, jokerEntity.InfoInfluenceType, jokerEntity.BoardInfluenceType, effect.Id, effect.EffectValue, effect.CommandType);
-                                target.ActiveEffects.Add(jokerEffect);
-                                sbEng.Append($"Player {target.Name} cannot {effect.CommandType} on their next turn.");
-                                sbJp.Append($"プレイヤー{target.Name}は次のターンに{effect.CommandType}ができなくなりました。");
-                                break;
-                            case Enums.ActionInfluenceTypeEnum.ChangePosition:
-                                jokerEffect = new ActiveJokerEffectEntity(jokerEntity.JokerId, jokerEntity.JokerType, jokerEntity.HandInfluenceType, jokerEntity.ActionInfluenceType, jokerEntity.InfoInfluenceType, jokerEntity.BoardInfluenceType, effect.Id, effect.EffectValue, effect.CommandType);
-                                target.ActiveEffects.Add(jokerEffect);
-                                gameLogicManager.UpdateQueue(target);
-                                sbEng.Append($"Player {jokerUser.Name} is acting last for this turn.");
-                                sbJp.Append($"このターンにプレイヤー{jokerUser.Name}が最後にアクションを行う。");
-                                break;
-                            case Enums.ActionInfluenceTypeEnum.ChangeStack:
-                                break;
-                            case Enums.ActionInfluenceTypeEnum.IncreaseBettingRounds:
-                                break;
-                            default:
-                                throw new ArgumentOutOfRangeException();
-                        }
+                        message = "This effect is already active.\nこの効果はもう既に付与されている。";
+                        isError = true;
+                        return;
+                    }
+
+                    switch (jokerEntity.ActionInfluenceType)
+                    {
+                        case Enums.ActionInfluenceTypeEnum.Force:
+                            var jokerEffect = new ActiveJokerEffectEntity(jokerEntity.JokerId, jokerEntity.JokerType, jokerEntity.HandInfluenceType, jokerEntity.ActionInfluenceType, jokerEntity.InfoInfluenceType, jokerEntity.BoardInfluenceType, effect.Id, effect.EffectValue, effect.CommandType);
+                            target.ActiveEffects.Add(jokerEffect);
+                            sbEng.Append($"Player {target.Name} must {effect.CommandType} on their next turn.");
+                            sbJp.Append($"プレイヤー{target.Name}は次のターンに{effect.CommandType}をしないといけない。");
+                            break;
+                        case Enums.ActionInfluenceTypeEnum.Prevent:
+                            jokerEffect = new ActiveJokerEffectEntity(jokerEntity.JokerId, jokerEntity.JokerType, jokerEntity.HandInfluenceType, jokerEntity.ActionInfluenceType, jokerEntity.InfoInfluenceType, jokerEntity.BoardInfluenceType, effect.Id, effect.EffectValue, effect.CommandType);
+                            target.ActiveEffects.Add(jokerEffect);
+                            sbEng.Append($"Player {target.Name} cannot {effect.CommandType} on their next turn.");
+                            sbJp.Append($"プレイヤー{target.Name}は次のターンに{effect.CommandType}ができなくなりました。");
+                            break;
+                        case Enums.ActionInfluenceTypeEnum.ChangePosition:
+                            jokerEffect = new ActiveJokerEffectEntity(jokerEntity.JokerId, jokerEntity.JokerType, jokerEntity.HandInfluenceType, jokerEntity.ActionInfluenceType, jokerEntity.InfoInfluenceType, jokerEntity.BoardInfluenceType, effect.Id, effect.EffectValue, effect.CommandType);
+                            target.ActiveEffects.Add(jokerEffect);
+                            gameLogicManager.UpdateQueue(target);
+                            sbEng.Append($"Player {jokerUser.Name} is acting last for this turn.");
+                            sbJp.Append($"このターンにプレイヤー{jokerUser.Name}が最後にアクションを行う。");
+                            break;
+                        case Enums.ActionInfluenceTypeEnum.ChangeStack:
+                            break;
+                        case Enums.ActionInfluenceTypeEnum.IncreaseBettingRounds:
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
                     }
                 }
             }
@@ -221,15 +215,12 @@ namespace TexasHoldEmServer.GameLogic
 
             foreach (var target in targets)
             {
-                foreach (var ability in joker.JokerAbilityEntities)
+                foreach (var effect in joker.JokerAbilityEntity.AbilityEffects)
                 {
-                    foreach (var effect in ability.AbilityEffects)
+                    if (target.ActiveEffects.Select(activeEffect => activeEffect.EffectId).Contains(effect.Id))
                     {
-                        if (target.ActiveEffects.Select(activeEffect => activeEffect.EffectId).Contains(effect.Id))
-                        {
-                            message = "This effect is already active.\nこの効果はもう既に発揮されている。";
-                            return false;
-                        }
+                        message = "This effect is already active.\nこの効果はもう既に発揮されている。";
+                        return false;
                     }
                 }
             }
@@ -242,16 +233,16 @@ namespace TexasHoldEmServer.GameLogic
         {
             jokerEntities =
             [
-                new JokerEntity(Guid.NewGuid(), 101, 2, 2, 3, 0, [jokerAbilityEntities[0]], true, Enums.JokerTypeEnum.Hand, Enums.HandInfluenceTypeEnum.DiscardThenDraw, Enums.ActionInfluenceTypeEnum.None, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.None, Enums.TargetTypeEnum.Self),
-                new JokerEntity(Guid.NewGuid(), 102, 2, 2, 3, 0, [jokerAbilityEntities[1]], true, Enums.JokerTypeEnum.Hand, Enums.HandInfluenceTypeEnum.DrawThenDiscard, Enums.ActionInfluenceTypeEnum.None, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.None, Enums.TargetTypeEnum.Self),
-                new JokerEntity(Guid.NewGuid(), 103, 2, 2, 3, 0, [jokerAbilityEntities[2]], true, Enums.JokerTypeEnum.Action, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.Force, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.None, Enums.TargetTypeEnum.SinglePlayer),
-                new JokerEntity(Guid.NewGuid(), 104, 2, 2, 3, 0, [jokerAbilityEntities[3]], true, Enums.JokerTypeEnum.Action, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.Prevent, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.None, Enums.TargetTypeEnum.SinglePlayer),
-                new JokerEntity(Guid.NewGuid(), 105, 2, 2, 3, 0, [jokerAbilityEntities[4]], true, Enums.JokerTypeEnum.Action, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.ChangePosition, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.None, Enums.TargetTypeEnum.Self),
-                new JokerEntity(Guid.NewGuid(), 106, 2, 2, 3, 0, [jokerAbilityEntities[5]], true, Enums.JokerTypeEnum.Action, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.ChangeStack, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.None, Enums.TargetTypeEnum.SinglePlayer),
-                new JokerEntity(Guid.NewGuid(), 107, 2, 2, 3, 0, [jokerAbilityEntities[6]], true, Enums.JokerTypeEnum.Action, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.IncreaseBettingRounds, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.None, Enums.TargetTypeEnum.None),
-                new JokerEntity(Guid.NewGuid(), 108, 2, 2, 3, 0, [jokerAbilityEntities[7]], true, Enums.JokerTypeEnum.Info, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.None, Enums.InfoInfluenceTypeEnum.CheckHand, Enums.BoardInfluenceTypeEnum.None, Enums.TargetTypeEnum.SinglePlayer),
-                new JokerEntity(Guid.NewGuid(), 109, 2, 2, 3, 0, [jokerAbilityEntities[8]], true, Enums.JokerTypeEnum.Board, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.None, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.IncreaseEquity, Enums.TargetTypeEnum.Self),
-                new JokerEntity(Guid.NewGuid(), 110, 2, 2, 3, 0, [jokerAbilityEntities[9]], true, Enums.JokerTypeEnum.Board, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.None, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.DecreaseEquity, Enums.TargetTypeEnum.SinglePlayer),
+                new JokerEntity(Guid.NewGuid(), 101, 2, 2, 3, 0, jokerAbilityEntities[0], true, Enums.JokerTypeEnum.Hand, Enums.HandInfluenceTypeEnum.DiscardThenDraw, Enums.ActionInfluenceTypeEnum.None, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.None, Enums.TargetTypeEnum.Self),
+                new JokerEntity(Guid.NewGuid(), 102, 2, 2, 3, 0, jokerAbilityEntities[1], true, Enums.JokerTypeEnum.Hand, Enums.HandInfluenceTypeEnum.DrawThenDiscard, Enums.ActionInfluenceTypeEnum.None, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.None, Enums.TargetTypeEnum.Self),
+                new JokerEntity(Guid.NewGuid(), 103, 2, 2, 3, 0, jokerAbilityEntities[2], true, Enums.JokerTypeEnum.Action, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.Force, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.None, Enums.TargetTypeEnum.SinglePlayer),
+                new JokerEntity(Guid.NewGuid(), 104, 2, 2, 3, 0, jokerAbilityEntities[3], true, Enums.JokerTypeEnum.Action, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.Prevent, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.None, Enums.TargetTypeEnum.SinglePlayer),
+                new JokerEntity(Guid.NewGuid(), 105, 2, 2, 3, 0, jokerAbilityEntities[4], true, Enums.JokerTypeEnum.Action, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.ChangePosition, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.None, Enums.TargetTypeEnum.Self),
+                new JokerEntity(Guid.NewGuid(), 106, 2, 2, 3, 0, jokerAbilityEntities[5], true, Enums.JokerTypeEnum.Action, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.ChangeStack, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.None, Enums.TargetTypeEnum.SinglePlayer),
+                new JokerEntity(Guid.NewGuid(), 107, 2, 2, 3, 0, jokerAbilityEntities[6], true, Enums.JokerTypeEnum.Action, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.IncreaseBettingRounds, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.None, Enums.TargetTypeEnum.None),
+                new JokerEntity(Guid.NewGuid(), 108, 2, 2, 3, 0, jokerAbilityEntities[7], true, Enums.JokerTypeEnum.Info, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.None, Enums.InfoInfluenceTypeEnum.CheckHand, Enums.BoardInfluenceTypeEnum.None, Enums.TargetTypeEnum.SinglePlayer),
+                new JokerEntity(Guid.NewGuid(), 109, 2, 2, 3, 0, jokerAbilityEntities[8], true, Enums.JokerTypeEnum.Board, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.None, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.IncreaseEquity, Enums.TargetTypeEnum.Self),
+                new JokerEntity(Guid.NewGuid(), 110, 2, 2, 3, 0, jokerAbilityEntities[9], true, Enums.JokerTypeEnum.Board, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.None, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.DecreaseEquity, Enums.TargetTypeEnum.SinglePlayer),
             ];
         }
 

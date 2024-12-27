@@ -272,7 +272,7 @@ namespace TexasHoldEmServer.Interfaces
             var joker = player.JokerCards.First(x => x.UniqueId == jokerUniqueId);
             gameLogicManager.DiscardAndFinishUsingJoker(player, joker, cardsToDiscard);
 
-            var effect = joker.JokerAbilityEntities.First().AbilityEffects.First();
+            var effect = joker.JokerAbilityEntity.AbilityEffects.First();
             var message = $"Player {player.Name} discarded {effect.EffectValue} new card(s).\nプレイヤー{player.Name}が{effect.EffectValue}カードを引いた";
             Broadcast(group).OnDiscardHoleCard(player, cardsToDiscard, message);
         }
