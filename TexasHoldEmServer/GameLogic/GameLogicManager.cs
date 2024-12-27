@@ -370,15 +370,9 @@ namespace TexasHoldEmServer.GameLogic
             for (var i = 0; i < numberOfPlayersToChange; i++)
             {
                 if (activePlayers[i].Id == playerToChange.Id)
-                {
-                    playerToChange.OriginalOrderInQueue = playerToChange.OrderInQueue;
                     playerToChange.OrderInQueue = playerQueue.Count;
-                }
                 else
-                {
-                    activePlayers[i].OriginalOrderInQueue = activePlayers[i].OrderInQueue;
                     activePlayers[i].OrderInQueue -= 1;
-                }
             }
             
             var players = activePlayers.OrderBy(x => x.OrderInQueue).ToList();

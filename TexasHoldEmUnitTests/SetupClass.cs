@@ -96,5 +96,14 @@ namespace TexasHoldEmUnitTests
             Assert.That(sut.GameLogicManager.GetAllPlayers().All(x => x.TempHoleCards.Count == 0 && x.MaxHoleCards == x.HoleCards.Count));
             Assert.That(sut.GameLogicManager.GetPots().Sum(x => x.PotAmount) + sut.GameLogicManager.GetAllPlayers().Sum(x => x.Chips), Is.EqualTo(totalChips));
         }
+
+        public static void PurchaseAndUseJoker(TestSystem sut, int jokerToUse, PlayerEntity player, ref int totalChips)
+        {
+            var jokerEntity = sut.JokerManager.GetJokerEntities().First(x => x.JokerId == jokerToUse);
+            sut.JokerManager.PurchaseJoker(jokerEntity.JokerId, player, out _, out var addedJoker);
+            totalChips -= addedJoker.BuyCost;
+            sut.JokerManager.UseJoker(sut.GameLogicManager, player, [player], player.JokerCards.First(), new List<CardEntity>(), out var isJokerError, out _);
+            AssertAfterJokerAction(sut, totalChips, false, isJokerError);
+        }
     }
 }
