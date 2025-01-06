@@ -229,7 +229,7 @@ namespace TexasHoldEmServer.Interfaces
             return response;
         }
 
-        public async Task<Enums.UseJokerResponseTypeEnum> UseJoker(Guid jokerUserId, Guid selectedJokerUniqueId, List<Guid> targetPlayerIds, List<CardEntity> holeCardsToDiscard)
+        public async Task<Enums.UseJokerResponseTypeEnum> UseJoker(Guid jokerUserId, Guid selectedJokerUniqueId, List<Guid> targetPlayerIds, List<CardEntity> holeCardsToDiscard, List<CardEntity> cardsToUpdateWeight)
         {
             if (group == null)
                 return Enums.UseJokerResponseTypeEnum.GroupDoesNotExist;
@@ -246,7 +246,7 @@ namespace TexasHoldEmServer.Interfaces
                     targetPlayers.Add(storage.AllValues.First(x => x.Id == id));
                 
                 var jokerEntity = jokerUser.JokerCards.First(x => x.UniqueId == selectedJokerUniqueId);
-                response = jokerManager.UseJoker(gameLogicManager, jokerUser, targetPlayers, jokerEntity, holeCardsToDiscard, out bool isError, out bool showHand, out string message);
+                response = jokerManager.UseJoker(gameLogicManager, jokerUser, targetPlayers, jokerEntity, holeCardsToDiscard, cardsToUpdateWeight, out bool isError, out bool showHand, out string message);
                 if (!isError)
                 {
                     var targetNames = targetPlayers.Select(x => x.Name).ToList();

@@ -51,7 +51,7 @@ namespace TexasHoldEmServer.GameLogic
             return response;
         }
 
-        public Enums.UseJokerResponseTypeEnum UseJoker(IGameLogicManager gameLogicManager, PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, List<CardEntity> holeCardsToDiscard, out bool isError, out bool showHand, out string actionMessage)
+        public Enums.UseJokerResponseTypeEnum UseJoker(IGameLogicManager gameLogicManager, PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, List<CardEntity> holeCardsToDiscard, List<CardEntity> cardsToUpdateWeight, out bool isError, out bool showHand, out string actionMessage)
         {
             if (!CanUseJoker(jokerUser, targets, jokerEntity, out var message))
             {
@@ -73,7 +73,7 @@ namespace TexasHoldEmServer.GameLogic
                     HandleInfoInfluence(jokerUser, targets, jokerEntity, out isError, out showHand, out actionMessage);
                     break;
                 case Enums.JokerTypeEnum.Board:
-                    HandleBoardInfluence(jokerUser, targets, jokerEntity, out isError, out actionMessage);
+                    HandleBoardInfluence(gameLogicManager, jokerUser, jokerEntity, cardsToUpdateWeight, out isError, out actionMessage);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -228,9 +228,36 @@ namespace TexasHoldEmServer.GameLogic
             showHand = false;
         }
         
-        private void HandleBoardInfluence(PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, out bool isError, out string message)
+        private void HandleBoardInfluence(IGameLogicManager gameLogicManager, PlayerEntity jokerUser, JokerEntity jokerEntity, List<CardEntity> cardsToUpdateWeight, out bool isError, out string message)
         {
-            throw new NotImplementedException();
+            var sbEng = new StringBuilder();
+            var sbJp = new StringBuilder();
+            sbEng.Append($"Player {jokerUser.Name} used a board influence joker. {jokerEntity.UseCost} chips were added to the pot.");
+            sbJp.Append($"プレイヤー{jokerUser.Name}がboard influenceジョーカーを使いました。{jokerEntity.UseCost}チップがポットに追加された。");
+            foreach (var effect in jokerEntity.JokerAbilityEntity.AbilityEffects)
+            {
+                switch (jokerEntity.BoardInfluenceType)
+                {
+                    case Enums.BoardInfluenceTypeEnum.IncreaseCardWeight:
+                        gameLogicManager.UpdateCardWeight(cardsToUpdateWeight, effect.EffectValue, true);
+                        sbEng.Append($"Player {jokerUser.Name} updated the card weights.");
+                        sbJp.Append($"プレイヤー{jokerUser.Name}がカードの重みを更新した。");
+                        break;
+                    case Enums.BoardInfluenceTypeEnum.DecreaseCardWeight:
+                        gameLogicManager.UpdateCardWeight(cardsToUpdateWeight, effect.EffectValue, false);
+                        sbEng.Append($"Player {jokerUser.Name} updated the card weights.");
+                        sbJp.Append($"プレイヤー{jokerUser.Name}がカードの重みを更新した。");
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+
+            var full = new StringBuilder(sbEng.ToString());
+            full.AppendLine();
+            full.Append(sbJp);
+            message = full.ToString();
+            isError = false;
         }
 
         private bool CanUseJoker(PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity joker, out string message)
@@ -275,8 +302,8 @@ namespace TexasHoldEmServer.GameLogic
                 new JokerEntity(Guid.NewGuid(), 106, 2, 2, 3, 0, jokerAbilityEntities[5], true, Enums.JokerTypeEnum.Action, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.ChangeStack, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.None, Enums.TargetTypeEnum.SinglePlayer),
                 new JokerEntity(Guid.NewGuid(), 107, 2, 2, 3, 0, jokerAbilityEntities[6], true, Enums.JokerTypeEnum.Action, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.IncreaseBettingRounds, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.None, Enums.TargetTypeEnum.None),
                 new JokerEntity(Guid.NewGuid(), 108, 2, 2, 3, 0, jokerAbilityEntities[7], true, Enums.JokerTypeEnum.Info, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.None, Enums.InfoInfluenceTypeEnum.CheckHand, Enums.BoardInfluenceTypeEnum.None, Enums.TargetTypeEnum.SinglePlayer),
-                new JokerEntity(Guid.NewGuid(), 109, 2, 2, 3, 0, jokerAbilityEntities[8], true, Enums.JokerTypeEnum.Board, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.None, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.IncreaseEquity, Enums.TargetTypeEnum.Self),
-                new JokerEntity(Guid.NewGuid(), 110, 2, 2, 3, 0, jokerAbilityEntities[9], true, Enums.JokerTypeEnum.Board, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.None, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.DecreaseEquity, Enums.TargetTypeEnum.SinglePlayer),
+                new JokerEntity(Guid.NewGuid(), 109, 2, 2, 3, 0, jokerAbilityEntities[8], true, Enums.JokerTypeEnum.Board, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.None, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.IncreaseCardWeight, Enums.TargetTypeEnum.Self),
+                new JokerEntity(Guid.NewGuid(), 110, 2, 2, 3, 0, jokerAbilityEntities[9], true, Enums.JokerTypeEnum.Board, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.None, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.DecreaseCardWeight, Enums.TargetTypeEnum.SinglePlayer),
             ];
         }
 
@@ -299,8 +326,8 @@ namespace TexasHoldEmServer.GameLogic
                 new JokerAbilityEntity(8, "Check the target's hand", [jokerAbilityEffectEntities[9]]),
 
                 //board influencers
-                new JokerAbilityEntity(9, "Increase equity", [jokerAbilityEffectEntities[10]]),
-                new JokerAbilityEntity(10, "Decrease the target's equity", [jokerAbilityEffectEntities[11]]),
+                new JokerAbilityEntity(9, "Increase the selected card(s) weight(s)", [jokerAbilityEffectEntities[10]]),
+                new JokerAbilityEntity(10, "Decrease the selected card(s)' weight(s)", [jokerAbilityEffectEntities[11]]),
 
                 // new(2, "Make the target show their hand. ターゲットのハンドを見せさせる。", [3]),
                 // new(3, "Make the target raise on their next turn. ターゲットを次のターンでレイズさせる。", [4]),
@@ -331,8 +358,8 @@ namespace TexasHoldEmServer.GameLogic
 
                 new AbilityEffectEntity(10, 8, 1, Enums.CommandTypeEnum.None, "Check the target's hand"),
 
-                new AbilityEffectEntity(11, 9, 0, Enums.CommandTypeEnum.None, "Increase equity"),
-                new AbilityEffectEntity(12, 10, 0, Enums.CommandTypeEnum.None, "Decrease target's equity"),
+                new AbilityEffectEntity(11, 9, 2, Enums.CommandTypeEnum.None, "Increase card weight"),
+                new AbilityEffectEntity(12, 10, 2, Enums.CommandTypeEnum.None, "Decrease card weight"),
 
                 // new(5, 1, 0, Enums.EffectTargetTypeEnum.Self, Enums.CommandTypeEnum.None, "Check even if there was a call or raise"),
                 // new(6, 1, 0, Enums.EffectTargetTypeEnum.Self, Enums.CommandTypeEnum.None, "Add another community card"),

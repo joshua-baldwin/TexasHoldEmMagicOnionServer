@@ -181,8 +181,8 @@ namespace TexasHoldEmShared.Enums
         public enum BoardInfluenceTypeEnum
         {
             None,
-            IncreaseEquity,
-            DecreaseEquity,
+            IncreaseCardWeight,
+            DecreaseCardWeight,
         }
 
         public enum TargetTypeEnum

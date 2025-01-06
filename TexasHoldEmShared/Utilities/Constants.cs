@@ -10,6 +10,7 @@ namespace THE.MagicOnion.Shared.Utilities
         public static int MinBet = 2;
         public static int RaiseAmount = 1;
         public static int MaxRounds = 5;
+        public static int OriginalCardWeight = 100;
         
         //Joker
         public static int MaxJokerCount = 3;

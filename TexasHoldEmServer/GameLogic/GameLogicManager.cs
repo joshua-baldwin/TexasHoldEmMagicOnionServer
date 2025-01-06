@@ -400,6 +400,17 @@ namespace TexasHoldEmServer.GameLogic
             extraBettingRoundCount++;
         }
 
+        public void UpdateCardWeight(List<CardEntity> cards, int multiplier, bool increaseWeight)
+        {
+            foreach (var card in cards)
+            {
+                var oldWeight = cardPool.First(x => x.Suit == card.Suit && x.Rank == card.Rank).Weight;
+                cardPool.First(x => x.Suit == card.Suit && x.Rank == card.Rank).Weight = increaseWeight
+                    ? oldWeight * multiplier
+                    : oldWeight / multiplier;
+            }
+        }
+
         #endregion
 
         private void RemoveFromPots()
@@ -760,7 +771,7 @@ namespace TexasHoldEmServer.GameLogic
             var deck = new List<CardEntity>();
             foreach (var suit in suits.Where(x => x != Enums.CardSuitEnum.None))
             {
-                deck.AddRange(ranks.Select(rank => new CardEntity(suit, rank, 1)));
+                deck.AddRange(ranks.Select(rank => new CardEntity(suit, rank, Constants.OriginalCardWeight)));
             }
 
             return deck;

@@ -26,6 +26,7 @@ namespace TexasHoldEmServer.GameLogic
         void AddJokerCostToPot(int cost);
         void UpdateQueue(PlayerEntity playerToChange);
         void IncreaseNumberOfBettingRounds();
+        void UpdateCardWeight(List<CardEntity> card, int multiplier, bool increaseWeight);
     }
 
     public interface IGameLogicManagerForTesting
