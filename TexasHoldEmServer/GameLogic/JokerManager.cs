@@ -208,8 +208,8 @@ namespace TexasHoldEmServer.GameLogic
                     switch (jokerEntity.InfoInfluenceType)
                     {
                         case Enums.InfoInfluenceTypeEnum.CheckHand:
-                            var jokerEffect = new ActiveJokerEffectEntity(jokerEntity.JokerId, jokerEntity.JokerType, jokerEntity.HandInfluenceType, jokerEntity.ActionInfluenceType, jokerEntity.InfoInfluenceType, jokerEntity.BoardInfluenceType, effect.Id, effect.EffectValue, effect.CommandType);
-                            target.ActiveEffects.Add(jokerEffect);
+                            //don't add joker effect
+                            //let player use as many times as wanted in case the target changes cards
                             showHand = true;
                             sbEng.Append($"Player {target.Name} showed their hand to player {jokerUser.Name}.");
                             sbJp.Append($"プレイヤー{target.Name}が{jokerUser.Name}にハンドを見せた。");
