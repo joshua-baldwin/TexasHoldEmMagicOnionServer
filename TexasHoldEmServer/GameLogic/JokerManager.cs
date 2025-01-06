@@ -51,15 +51,16 @@ namespace TexasHoldEmServer.GameLogic
             return response;
         }
 
-        public Enums.UseJokerResponseTypeEnum UseJoker(IGameLogicManager gameLogicManager, PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, List<CardEntity> holeCardsToDiscard, out bool isError, out string actionMessage)
+        public Enums.UseJokerResponseTypeEnum UseJoker(IGameLogicManager gameLogicManager, PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, List<CardEntity> holeCardsToDiscard, out bool isError, out bool showHand, out string actionMessage)
         {
             if (!CanUseJoker(jokerUser, targets, jokerEntity, out var message))
             {
                 actionMessage = message;
+                showHand = false;
                 isError = true;
                 return Enums.UseJokerResponseTypeEnum.Failed;
             }
-            
+            showHand = false;
             switch (jokerEntity.JokerType)
             {
                 case Enums.JokerTypeEnum.Hand:
@@ -69,7 +70,7 @@ namespace TexasHoldEmServer.GameLogic
                     HandleActionInfluence(gameLogicManager, jokerUser, targets, jokerEntity, out isError, out actionMessage);
                     break;
                 case Enums.JokerTypeEnum.Info:
-                    HandleInfoInfluence(jokerUser, targets, jokerEntity, out isError, out actionMessage);
+                    HandleInfoInfluence(jokerUser, targets, jokerEntity, out isError, out showHand, out actionMessage);
                     break;
                 case Enums.JokerTypeEnum.Board:
                     HandleBoardInfluence(jokerUser, targets, jokerEntity, out isError, out actionMessage);
@@ -80,7 +81,7 @@ namespace TexasHoldEmServer.GameLogic
 
             if (isError)
                 return Enums.UseJokerResponseTypeEnum.Failed;
-            
+
             gameLogicManager.AddJokerCostToPot(jokerEntity.UseCost);
             jokerUser.Chips -= jokerEntity.UseCost;
             if (jokerEntity.HandInfluenceType != Enums.HandInfluenceTypeEnum.DrawThenDiscard)
@@ -194,9 +195,37 @@ namespace TexasHoldEmServer.GameLogic
             isError = false;
         }
         
-        private void HandleInfoInfluence(PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, out bool isError, out string message)
+        private void HandleInfoInfluence(PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, out bool isError, out bool showHand, out string message)
         {
-            throw new NotImplementedException();
+            var sbEng = new StringBuilder();
+            var sbJp = new StringBuilder();
+            sbEng.Append($"Player {jokerUser.Name} used an info influence joker. {jokerEntity.UseCost} chips were added to the pot.");
+            sbJp.Append($"プレイヤー{jokerUser.Name}がinfo influenceジョーカーを使いました。{jokerEntity.UseCost}チップがポットに追加された。");
+            foreach (var target in targets)
+            {
+                foreach (var effect in jokerEntity.JokerAbilityEntity.AbilityEffects)
+                {
+                    switch (jokerEntity.InfoInfluenceType)
+                    {
+                        case Enums.InfoInfluenceTypeEnum.CheckHand:
+                            var jokerEffect = new ActiveJokerEffectEntity(jokerEntity.JokerId, jokerEntity.JokerType, jokerEntity.HandInfluenceType, jokerEntity.ActionInfluenceType, jokerEntity.InfoInfluenceType, jokerEntity.BoardInfluenceType, effect.Id, effect.EffectValue, effect.CommandType);
+                            target.ActiveEffects.Add(jokerEffect);
+                            showHand = true;
+                            sbEng.Append($"Player {target.Name} showed their hand to player {jokerUser.Name}.");
+                            sbJp.Append($"プレイヤー{target.Name}が{jokerUser.Name}にハンドを見せた。");
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                }
+            }
+            
+            var full = new StringBuilder(sbEng.ToString());
+            full.AppendLine();
+            full.Append(sbJp);
+            message = full.ToString();
+            isError = false;
+            showHand = false;
         }
         
         private void HandleBoardInfluence(PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, out bool isError, out string message)
@@ -300,7 +329,7 @@ namespace TexasHoldEmServer.GameLogic
                 new AbilityEffectEntity(8, 6, 0, Enums.CommandTypeEnum.None, "Change stack"),
                 new AbilityEffectEntity(9, 7, 0, Enums.CommandTypeEnum.None, "Increase betting rounds"),
 
-                new AbilityEffectEntity(10, 8, 0, Enums.CommandTypeEnum.None, "Check the target's hand"),
+                new AbilityEffectEntity(10, 8, 1, Enums.CommandTypeEnum.None, "Check the target's hand"),
 
                 new AbilityEffectEntity(11, 9, 0, Enums.CommandTypeEnum.None, "Increase equity"),
                 new AbilityEffectEntity(12, 10, 0, Enums.CommandTypeEnum.None, "Decrease target's equity"),

@@ -246,17 +246,17 @@ namespace TexasHoldEmServer.Interfaces
                     targetPlayers.Add(storage.AllValues.First(x => x.Id == id));
                 
                 var jokerEntity = jokerUser.JokerCards.First(x => x.UniqueId == selectedJokerUniqueId);
-                response = jokerManager.UseJoker(gameLogicManager, jokerUser, targetPlayers, jokerEntity, holeCardsToDiscard, out bool isError, out string message);
+                response = jokerManager.UseJoker(gameLogicManager, jokerUser, targetPlayers, jokerEntity, holeCardsToDiscard, out bool isError, out bool showHand, out string message);
                 if (!isError)
                 {
                     var targetNames = targetPlayers.Select(x => x.Name).ToList();
                     var sb = new StringBuilder();
                     targetNames.ForEach(x => sb.Append($"{x} "));
                     Console.WriteLine($"Player {jokerUser.Name} used {jokerEntity.JokerType} influence joker against player(s) {sb}, response: {response}");
-                    Broadcast(group).OnUseJoker(storage.AllValues.ToList(), jokerUser, targetPlayers, jokerEntity, gameLogicManager.GetCurrentPlayer().Id, gameLogicManager.GetPots(), isError, message);
+                    Broadcast(group).OnUseJoker(storage.AllValues.ToList(), jokerUser, targetPlayers, jokerEntity, gameLogicManager.GetCurrentPlayer().Id, gameLogicManager.GetPots(), isError, showHand, message);
                 }
                 else
-                    BroadcastToSelf(group).OnUseJoker(storage.AllValues.ToList(), jokerUser, targetPlayers, jokerEntity, gameLogicManager.GetCurrentPlayer().Id, gameLogicManager.GetPots(), isError, message);
+                    BroadcastToSelf(group).OnUseJoker(storage.AllValues.ToList(), jokerUser, targetPlayers, jokerEntity, gameLogicManager.GetCurrentPlayer().Id, gameLogicManager.GetPots(), isError, false, message);
             }
             catch (Exception)
             {
