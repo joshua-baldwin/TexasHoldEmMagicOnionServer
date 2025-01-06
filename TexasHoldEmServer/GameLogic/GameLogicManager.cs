@@ -307,7 +307,7 @@ namespace TexasHoldEmServer.GameLogic
             var newCards = new List<CardEntity>();
             for (var i = 0; i < numberOfCardsToDraw; i++)
             {
-                var card = cardPool.GetRandomElement();
+                var card = WeightedCardSelector.GetCardEntity(cardPool, cardPool.Sum(x => x.Weight));
                 cardPool.Remove(card);
                 newCards.Add(card);
             }
@@ -737,7 +737,7 @@ namespace TexasHoldEmServer.GameLogic
             {
                 for (var i = 0; i < Constants.MaxHoleCards; i++)
                 {
-                    var card = shuffled.GetRandomElement();
+                    var card = WeightedCardSelector.GetCardEntity(shuffled, shuffled.Sum(x => x.Weight));
                     shuffled.Remove(card);
                     players[startIndex].HoleCards.Add(card);
                     players[startIndex].MaxHoleCards++;
@@ -760,7 +760,7 @@ namespace TexasHoldEmServer.GameLogic
             var deck = new List<CardEntity>();
             foreach (var suit in suits.Where(x => x != Enums.CardSuitEnum.None))
             {
-                deck.AddRange(ranks.Select(rank => new CardEntity(suit, rank)));
+                deck.AddRange(ranks.Select(rank => new CardEntity(suit, rank, 1)));
             }
 
             return deck;
@@ -772,11 +772,11 @@ namespace TexasHoldEmServer.GameLogic
         
         private void SetTheFlop()
         {
-            var card1 = cardPool.GetRandomElement();
+            var card1 = WeightedCardSelector.GetCardEntity(cardPool, cardPool.Sum(x => x.Weight));
             cardPool.Remove(card1);
-            var card2 = cardPool.GetRandomElement();
+            var card2 = WeightedCardSelector.GetCardEntity(cardPool, cardPool.Sum(x => x.Weight));
             cardPool.Remove(card2);
-            var card3 = cardPool.GetRandomElement();
+            var card3 = WeightedCardSelector.GetCardEntity(cardPool, cardPool.Sum(x => x.Weight));
             cardPool.Remove(card3);
             
             communityCards.Add(card1);
@@ -786,14 +786,14 @@ namespace TexasHoldEmServer.GameLogic
         
         private void SetTheTurn()
         {
-            var card4 = cardPool.GetRandomElement();
+            var card4 = WeightedCardSelector.GetCardEntity(cardPool, cardPool.Sum(x => x.Weight));
             cardPool.Remove(card4);
             communityCards.Add(card4);
         }
 
         private void SetTheRiver()
         {
-            var card5 = cardPool.GetRandomElement();
+            var card5 = WeightedCardSelector.GetCardEntity(cardPool, cardPool.Sum(x => x.Weight));
             cardPool.Remove(card5);
             communityCards.Add(card5);
         }
@@ -802,7 +802,7 @@ namespace TexasHoldEmServer.GameLogic
         {
             while (communityCards.Count < 5)
             {
-                var card = cardPool.GetRandomElement();
+                var card = WeightedCardSelector.GetCardEntity(cardPool, cardPool.Sum(x => x.Weight));
                 cardPool.Remove(card);
                 communityCards.Add(card);
             }

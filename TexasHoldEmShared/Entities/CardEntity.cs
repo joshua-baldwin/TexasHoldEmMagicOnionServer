@@ -13,12 +13,16 @@ namespace THE.MagicOnion.Shared.Entities
         public Enums.CardRankEnum Rank { get; private set; }
         
         [Key(2)]
+        public int Weight { get; set; }
+        
+        [Key(3)]
         public bool IsFinalHand { get; set; }
 
-        public CardEntity(Enums.CardSuitEnum suit, Enums.CardRankEnum rank)
+        public CardEntity(Enums.CardSuitEnum suit, Enums.CardRankEnum rank, int weight)
         {
             Suit = suit;
             Rank = rank;
+            Weight = weight;
         }
     }
 }
