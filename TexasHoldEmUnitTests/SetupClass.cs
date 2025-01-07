@@ -107,12 +107,12 @@ namespace TexasHoldEmUnitTests
             Assert.That(sut.GameLogicManager.GetPots().Sum(x => x.PotAmount) + sut.GameLogicManager.GetAllPlayers().Sum(x => x.Chips), Is.EqualTo(totalChips));
         }
 
-        public static void PurchaseAndUseJoker(TestSystem sut, int jokerToUse, PlayerEntity player, List<PlayerEntity> targets, ref int totalChips)
+        public static void PurchaseAndUseJoker(TestSystem sut, int jokerToUse, PlayerEntity player, List<PlayerEntity> targets, List<CardEntity> cardsToDiscard, List<CardEntity> cardsToUpdateWeight, ref int totalChips)
         {
             var jokerEntity = sut.JokerManager.GetJokerEntities().First(x => x.JokerId == jokerToUse);
             sut.JokerManager.PurchaseJoker(jokerEntity.JokerId, player, out _, out var addedJoker);
             totalChips -= addedJoker.BuyCost;
-            sut.JokerManager.UseJoker(sut.GameLogicManager, player, targets, player.JokerCards.First(), new List<CardEntity>(), out var isJokerError, out _);
+            sut.JokerManager.UseJoker(sut.GameLogicManager, player, targets, player.JokerCards.First(), cardsToDiscard, cardsToUpdateWeight, out var isJokerError, out _, out _);
             AssertAfterJokerAction(sut, totalChips, false, isJokerError);
         }
     }

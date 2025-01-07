@@ -1,5 +1,6 @@
 using MessagePack;
 using TexasHoldEmShared.Enums;
+using THE.MagicOnion.Shared.Utilities;
 
 namespace THE.MagicOnion.Shared.Entities
 {
@@ -18,11 +19,11 @@ namespace THE.MagicOnion.Shared.Entities
         [Key(3)]
         public bool IsFinalHand { get; set; }
 
-        public CardEntity(Enums.CardSuitEnum suit, Enums.CardRankEnum rank, int weight)
+        public CardEntity(Enums.CardSuitEnum suit, Enums.CardRankEnum rank)
         {
             Suit = suit;
             Rank = rank;
-            Weight = weight;
+            Weight = Constants.OriginalCardWeight;
         }
     }
 }

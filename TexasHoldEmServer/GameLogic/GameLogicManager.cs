@@ -771,7 +771,7 @@ namespace TexasHoldEmServer.GameLogic
             var deck = new List<CardEntity>();
             foreach (var suit in suits.Where(x => x != Enums.CardSuitEnum.None))
             {
-                deck.AddRange(ranks.Select(rank => new CardEntity(suit, rank, Constants.OriginalCardWeight)));
+                deck.AddRange(ranks.Select(rank => new CardEntity(suit, rank)));
             }
 
             return deck;

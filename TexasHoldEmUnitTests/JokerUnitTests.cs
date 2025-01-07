@@ -40,7 +40,7 @@ namespace TexasHoldEmUnitTests
             var joker = sut.JokerManager.GetJokerEntities().First();
             sut.JokerManager.PurchaseJoker(joker.JokerId, p1, out _, out var addedJoker);
             totalChips -= addedJoker.BuyCost;
-            sut.JokerManager.UseJoker(sut.GameLogicManager, p1, [p1], p1.JokerCards.First(), new List<CardEntity> { new(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.King), }, out var isJokerError, out _);
+            sut.JokerManager.UseJoker(sut.GameLogicManager, p1, [p1], p1.JokerCards.First(), new List<CardEntity> { new(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.King), }, new List<CardEntity>(), out var isJokerError, out _, out _);
             SetupClass.AssertAfterJokerAction(sut, totalChips, false, isJokerError);
             sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 1, out var isGameOver, out var isError, out _);
             SetupClass.AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
@@ -112,7 +112,7 @@ namespace TexasHoldEmUnitTests
             var joker = sut.JokerManager.GetJokerEntities().First(x => x.JokerId == 102);
             sut.JokerManager.PurchaseJoker(joker.JokerId, p1, out _, out var addedJoker);
             totalChips -= addedJoker.BuyCost;
-            sut.JokerManager.UseJoker(sut.GameLogicManager, p1, [p1], p1.JokerCards.First(), new List<CardEntity> { new(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.King), }, out var isJokerError, out _);
+            sut.JokerManager.UseJoker(sut.GameLogicManager, p1, [p1], p1.JokerCards.First(), new List<CardEntity> { new(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.King), }, new List<CardEntity>(), out var isJokerError, out _, out _);
             sut.GameLogicManager.DiscardAndFinishUsingJoker(p1, p1.JokerCards.First(), [p1.HoleCards.First()]);
             SetupClass.AssertAfterJokerAction(sut, totalChips, false, isJokerError);
             sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 1, out var isGameOver, out var isError, out _);
@@ -189,7 +189,7 @@ namespace TexasHoldEmUnitTests
             var jokerEntity = sut.JokerManager.GetJokerEntities().First();
             sut.JokerManager.PurchaseJoker(jokerEntity.JokerId, p1, out _, out var addedJoker);
             totalChips -= addedJoker.BuyCost;
-            sut.JokerManager.UseJoker(sut.GameLogicManager, p1, [p1], p1.JokerCards.First(), new List<CardEntity>() { new(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.King), }, out var isJokerError, out _);
+            sut.JokerManager.UseJoker(sut.GameLogicManager, p1, [p1], p1.JokerCards.First(), new List<CardEntity>() { new(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.King), }, new List<CardEntity>(), out var isJokerError, out _, out _);
             SetupClass.AssertAfterJokerAction(sut, totalChips, false, isJokerError);
             sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 1, out var isGameOver, out var isError, out _);
             SetupClass.AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
@@ -200,18 +200,18 @@ namespace TexasHoldEmUnitTests
             var jokerEntity2 = sut.JokerManager.GetJokerEntities().First();
             sut.JokerManager.PurchaseJoker(jokerEntity2.JokerId, p4, out _, out addedJoker);
             totalChips -= addedJoker.BuyCost;
-            sut.JokerManager.UseJoker(sut.GameLogicManager, p4, [p4], p4.JokerCards.First(), new List<CardEntity>() { p4.HoleCards.First() }, out isJokerError, out _);
+            sut.JokerManager.UseJoker(sut.GameLogicManager, p4, [p4], p4.JokerCards.First(), new List<CardEntity>() { p4.HoleCards.First() }, new List<CardEntity>(), out isJokerError, out _, out _);
             SetupClass.AssertAfterJokerAction(sut, totalChips, false, isJokerError);
             sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
             SetupClass.AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
             var jokerEntity3 = sut.JokerManager.GetJokerEntities().First();
             sut.JokerManager.PurchaseJoker(jokerEntity3.JokerId, p5, out _, out addedJoker);
             totalChips -= addedJoker.BuyCost;
-            sut.JokerManager.UseJoker(sut.GameLogicManager, p5, [p5], p5.JokerCards.First(), new List<CardEntity>() { p5.HoleCards.First() }, out isJokerError, out _);
+            sut.JokerManager.UseJoker(sut.GameLogicManager, p5, [p5], p5.JokerCards.First(), new List<CardEntity>() { p5.HoleCards.First() }, new List<CardEntity>(), out isJokerError, out _, out _);
             SetupClass.AssertAfterJokerAction(sut, totalChips, false, isError);
-            sut.JokerManager.UseJoker(sut.GameLogicManager, p5, [p5], p5.JokerCards.First(), new List<CardEntity>() { p5.HoleCards.First() }, out isJokerError, out _);
+            sut.JokerManager.UseJoker(sut.GameLogicManager, p5, [p5], p5.JokerCards.First(), new List<CardEntity>() { p5.HoleCards.First() }, new List<CardEntity>(), out isJokerError, out _, out _);
             SetupClass.AssertAfterJokerAction(sut, totalChips, false, isError);
-            sut.JokerManager.UseJoker(sut.GameLogicManager, p5, [p5], p5.JokerCards.First(), new List<CardEntity>() { p5.HoleCards.First() }, out isJokerError, out _);
+            sut.JokerManager.UseJoker(sut.GameLogicManager, p5, [p5], p5.JokerCards.First(), new List<CardEntity>() { p5.HoleCards.First() }, new List<CardEntity>(), out isJokerError, out _, out _);
             SetupClass.AssertAfterJokerAction(sut, totalChips, false, isError);
             sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.AllIn, 0, out isGameOver, out isError, out _);
             SetupClass.AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
@@ -277,7 +277,7 @@ namespace TexasHoldEmUnitTests
             var jokerEntity = sut.JokerManager.GetJokerEntities().First(x => x.JokerId == 103);
             sut.JokerManager.PurchaseJoker(jokerEntity.JokerId, p1, out _, out var addedJoker);
             totalChips -= addedJoker.BuyCost;
-            sut.JokerManager.UseJoker(sut.GameLogicManager, p1, [p2], p1.JokerCards.First(), new List<CardEntity>(), out var isJokerError, out _);
+            sut.JokerManager.UseJoker(sut.GameLogicManager, p1, [p2], p1.JokerCards.First(), new List<CardEntity>(), new List<CardEntity>(), out var isJokerError, out _, out _);
             SetupClass.AssertAfterJokerAction(sut, totalChips, false, isJokerError);
             sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 1, out var isGameOver, out var isError, out _);
             SetupClass.AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
@@ -316,7 +316,7 @@ namespace TexasHoldEmUnitTests
             var p2 = sut.Players[1];
             
             //prevent check
-            SetupClass.PurchaseAndUseJoker(sut, 103, p1, [p2], ref totalChips);
+            SetupClass.PurchaseAndUseJoker(sut, 103, p1, [p2], [], [], ref totalChips);
             sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out var isGameOver, out var isError, out _);
             SetupClass.AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
             sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out isGameOver, out isError, out _);
@@ -353,7 +353,7 @@ namespace TexasHoldEmUnitTests
             var p3 = sut.Players[2];
             
             //change position
-            SetupClass.PurchaseAndUseJoker(sut, 105, p1, [p1], ref totalChips);
+            SetupClass.PurchaseAndUseJoker(sut, 105, p1, [p1], [], [], ref totalChips);
             Assert.That(sut.GameLogicManager.GetCurrentPlayer().Name, Is.EqualTo("big"));
             sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out var isGameOver, out var isError, out _);
             SetupClass.AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
@@ -389,7 +389,7 @@ namespace TexasHoldEmUnitTests
             sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out isGameOver, out isError, out _);
             SetupClass.AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
             
-            SetupClass.PurchaseAndUseJoker(sut, 105, p3, [p3], ref totalChips);
+            SetupClass.PurchaseAndUseJoker(sut, 105, p3, [p3], [], [], ref totalChips);
             Assert.That(sut.GameLogicManager.GetCurrentPlayer().Name, Is.EqualTo("none4"));
             sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out isGameOver, out isError, out _);
             Assert.That(sut.GameLogicManager.GetCurrentPlayer().Name, Is.EqualTo("none3"));
@@ -436,7 +436,7 @@ namespace TexasHoldEmUnitTests
             sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 1, out isGameOver, out isError, out _);
             SetupClass.AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
             
-            SetupClass.PurchaseAndUseJoker(sut, 105, p3, [p3], ref totalChips);
+            SetupClass.PurchaseAndUseJoker(sut, 105, p3, [p3], [], [], ref totalChips);
             Assert.That(sut.GameLogicManager.GetCurrentPlayer().Name, Is.EqualTo("none4"));
             sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out isGameOver, out isError, out _);
             SetupClass.AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
@@ -485,10 +485,10 @@ namespace TexasHoldEmUnitTests
             var p2 = sut.Players[1];
             
             //change position
-            SetupClass.PurchaseAndUseJoker(sut, 105, p1, [p1], ref totalChips);
+            SetupClass.PurchaseAndUseJoker(sut, 105, p1, [p1], [], [], ref totalChips);
             Assert.That(sut.GameLogicManager.GetCurrentPlayer().Name, Is.EqualTo("big"));
             
-            SetupClass.PurchaseAndUseJoker(sut, 105, p2, [p2], ref totalChips);
+            SetupClass.PurchaseAndUseJoker(sut, 105, p2, [p2], [], [], ref totalChips);
             Assert.That(sut.GameLogicManager.GetCurrentPlayer().Name, Is.EqualTo("none3"));
             
             sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 1, out var isGameOver, out var isError, out _);
@@ -535,7 +535,7 @@ namespace TexasHoldEmUnitTests
             var p2 = sut.Players[1];
             
             //change position
-            SetupClass.PurchaseAndUseJoker(sut, 107, p1, [p1], ref totalChips);
+            SetupClass.PurchaseAndUseJoker(sut, 107, p1, [p1], [], [], ref totalChips);
             
             sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out var isGameOver, out var isError, out _);
             SetupClass.AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
@@ -593,7 +593,7 @@ namespace TexasHoldEmUnitTests
             var p2 = sut.Players[1];
             
             //change position
-            SetupClass.PurchaseAndUseJoker(sut, 107, p1, [p1], ref totalChips);
+            SetupClass.PurchaseAndUseJoker(sut, 107, p1, [p1], [], [], ref totalChips);
             
             sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out var isGameOver, out var isError, out _);
             SetupClass.AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
@@ -603,7 +603,7 @@ namespace TexasHoldEmUnitTests
             SetupClass.AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
             Assert.That(sut.GameLogicManager.GetGameState(), Is.EqualTo(Enums.GameStateEnum.TheTurn));
             
-            sut.JokerManager.UseJoker(sut.GameLogicManager, p1, [p1], p1.JokerCards.First(), new List<CardEntity>(), out var isJokerError, out _);
+            sut.JokerManager.UseJoker(sut.GameLogicManager, p1, [p1], p1.JokerCards.First(), new List<CardEntity>(), new List<CardEntity>(), out var isJokerError, out _, out _);
             SetupClass.AssertAfterJokerAction(sut, totalChips, true, isJokerError);
             
             sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out isGameOver, out isError, out _);
