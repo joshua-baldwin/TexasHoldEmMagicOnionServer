@@ -1,10 +1,9 @@
 using MagicOnion.Server.Hubs;
-using TexasHoldEmServer.GameLogic;
-using TexasHoldEmServer.ServerEntities;
-using THE.MagicOnion.Shared.Entities;
-using THE.MagicOnion.Shared.Utilities;
+using THE.ServerEntities;
+using THE.Entities;
+using THE.Shared.Utilities;
 
-namespace TexasHoldEmServer.Managers
+namespace THE.Managers
 {
     public interface IRoomManager
     {

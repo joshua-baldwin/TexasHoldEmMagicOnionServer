@@ -1,4 +1,4 @@
-namespace THE.MagicOnion.Shared.Utilities
+namespace THE.Shared.Utilities
 {
     public static class Constants
     {

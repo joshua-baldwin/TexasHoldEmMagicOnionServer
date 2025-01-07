@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using MessagePack;
 
-namespace THE.MagicOnion.Shared.Entities
+namespace THE.Entities
 {
     [MessagePackObject]
     public class PotEntity

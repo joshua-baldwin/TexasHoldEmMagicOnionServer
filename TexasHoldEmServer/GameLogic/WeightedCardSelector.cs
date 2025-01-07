@@ -1,6 +1,6 @@
-using THE.MagicOnion.Shared.Entities;
+using THE.Entities;
 
-namespace TexasHoldEmServer.GameLogic
+namespace THE.GameLogic
 {
     public static class WeightedCardSelector
     {

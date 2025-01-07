@@ -1,7 +1,7 @@
-using TexasHoldEmShared.Enums;
-using THE.MagicOnion.Shared.Entities;
+using THE.Shared.Enums;
+using THE.Entities;
 
-namespace TexasHoldEmServer.GameLogic
+namespace THE.GameLogic
 {
     public static class HandRankingLogic
     {

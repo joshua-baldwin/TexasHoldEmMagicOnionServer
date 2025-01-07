@@ -1,7 +1,7 @@
 using MessagePack;
-using TexasHoldEmShared.Enums;
+using THE.Shared.Enums;
 
-namespace THE.MagicOnion.Shared.Entities
+namespace THE.Entities
 {
     [MessagePackObject]
     public class ActiveJokerEffectEntity

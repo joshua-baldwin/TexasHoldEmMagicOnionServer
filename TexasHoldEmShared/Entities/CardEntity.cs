@@ -1,8 +1,8 @@
 using MessagePack;
-using TexasHoldEmShared.Enums;
-using THE.MagicOnion.Shared.Utilities;
+using THE.Shared.Utilities;
+using THE.Shared.Enums;
 
-namespace THE.MagicOnion.Shared.Entities
+namespace THE.Entities
 {
     [MessagePackObject]
     public class CardEntity

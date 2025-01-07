@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using THE.MagicOnion.Shared.Entities;
+using THE.Entities;
 
-namespace THE.MagicOnion.Shared.Utilities
+namespace THE.Shared.Utilities
 {
     public static class ExtensionMethods
     {

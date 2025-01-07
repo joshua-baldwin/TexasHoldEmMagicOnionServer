@@ -1,17 +1,16 @@
 using System.Text;
 using MagicOnion.Server.Hubs;
-using TexasHoldEmServer.GameLogic;
-using TexasHoldEmServer.Managers;
-using TexasHoldEmShared.Enums;
-using THE.MagicOnion.Shared.Entities;
-using THE.MagicOnion.Shared.Interfaces;
-using THE.MagicOnion.Shared.Utilities;
+using THE.GameLogic;
+using THE.Managers;
+using THE.Shared.Enums;
+using THE.Entities;
+using THE.Shared.Utilities;
 
 #pragma warning disable CS8604 // Possible null reference argument.
 #pragma warning disable CS8603 // Possible null reference return.
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
 
-namespace TexasHoldEmServer.Interfaces
+namespace THE.Interfaces
 {
     public class GamingHubReceiver : StreamingHubBase<IGamingHub, IGamingHubReceiver>, IGamingHub
     {

@@ -1,8 +1,8 @@
-using TexasHoldEmShared.Enums;
-using THE.MagicOnion.Shared.Entities;
-using THE.MagicOnion.Shared.Utilities;
+using THE.Shared.Enums;
+using THE.Entities;
+using THE.Shared.Utilities;
 
-namespace TexasHoldEmServer.GameLogic
+namespace THE.GameLogic
 {
     public class GameLogicManager : IGameLogicManager
     {

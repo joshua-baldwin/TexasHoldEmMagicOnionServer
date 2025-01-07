@@ -1,7 +1,7 @@
 using MagicOnion.Server.Hubs;
-using THE.MagicOnion.Shared.Entities;
+using THE.Entities;
 
-namespace TexasHoldEmServer.ServerEntities;
+namespace THE.ServerEntities;
 
 public class RoomEntity
 {

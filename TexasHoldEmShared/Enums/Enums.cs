@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace TexasHoldEmShared.Enums
+namespace THE.Shared.Enums
 {
     public static class Enums
     {

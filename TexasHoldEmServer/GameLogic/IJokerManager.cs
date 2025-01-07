@@ -1,7 +1,7 @@
-using TexasHoldEmShared.Enums;
-using THE.MagicOnion.Shared.Entities;
+using THE.Entities;
+using THE.Shared.Enums;
 
-namespace TexasHoldEmServer.GameLogic
+namespace THE.GameLogic
 {
     public interface IJokerManager
     {

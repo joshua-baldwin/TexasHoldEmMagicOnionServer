@@ -1,7 +1,5 @@
-using MagicOnion;
-using MagicOnion.Server;
-using TexasHoldEmServer.GameLogic;
-using TexasHoldEmServer.Managers;
+using THE.GameLogic;
+using THE.Managers;
 
 var builder = WebApplication.CreateBuilder(args);
 

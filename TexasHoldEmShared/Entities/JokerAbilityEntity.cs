@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MessagePack;
 
-namespace THE.MagicOnion.Shared.Entities
+namespace THE.Entities
 {
     [MessagePackObject]
     public class JokerAbilityEntity

@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using TexasHoldEmShared.Enums;
-using THE.MagicOnion.Shared.Entities;
+using THE.Entities;
+using THE.Shared.Enums;
 
-namespace THE.MagicOnion.Shared.Interfaces
+namespace THE.Interfaces
 {
     public interface IGamingHubReceiver
     {
