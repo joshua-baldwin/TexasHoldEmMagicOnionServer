@@ -5,6 +5,7 @@ namespace TexasHoldEmServer.GameLogic
 {
     public interface IGameLogicManager
     {
+        List<CardEntity> GetCardPool();
         Queue<PlayerEntity> GetPlayerQueue();
         PlayerEntity GetPreviousPlayer();
         PlayerEntity GetCurrentPlayer();

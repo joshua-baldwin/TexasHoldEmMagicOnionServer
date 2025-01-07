@@ -15,7 +15,7 @@ namespace TexasHoldEmServer.GameLogic
         private bool smallBlindBetDone;
         private bool bigBlindBetDone;
         private (int Amount, bool IsAllIn, bool IsGreaterThanPrevious) previousBet;
-        private List<CardEntity> cardPool;
+        protected List<CardEntity> cardPool = new();
         private bool isTie;
         private int maxBetForTurn;
         private int currentRaise;
@@ -29,7 +29,8 @@ namespace TexasHoldEmServer.GameLogic
         private int currentRound;
 
         #region Interface methods
-        
+
+        public List<CardEntity> GetCardPool() => cardPool;
         public Queue<PlayerEntity> GetPlayerQueue() => playerQueue;
         public PlayerEntity GetPreviousPlayer() => previousPlayer;
         public PlayerEntity GetCurrentPlayer() => currentPlayer;
