@@ -1,7 +1,7 @@
-using TexasHoldEmServer.GameLogic;
-using TexasHoldEmShared.Enums;
-using THE.MagicOnion.Shared.Entities;
-using THE.MagicOnion.Shared.Utilities;
+using THE.GameLogic;
+using THE.Shared.Enums;
+using THE.Entities;
+using THE.Shared.Utilities;
 
 namespace TexasHoldEmUnitTests
 {

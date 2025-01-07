@@ -1,5 +1,5 @@
-using TexasHoldEmShared.Enums;
-using THE.MagicOnion.Shared.Entities;
+using THE.Shared.Enums;
+using THE.Entities;
 
 namespace TexasHoldEmUnitTests
 {
