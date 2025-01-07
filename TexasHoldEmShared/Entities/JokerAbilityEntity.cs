@@ -30,6 +30,8 @@ namespace THE.Entities
                 newString = newString.Replace("{effectValue}", AbilityEffects.First().EffectValue.ToString());
             if (newString.Contains("{commandType}"))
                 newString = newString.Replace("{commandType}", AbilityEffects.First().CommandType.ToString());
+            if (newString.Contains("{targetNumber}"))
+                newString = newString.Replace("{targetNumber}", AbilityEffects.First().TargetNumber.ToString());
 
             return newString;
         }

@@ -31,9 +31,12 @@ namespace THE.Entities
         public int EffectValue { get; set; }
         
         [Key(8)]
+        public int TargetNumber { get; set; }
+        
+        [Key(9)]
         public Enums.CommandTypeEnum CommandType { get; set; }
 
-        public ActiveJokerEffectEntity(int jokerId, Enums.JokerTypeEnum jokerType, Enums.HandInfluenceTypeEnum handInfluenceType, Enums.ActionInfluenceTypeEnum actionInfluenceType, Enums.InfoInfluenceTypeEnum infoInfluenceType, Enums.BoardInfluenceTypeEnum boardInfluenceType, int effectId, int effectValue, Enums.CommandTypeEnum commandType)
+        public ActiveJokerEffectEntity(int jokerId, Enums.JokerTypeEnum jokerType, Enums.HandInfluenceTypeEnum handInfluenceType, Enums.ActionInfluenceTypeEnum actionInfluenceType, Enums.InfoInfluenceTypeEnum infoInfluenceType, Enums.BoardInfluenceTypeEnum boardInfluenceType, int effectId, int effectValue, int targetNumber, Enums.CommandTypeEnum commandType)
         {
             JokerId = jokerId;
             JokerType = jokerType;
@@ -43,6 +46,7 @@ namespace THE.Entities
             BoardInfluenceType = boardInfluenceType;
             EffectId = effectId;
             EffectValue = effectValue;
+            TargetNumber = targetNumber;
             CommandType = commandType;
         }
     }

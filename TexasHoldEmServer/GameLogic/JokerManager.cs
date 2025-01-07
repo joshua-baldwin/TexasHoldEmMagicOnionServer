@@ -106,23 +106,23 @@ namespace THE.GameLogic
             {
                 foreach (var effect in jokerEntity.JokerAbilityEntity.AbilityEffects)
                 {
-                    if (holeCardsToDiscard.Count > effect.EffectValue)
+                    if (holeCardsToDiscard.Count > effect.TargetNumber)
                     {
                         message = "Too many cards selected.\n選択されたカードが多すぎる。";
                         isError = true;
                         return;
                     }
 
-                    sbEng.Append($"Player {target.Name} drew {effect.EffectValue} new card(s).");
-                    sbJap.Append($"プレイヤー{target.Name}が{effect.EffectValue}カードを引いた。");
+                    sbEng.Append($"Player {target.Name} drew {effect.TargetNumber} new card(s).");
+                    sbJap.Append($"プレイヤー{target.Name}が{effect.TargetNumber}カードを引いた。");
                     if (jokerEntity.HandInfluenceType == Enums.HandInfluenceTypeEnum.DiscardThenDraw)
                     {
                         gameLogicManager.DiscardToCardPool(target, holeCardsToDiscard);
-                        target.HoleCards.AddRange(gameLogicManager.DrawFromCardPool(effect.EffectValue));
+                        target.HoleCards.AddRange(gameLogicManager.DrawFromCardPool(effect.TargetNumber));
                     }
                     else
                     {
-                        target.TempHoleCards.AddRange(gameLogicManager.DrawFromCardPool(effect.EffectValue));
+                        target.TempHoleCards.AddRange(gameLogicManager.DrawFromCardPool(effect.TargetNumber));
                         //discard is a different api
                     }
 
@@ -155,19 +155,19 @@ namespace THE.GameLogic
                     switch (jokerEntity.ActionInfluenceType)
                     {
                         case Enums.ActionInfluenceTypeEnum.Force:
-                            var jokerEffect = new ActiveJokerEffectEntity(jokerEntity.JokerId, jokerEntity.JokerType, jokerEntity.HandInfluenceType, jokerEntity.ActionInfluenceType, jokerEntity.InfoInfluenceType, jokerEntity.BoardInfluenceType, effect.Id, effect.EffectValue, effect.CommandType);
+                            var jokerEffect = new ActiveJokerEffectEntity(jokerEntity.JokerId, jokerEntity.JokerType, jokerEntity.HandInfluenceType, jokerEntity.ActionInfluenceType, jokerEntity.InfoInfluenceType, jokerEntity.BoardInfluenceType, effect.Id, effect.EffectValue, effect.TargetNumber, effect.CommandType);
                             target.ActiveEffects.Add(jokerEffect);
                             sbEng.Append($"Player {target.Name} must {effect.CommandType} on their next turn.");
                             sbJp.Append($"プレイヤー{target.Name}は次のターンに{effect.CommandType}をしないといけない。");
                             break;
                         case Enums.ActionInfluenceTypeEnum.Prevent:
-                            jokerEffect = new ActiveJokerEffectEntity(jokerEntity.JokerId, jokerEntity.JokerType, jokerEntity.HandInfluenceType, jokerEntity.ActionInfluenceType, jokerEntity.InfoInfluenceType, jokerEntity.BoardInfluenceType, effect.Id, effect.EffectValue, effect.CommandType);
+                            jokerEffect = new ActiveJokerEffectEntity(jokerEntity.JokerId, jokerEntity.JokerType, jokerEntity.HandInfluenceType, jokerEntity.ActionInfluenceType, jokerEntity.InfoInfluenceType, jokerEntity.BoardInfluenceType, effect.Id, effect.EffectValue, effect.TargetNumber, effect.CommandType);
                             target.ActiveEffects.Add(jokerEffect);
                             sbEng.Append($"Player {target.Name} cannot {effect.CommandType} on their next turn.");
                             sbJp.Append($"プレイヤー{target.Name}は次のターンに{effect.CommandType}ができなくなりました。");
                             break;
                         case Enums.ActionInfluenceTypeEnum.ChangePosition:
-                            jokerEffect = new ActiveJokerEffectEntity(jokerEntity.JokerId, jokerEntity.JokerType, jokerEntity.HandInfluenceType, jokerEntity.ActionInfluenceType, jokerEntity.InfoInfluenceType, jokerEntity.BoardInfluenceType, effect.Id, effect.EffectValue, effect.CommandType);
+                            jokerEffect = new ActiveJokerEffectEntity(jokerEntity.JokerId, jokerEntity.JokerType, jokerEntity.HandInfluenceType, jokerEntity.ActionInfluenceType, jokerEntity.InfoInfluenceType, jokerEntity.BoardInfluenceType, effect.Id, effect.EffectValue, effect.TargetNumber, effect.CommandType);
                             target.ActiveEffects.Add(jokerEffect);
                             gameLogicManager.UpdateQueue(target);
                             sbEng.Append($"Player {jokerUser.Name} is acting last for this turn.");
@@ -176,7 +176,7 @@ namespace THE.GameLogic
                         case Enums.ActionInfluenceTypeEnum.ChangeStack:
                             break;
                         case Enums.ActionInfluenceTypeEnum.IncreaseBettingRounds:
-                            jokerEffect = new ActiveJokerEffectEntity(jokerEntity.JokerId, jokerEntity.JokerType, jokerEntity.HandInfluenceType, jokerEntity.ActionInfluenceType, jokerEntity.InfoInfluenceType, jokerEntity.BoardInfluenceType, effect.Id, effect.EffectValue, effect.CommandType);
+                            jokerEffect = new ActiveJokerEffectEntity(jokerEntity.JokerId, jokerEntity.JokerType, jokerEntity.HandInfluenceType, jokerEntity.ActionInfluenceType, jokerEntity.InfoInfluenceType, jokerEntity.BoardInfluenceType, effect.Id, effect.EffectValue, effect.TargetNumber, effect.CommandType);
                             target.ActiveEffects.Add(jokerEffect);
                             gameLogicManager.IncreaseNumberOfBettingRounds();
                             sbEng.Append("The number of betting turns has increased by one.");
@@ -312,8 +312,8 @@ namespace THE.GameLogic
             jokerAbilityEntities =
             [
                 //hand influencers
-                new JokerAbilityEntity(1, "Discard {effectValue} hole card(s) and draw {effectValue} more. ハンドを{effectValue}枚捨てて、{effectValue}枚弾き直す。", [jokerAbilityEffectEntities[0]]),
-                new JokerAbilityEntity(2, "Draw {effectValue} card(s) and add to your hand, discard {effectValue} card(s). 追加で{effectValue}枚引いて、{effectValue}枚の中から{effectValue}枚捨てる。", [jokerAbilityEffectEntities[2]]),
+                new JokerAbilityEntity(1, "Discard {targetNumber} hole card(s) and draw {targetNumber} more. ハンドを{targetNumber}枚捨てて、{targetNumber}枚弾き直す。", [jokerAbilityEffectEntities[0]]),
+                new JokerAbilityEntity(2, "Draw {targetNumber} card(s) and add to your hand, discard {targetNumber} card(s). 追加で{targetNumber}枚引いて、{targetNumber}枚捨てる。", [jokerAbilityEffectEntities[2]]),
 
                 //action influencers
                 new JokerAbilityEntity(3, "Force the target to {commandType}.ターゲットに{commandType}をさせる", [jokerAbilityEffectEntities[4]]),
@@ -323,11 +323,11 @@ namespace THE.GameLogic
                 new JokerAbilityEntity(7, "Increase the number of betting rounds.", [jokerAbilityEffectEntities[8]]),
 
                 //info influencers
-                new JokerAbilityEntity(8, "Check the target's hand", [jokerAbilityEffectEntities[9]]),
+                new JokerAbilityEntity(8, "Check the hand of {targetNumber} target(s)", [jokerAbilityEffectEntities[9]]),
 
                 //board influencers
-                new JokerAbilityEntity(9, "Increase the selected card(s) weight(s)", [jokerAbilityEffectEntities[10]]),
-                new JokerAbilityEntity(10, "Decrease the selected card(s)' weight(s)", [jokerAbilityEffectEntities[11]]),
+                new JokerAbilityEntity(9, "Increase the weight of {targetNumber} card(s) by {effectValue} times", [jokerAbilityEffectEntities[10]]),
+                new JokerAbilityEntity(10, "Decrease the weight of {targetNumber} card(s) by {effectValue} times", [jokerAbilityEffectEntities[11]]),
 
                 // new(2, "Make the target show their hand. ターゲットのハンドを見せさせる。", [3]),
                 // new(3, "Make the target raise on their next turn. ターゲットを次のターンでレイズさせる。", [4]),
@@ -345,21 +345,21 @@ namespace THE.GameLogic
         {
             jokerAbilityEffectEntities =
             [
-                new AbilityEffectEntity(1, 1, 1, Enums.CommandTypeEnum.None, "Discard then draw"),
-                new AbilityEffectEntity(2, 1, 2, Enums.CommandTypeEnum.None, "Discard then draw"),
-                new AbilityEffectEntity(3, 2, 1, Enums.CommandTypeEnum.None, "Draw then discard"),
-                new AbilityEffectEntity(4, 2, 2, Enums.CommandTypeEnum.None, "Draw then discard"),
+                new AbilityEffectEntity(1, 1, 0, 1, Enums.CommandTypeEnum.None, "Discard then draw"),
+                new AbilityEffectEntity(2, 1, 0, 2, Enums.CommandTypeEnum.None, "Discard then draw"),
+                new AbilityEffectEntity(3, 2, 0, 1, Enums.CommandTypeEnum.None, "Draw then discard"),
+                new AbilityEffectEntity(4, 2, 0, 2, Enums.CommandTypeEnum.None, "Draw then discard"),
 
-                new AbilityEffectEntity(5, 3, 1, Enums.CommandTypeEnum.Raise, "Make the target raise"),
-                new AbilityEffectEntity(6, 4, 1, Enums.CommandTypeEnum.Check, "Prevent the target from checking"),
-                new AbilityEffectEntity(7, 5, 0, Enums.CommandTypeEnum.None, "Change position"),
-                new AbilityEffectEntity(8, 6, 0, Enums.CommandTypeEnum.None, "Change stack"),
-                new AbilityEffectEntity(9, 7, 0, Enums.CommandTypeEnum.None, "Increase betting rounds"),
+                new AbilityEffectEntity(5, 3, 0, 1, Enums.CommandTypeEnum.Raise, "Make the target raise"),
+                new AbilityEffectEntity(6, 4, 0, 1, Enums.CommandTypeEnum.Check, "Prevent the target from checking"),
+                new AbilityEffectEntity(7, 5, 0, 0, Enums.CommandTypeEnum.None, "Change position"),
+                new AbilityEffectEntity(8, 6, 0, 0, Enums.CommandTypeEnum.None, "Change stack"),
+                new AbilityEffectEntity(9, 7, 0, 0, Enums.CommandTypeEnum.None, "Increase betting rounds"),
 
-                new AbilityEffectEntity(10, 8, 1, Enums.CommandTypeEnum.None, "Check the target's hand"),
+                new AbilityEffectEntity(10, 8, 0, 1, Enums.CommandTypeEnum.None, "Check the target's hand"),
 
-                new AbilityEffectEntity(11, 9, 2, Enums.CommandTypeEnum.None, "Increase card weight"),
-                new AbilityEffectEntity(12, 10, 2, Enums.CommandTypeEnum.None, "Decrease card weight"),
+                new AbilityEffectEntity(11, 9, 2, 1, Enums.CommandTypeEnum.None, "Increase card weight"),
+                new AbilityEffectEntity(12, 10, 2, 1, Enums.CommandTypeEnum.None, "Decrease card weight"),
 
                 // new(5, 1, 0, Enums.EffectTargetTypeEnum.Self, Enums.CommandTypeEnum.None, "Check even if there was a call or raise"),
                 // new(6, 1, 0, Enums.EffectTargetTypeEnum.Self, Enums.CommandTypeEnum.None, "Add another community card"),
