@@ -37,7 +37,7 @@ namespace THE.Interfaces
                 self = new PlayerEntity(userName, Guid.NewGuid(), Enums.PlayerRoleEnum.None);
                 self.Chips = Constants.StartingChips;
                 var existingRoom = roomManager.GetNonFullRoomEntity();
-                if (existingRoom == null)
+                if (existingRoom == null || gameLogicManager.GetCurrentRound() > 0)
                 {
                     if (roomManager.GetRoomCount() >= RoomManager.MaxRoomCount)
                     {
