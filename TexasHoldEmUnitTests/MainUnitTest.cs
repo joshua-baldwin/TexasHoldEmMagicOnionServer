@@ -1,6 +1,7 @@
 using THE.GameLogic;
 using THE.Shared.Enums;
 using THE.Entities;
+using THE.Managers;
 using THE.Shared.Utilities;
 
 namespace TexasHoldEmUnitTests
@@ -2453,6 +2454,33 @@ namespace TexasHoldEmUnitTests
             
             Assert.That(winners.Count, Is.EqualTo(1));
             Assert.That(winners.First().TiedWith.Count, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void JoinRoomTest()
+        {
+            var playerList = new List<PlayerEntity>();
+            var roomManager = new RoomManager();
+            var self = new PlayerEntity("p1", Guid.NewGuid(), Enums.PlayerRoleEnum.None);
+            self.Chips = Constants.StartingChips;
+            
+            var roomId = Guid.NewGuid();
+            self.RoomId = roomId;
+            playerList.Add(self);
+            roomManager.AddRoomAndConnection(roomId, playerList, self.Id, Guid.NewGuid());
+            
+            var existingRoom = roomManager.GetNonFullRoomEntity();
+            for (var i = 0; i < 9; i++)
+            {
+                Assert.That(existingRoom, Is.Not.Null);
+                self = new PlayerEntity($"p{i + 2}", Guid.NewGuid(), Enums.PlayerRoleEnum.None);
+                self.Chips = Constants.StartingChips;
+                self.RoomId = roomId;
+                playerList.Add(self);
+                roomManager.AddConnection(existingRoom.Id, self.Id, Guid.NewGuid());
+            }
+            existingRoom = roomManager.GetNonFullRoomEntity();
+            Assert.That(existingRoom, Is.Null);
         }
     }
 }
