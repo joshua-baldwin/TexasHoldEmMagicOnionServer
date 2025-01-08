@@ -50,7 +50,7 @@ namespace THE.GameLogic
         //         {
         //             if (result.ContainsKey((selectedCardEntity.Suit, selectedCardEntity.Rank)))
         //             {
-        //                 result[(selectedCardEntity.Suit, selectedCardEntity.Rank)] = result[(selectedCardEntity.Suit, selectedCardEntity.Rank)] + 1;
+        //                 result[(selectedCardEntity.Suit, selectedCardEntity.Rank)] += 1;
         //             }
         //             else
         //             {
