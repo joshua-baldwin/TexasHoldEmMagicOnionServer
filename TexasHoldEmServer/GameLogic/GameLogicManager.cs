@@ -207,7 +207,7 @@ namespace THE.GameLogic
                     
                     currentPlayer.HasTakenAction = true;
                     currentRaise = betAmount;
-                    maxBetForTurn = betAmount;
+                    maxBetForTurn += chipsBet;
                     
                     DistributeBetAmountToPots(betAmount);
                     break;
