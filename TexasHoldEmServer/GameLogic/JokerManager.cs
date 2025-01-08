@@ -294,16 +294,19 @@ namespace THE.GameLogic
         {
             jokerEntities =
             [
-                new JokerEntity(Guid.NewGuid(), 101, 2, 2, 3, 0, jokerAbilityEntities[0], true, Enums.JokerTypeEnum.Hand, Enums.HandInfluenceTypeEnum.DiscardThenDraw, Enums.ActionInfluenceTypeEnum.None, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.None, Enums.TargetTypeEnum.Self),
-                new JokerEntity(Guid.NewGuid(), 102, 2, 2, 3, 0, jokerAbilityEntities[1], true, Enums.JokerTypeEnum.Hand, Enums.HandInfluenceTypeEnum.DrawThenDiscard, Enums.ActionInfluenceTypeEnum.None, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.None, Enums.TargetTypeEnum.Self),
-                new JokerEntity(Guid.NewGuid(), 103, 2, 2, 3, 0, jokerAbilityEntities[2], true, Enums.JokerTypeEnum.Action, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.Force, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.None, Enums.TargetTypeEnum.SinglePlayer),
-                new JokerEntity(Guid.NewGuid(), 104, 2, 2, 3, 0, jokerAbilityEntities[3], true, Enums.JokerTypeEnum.Action, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.Prevent, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.None, Enums.TargetTypeEnum.SinglePlayer),
-                new JokerEntity(Guid.NewGuid(), 105, 2, 2, 3, 0, jokerAbilityEntities[4], true, Enums.JokerTypeEnum.Action, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.ChangePosition, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.None, Enums.TargetTypeEnum.Self),
-                new JokerEntity(Guid.NewGuid(), 106, 2, 2, 3, 0, jokerAbilityEntities[5], true, Enums.JokerTypeEnum.Action, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.ChangeStack, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.None, Enums.TargetTypeEnum.SinglePlayer),
+                new JokerEntity(Guid.NewGuid(), 101, 2, 3, 3, 0, jokerAbilityEntities[0], true, Enums.JokerTypeEnum.Hand, Enums.HandInfluenceTypeEnum.DiscardThenDraw, Enums.ActionInfluenceTypeEnum.None, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.None, Enums.TargetTypeEnum.Self),
+                new JokerEntity(Guid.NewGuid(), 102, 2, 3, 3, 0, jokerAbilityEntities[1], true, Enums.JokerTypeEnum.Hand, Enums.HandInfluenceTypeEnum.DrawThenDiscard, Enums.ActionInfluenceTypeEnum.None, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.None, Enums.TargetTypeEnum.Self),
+                
+                new JokerEntity(Guid.NewGuid(), 103, 2, 4, 3, 0, jokerAbilityEntities[2], true, Enums.JokerTypeEnum.Action, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.Force, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.None, Enums.TargetTypeEnum.SinglePlayer),
+                new JokerEntity(Guid.NewGuid(), 104, 2, 4, 3, 0, jokerAbilityEntities[3], true, Enums.JokerTypeEnum.Action, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.Prevent, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.None, Enums.TargetTypeEnum.SinglePlayer),
+                new JokerEntity(Guid.NewGuid(), 105, 2, 3, 3, 0, jokerAbilityEntities[4], true, Enums.JokerTypeEnum.Action, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.ChangePosition, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.None, Enums.TargetTypeEnum.Self),
+                //new JokerEntity(Guid.NewGuid(), 106, 2, 2, 3, 0, jokerAbilityEntities[5], true, Enums.JokerTypeEnum.Action, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.ChangeStack, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.None, Enums.TargetTypeEnum.SinglePlayer),
                 new JokerEntity(Guid.NewGuid(), 107, 2, 2, 3, 0, jokerAbilityEntities[6], true, Enums.JokerTypeEnum.Action, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.IncreaseBettingRounds, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.None, Enums.TargetTypeEnum.None),
-                new JokerEntity(Guid.NewGuid(), 108, 2, 2, 3, 0, jokerAbilityEntities[7], true, Enums.JokerTypeEnum.Info, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.None, Enums.InfoInfluenceTypeEnum.CheckHand, Enums.BoardInfluenceTypeEnum.None, Enums.TargetTypeEnum.SinglePlayer),
-                new JokerEntity(Guid.NewGuid(), 109, 2, 2, 3, 0, jokerAbilityEntities[8], true, Enums.JokerTypeEnum.Board, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.None, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.IncreaseCardWeight, Enums.TargetTypeEnum.None),
-                new JokerEntity(Guid.NewGuid(), 110, 2, 2, 3, 0, jokerAbilityEntities[9], true, Enums.JokerTypeEnum.Board, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.None, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.DecreaseCardWeight, Enums.TargetTypeEnum.None),
+                
+                new JokerEntity(Guid.NewGuid(), 108, 2, 4, 3, 0, jokerAbilityEntities[7], true, Enums.JokerTypeEnum.Info, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.None, Enums.InfoInfluenceTypeEnum.CheckHand, Enums.BoardInfluenceTypeEnum.None, Enums.TargetTypeEnum.SinglePlayer),
+                
+                new JokerEntity(Guid.NewGuid(), 109, 2, 3, 3, 0, jokerAbilityEntities[8], true, Enums.JokerTypeEnum.Board, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.None, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.IncreaseCardWeight, Enums.TargetTypeEnum.None),
+                new JokerEntity(Guid.NewGuid(), 110, 2, 3, 3, 0, jokerAbilityEntities[9], true, Enums.JokerTypeEnum.Board, Enums.HandInfluenceTypeEnum.None, Enums.ActionInfluenceTypeEnum.None, Enums.InfoInfluenceTypeEnum.None, Enums.BoardInfluenceTypeEnum.DecreaseCardWeight, Enums.TargetTypeEnum.None),
             ];
         }
 
@@ -318,16 +321,16 @@ namespace THE.GameLogic
                 //action influencers
                 new JokerAbilityEntity(3, "Force the target to {commandType}.ターゲットに{commandType}をさせる", [jokerAbilityEffectEntities[4]]),
                 new JokerAbilityEntity(4, "Prevent the target from performing a(n) {commandType}. ターゲットの{commandType}アクションを消す。", [jokerAbilityEffectEntities[5]]),
-                new JokerAbilityEntity(5, "Change position.", [jokerAbilityEffectEntities[6]]),
+                new JokerAbilityEntity(5, "Act last during this turn.\nこのターンに最後にアクションを行う", [jokerAbilityEffectEntities[6]]),
                 new JokerAbilityEntity(6, "Change stack.", [jokerAbilityEffectEntities[7]]),
-                new JokerAbilityEntity(7, "Increase the number of betting rounds.", [jokerAbilityEffectEntities[8]]),
+                new JokerAbilityEntity(7, "Increase the number of betting rounds.\nベットラウンドの数を増える", [jokerAbilityEffectEntities[8]]),
 
                 //info influencers
-                new JokerAbilityEntity(8, "Check the hand of {targetNumber} target(s)", [jokerAbilityEffectEntities[9]]),
+                new JokerAbilityEntity(8, "Check the hand of {targetNumber} target(s).\n{targetNumber}人のターゲットのハンドを確認する", [jokerAbilityEffectEntities[9]]),
 
                 //board influencers
-                new JokerAbilityEntity(9, "Increase the weight of {targetNumber} card(s) by {effectValue} times", [jokerAbilityEffectEntities[10]]),
-                new JokerAbilityEntity(10, "Decrease the weight of {targetNumber} card(s) by {effectValue} times", [jokerAbilityEffectEntities[11]]),
+                new JokerAbilityEntity(9, "Increase the weight of {targetNumber} card(s) by {effectValue} times.\n{targetNumber}枚のカードの重みを{effectValue}倍で上げる。", [jokerAbilityEffectEntities[10]]),
+                new JokerAbilityEntity(10, "Decrease the weight of {targetNumber} card(s) by {effectValue} times.\n{targetNumber}枚のカードの重みを{effectValue}倍で下げる。", [jokerAbilityEffectEntities[11]]),
 
                 // new(2, "Make the target show their hand. ターゲットのハンドを見せさせる。", [3]),
                 // new(3, "Make the target raise on their next turn. ターゲットを次のターンでレイズさせる。", [4]),
