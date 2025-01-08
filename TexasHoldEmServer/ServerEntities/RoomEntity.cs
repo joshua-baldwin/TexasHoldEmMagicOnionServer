@@ -6,15 +6,15 @@ namespace THE.ServerEntities;
 public class RoomEntity
 {
     public readonly Guid Id;
-    public readonly List<PlayerEntity> PlayerList;
+    public readonly IInMemoryStorage<PlayerEntity> Storage;
     
     //(PlayerId, ConnectionId)
     private readonly Dictionary<Guid, Guid> connections = new();
 
-    public RoomEntity(Guid id, List<PlayerEntity> playerList)
+    public RoomEntity(Guid id, IInMemoryStorage<PlayerEntity> storage)
     {
         Id = id;
-        PlayerList = playerList;
+        Storage = storage;
     }
 
     public void AddConnection(Guid playerId, Guid connectionId)

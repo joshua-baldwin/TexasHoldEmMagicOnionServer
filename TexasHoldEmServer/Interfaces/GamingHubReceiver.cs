@@ -47,7 +47,7 @@ namespace THE.Interfaces
                     var roomId = Guid.NewGuid();
                     self.RoomId = roomId;
                     (group, storage) = await Group.AddAsync(roomId.ToString(), self);
-                    roomManager.AddRoomAndConnection(roomId, storage.AllValues.ToList(), self.Id, ConnectionId);
+                    roomManager.AddRoomAndConnection(roomId, storage, self.Id, ConnectionId);
                 }
                 else
                 {
@@ -139,7 +139,7 @@ namespace THE.Interfaces
                 gameLogicManager.CreateQueue(players.ToList());
 
                 var room = roomManager.GetRoomEntity(currentPlayer.RoomId);
-                var eligiblePlayers = room.PlayerList.Where(player => players.Select(x => x.Id).Contains(player.Id));
+                var eligiblePlayers = room.Storage.AllValues.Where(player => players.Select(x => x.Id).Contains(player.Id));
                 var ids = new List<Guid>();
                 foreach (var player in eligiblePlayers)
                     ids.Add(room.GetConnectionId(player.Id));

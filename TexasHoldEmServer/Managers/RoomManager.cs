@@ -7,7 +7,7 @@ namespace THE.Managers
 {
     public interface IRoomManager
     {
-        void AddRoomAndConnection(Guid roomId, List<PlayerEntity> storage, Guid playerId, Guid connectionId);
+        void AddRoomAndConnection(Guid roomId, IInMemoryStorage<PlayerEntity> storage, Guid playerId, Guid connectionId);
         void AddConnection(Guid roomId, Guid playerId, Guid connectionId);
         void RemoveConnection(Guid roomId, Guid playerId);
         RoomEntity GetRoomEntity(Guid roomId);
@@ -21,9 +21,9 @@ namespace THE.Managers
         public const int MaxRoomCount = 10;
         private Dictionary<Guid, RoomEntity> roomDictionary = new();
 
-        public void AddRoomAndConnection(Guid roomId, List<PlayerEntity> playerList, Guid playerId, Guid connectionId)
+        public void AddRoomAndConnection(Guid roomId, IInMemoryStorage<PlayerEntity> storage, Guid playerId, Guid connectionId)
         {
-            var roomEntity = new RoomEntity(roomId, playerList);
+            var roomEntity = new RoomEntity(roomId, storage);
             roomDictionary.TryAdd(roomId, roomEntity);
             AddConnection(roomId, playerId, connectionId);
         }
@@ -50,7 +50,7 @@ namespace THE.Managers
         {
             foreach (var room in roomDictionary.Values)
             {
-                if (room.PlayerList.Count < Constants.MaxPlayers)
+                if (room.Storage.AllValues.Count < Constants.MaxPlayers)
                     return room;
             }
 
