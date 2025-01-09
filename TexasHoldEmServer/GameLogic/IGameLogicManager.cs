@@ -21,6 +21,7 @@ namespace THE.GameLogic
         void DiscardAndFinishUsingJoker(PlayerEntity target, JokerEntity joker, List<CardEntity> cardsToDiscard);
         void DiscardToCardPool(PlayerEntity target, List<CardEntity> cardsToDiscard);
         List<CardEntity> DrawFromCardPool(int numberOfCardsToDraw);
+        List<CardEntity> DrawFromCardPool(List<CardEntity> cardsToDraw);
         void CreateQueue(List<PlayerEntity> players);
         List<WinningHandEntity> DoShowdown();
         void AddJokerCostToPot(int cost);

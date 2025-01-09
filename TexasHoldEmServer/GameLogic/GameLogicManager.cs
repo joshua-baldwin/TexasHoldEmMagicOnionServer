@@ -290,7 +290,19 @@ namespace THE.GameLogic
             }
             return newCards;
         }
-        
+
+        public List<CardEntity> DrawFromCardPool(List<CardEntity> cardsToDraw)
+        {
+            var newCards = new List<CardEntity>();
+            foreach (var card in cardsToDraw)
+            {
+                var newCard = cardPool.First(c => c.Suit == card.Suit && c.Rank == card.Rank);
+                cardPool.Remove(newCard);
+                newCards.Add(newCard);
+            }
+            return newCards;
+        }
+
         public void CreateQueue(List<PlayerEntity> players)
         {
             var playerList = players.OrderByDescending(x => x.IsDealer)
