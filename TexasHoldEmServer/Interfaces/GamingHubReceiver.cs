@@ -18,8 +18,6 @@ namespace THE.Interfaces
         private PlayerEntity? self;
         private IInMemoryStorage<PlayerEntity>? storage;
         private IRoomManager? roomManager;
-        private IGameLogicManager? gameLogicManager;
-        private IJokerManager? jokerManager;
         
         public async Task<Enums.JoinRoomResponseTypeEnum> JoinRoomAsync(string userName)
         {
@@ -28,16 +26,10 @@ namespace THE.Interfaces
                 if (roomManager == null)
                     roomManager = Context.ServiceProvider.GetService<IRoomManager>();
 
-                if (gameLogicManager == null)
-                    gameLogicManager = Context.ServiceProvider.GetService<IGameLogicManager>();
-                
-                if (jokerManager == null)
-                    jokerManager = Context.ServiceProvider.GetService<IJokerManager>();
-
                 self = new PlayerEntity(userName, Guid.NewGuid(), Enums.PlayerRoleEnum.None);
                 self.Chips = Constants.StartingChips;
                 var existingRoom = roomManager.GetNonFullRoomEntity();
-                if (existingRoom == null || gameLogicManager.GetCurrentRound() > 0)
+                if (existingRoom == null || existingRoom.Closed)
                 {
                     if (roomManager.GetRoomCount() >= RoomManager.MaxRoomCount)
                     {
@@ -45,9 +37,11 @@ namespace THE.Interfaces
                     }
 
                     var roomId = Guid.NewGuid();
+                    var gameLogicManager = Context.ServiceProvider.GetService<IGameLogicManager>();
+                    var jokerManager = Context.ServiceProvider.GetService<IJokerManager>();
                     self.RoomId = roomId;
                     (group, storage) = await Group.AddAsync(roomId.ToString(), self);
-                    roomManager.AddRoomAndConnection(roomId, storage, self.Id, ConnectionId);
+                    roomManager.AddRoomAndConnection(roomId, storage, self.Id, ConnectionId, gameLogicManager, jokerManager);
                 }
                 else
                 {
@@ -56,7 +50,8 @@ namespace THE.Interfaces
                 }
 
                 self.RoomId = Guid.Parse(group.GroupName);
-                Broadcast(group).OnJoinRoom(self, storage.AllValues.Count, jokerManager.GetJokerEntities());
+                var room = roomManager.GetRoomEntity(self.RoomId);
+                Broadcast(group).OnJoinRoom(self, storage.AllValues.Count, room.JokerManager.GetJokerEntities());
             }
             catch (Exception)
             {
@@ -76,10 +71,7 @@ namespace THE.Interfaces
             await group.RemoveAsync(Context);
             roomManager.RemoveConnection(self.RoomId, self.Id);
             if (storage.AllValues.Count == 0)
-            {
-                roomManager.ClearRooms();
-                gameLogicManager.Reset();
-            }
+                roomManager.ClearRoom(self.RoomId);
             
             Console.WriteLine($"{self.Name} left");
             return self;
@@ -96,7 +88,10 @@ namespace THE.Interfaces
 
         public async Task<Enums.StartResponseTypeEnum> StartGame(Guid playerId, bool isFirstRound)
         {
-            if (gameLogicManager.GetCurrentRound() > Constants.MaxRounds)
+            var players = storage.AllValues.ToList();
+            var currentPlayer = players.FirstOrDefault(player => player.Id == playerId);
+            var room = roomManager.GetRoomEntity(currentPlayer.RoomId);
+            if (room.GameLogicManager.GetCurrentRound() > Constants.MaxRounds)
                 return Enums.StartResponseTypeEnum.AlreadyPlayedMaxRounds;
             
             if (group == null)
@@ -104,8 +99,6 @@ namespace THE.Interfaces
 
             try
             {
-                var players = storage.AllValues.ToList();
-                var currentPlayer = players.FirstOrDefault(player => player.Id == playerId);
                 if (currentPlayer.Chips < Constants.MinBet && !isFirstRound)
                 {
                     //not enough chips to play
@@ -113,10 +106,7 @@ namespace THE.Interfaces
                     await group.RemoveAsync(Context);
                     roomManager.RemoveConnection(self.RoomId, self.Id);
                     if (storage.AllValues.Count == 0)
-                    {
-                        roomManager.ClearRooms();
-                        gameLogicManager.Reset();
-                    }
+                        roomManager.ClearRoom(self.RoomId);
 
                     return Enums.StartResponseTypeEnum.NotEnoughChips;
                 }
@@ -135,16 +125,17 @@ namespace THE.Interfaces
 
                 players.ForEach(player => player.IsReady = false);
 
-                gameLogicManager.SetupGame(players.ToList(), isFirstRound);
-                gameLogicManager.CreateQueue(players.ToList());
+                room.GameLogicManager.SetupGame(players.ToList(), isFirstRound);
+                room.GameLogicManager.CreateQueue(players.ToList());
 
-                var room = roomManager.GetRoomEntity(currentPlayer.RoomId);
+                
+                room.CloseRoom();
                 var eligiblePlayers = room.Storage.AllValues.Where(player => players.Select(x => x.Id).Contains(player.Id));
                 var ids = new List<Guid>();
                 foreach (var player in eligiblePlayers)
                     ids.Add(room.GetConnectionId(player.Id));
 
-                BroadcastTo(group, ids.ToArray()).OnGameStart(gameLogicManager.GetPlayerQueue().ToList(), gameLogicManager.GetCardPool(), gameLogicManager.GetCurrentPlayer(), gameLogicManager.GetGameState(), gameLogicManager.GetCurrentRound(), isFirstRound);
+                BroadcastTo(group, ids.ToArray()).OnGameStart(room.GameLogicManager.GetPlayerQueue().ToList(), room.GameLogicManager.GetCardPool(), room.GameLogicManager.GetCurrentPlayer(), room.GameLogicManager.GetGameState(), room.GameLogicManager.GetCurrentRound(), isFirstRound);
             }
             catch (Exception)
             {
@@ -167,7 +158,7 @@ namespace THE.Interfaces
             Broadcast(group).OnCancelGameStart();
         }
 
-        public async Task<Enums.DoActionResponseTypeEnum> DoAction(Enums.CommandTypeEnum commandType, int betAmount)
+        public async Task<Enums.DoActionResponseTypeEnum> DoAction(Guid playerId, Enums.CommandTypeEnum commandType, int betAmount)
         {
             if (group == null)
                 return Enums.DoActionResponseTypeEnum.GroupDoesNotExist;
@@ -175,6 +166,8 @@ namespace THE.Interfaces
             if (storage.AllValues.Any(player => !player.CardsAreValid()))
                 return Enums.DoActionResponseTypeEnum.PlayerHasInvalidCardData;
 
+            var player = storage.AllValues.First(x => x.Id == playerId);
+            var gameLogicManager = roomManager.GetRoomEntity(player.RoomId).GameLogicManager;
             try
             {
                 var previousPlayer = gameLogicManager.GetCurrentPlayer();
@@ -209,11 +202,12 @@ namespace THE.Interfaces
             if (group == null)
                 return Enums.BuyJokerResponseTypeEnum.GroupDoesNotExist;
 
+            var player = storage.AllValues.First(x => x.Id == playerId);
+            var room = roomManager.GetRoomEntity(player.RoomId);
             Enums.BuyJokerResponseTypeEnum response;
             try
             {
-                var player = storage.AllValues.First(x => x.Id == playerId);
-                response = jokerManager.PurchaseJoker(jokerId, player, out bool isError, out JokerEntity addedJoker);
+                response = room.JokerManager.PurchaseJoker(jokerId, player, out bool isError, out JokerEntity addedJoker);
                 if (response == Enums.BuyJokerResponseTypeEnum.Success)
                 {
                     Console.WriteLine($"Player {player.Name} is purchasing {addedJoker.JokerType} influence joker {addedJoker.JokerId}, response: {response}");
@@ -236,10 +230,13 @@ namespace THE.Interfaces
             if (storage.AllValues.Any(player => !player.CardsAreValid()))
                 return Enums.UseJokerResponseTypeEnum.PlayerHasInvalidCardData;
 
+            var jokerUser = storage.AllValues.First(x => x.Id == jokerUserId);
+            var room = roomManager.GetRoomEntity(jokerUser.RoomId);
+            var gameLogicManager = room.GameLogicManager;
+            var jokerManager = room.JokerManager;
             Enums.UseJokerResponseTypeEnum response;
             try
             {
-                var jokerUser = storage.AllValues.First(x => x.Id == jokerUserId);
                 var targetPlayers = new List<PlayerEntity>();
                 foreach (var id in targetPlayerIds)
                     targetPlayers.Add(storage.AllValues.First(x => x.Id == id));
@@ -269,6 +266,7 @@ namespace THE.Interfaces
         {
             var player = storage.AllValues.First(x => x.Id == jokerUserId);
             var joker = player.JokerCards.First(x => x.UniqueId == jokerUniqueId);
+            var gameLogicManager = roomManager.GetRoomEntity(player.RoomId).GameLogicManager;
             gameLogicManager.DiscardAndFinishUsingJoker(player, joker, cardsToDiscard);
 
             var effect = joker.JokerAbilityEntity.AbilityEffects.First();
@@ -280,10 +278,8 @@ namespace THE.Interfaces
         {
             roomManager?.RemoveConnection(self.Id, self.RoomId);
             if (storage.AllValues.Count == 0)
-            {
-                roomManager.ClearRooms();
-                gameLogicManager.Reset();
-            }
+                roomManager.ClearRoom(self.RoomId);
+            
             return ValueTask.CompletedTask;
         }
     }

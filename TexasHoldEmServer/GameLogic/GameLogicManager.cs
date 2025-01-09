@@ -42,30 +42,6 @@ namespace THE.GameLogic
         public int GetExtraBettingRoundsCount() => extraBettingRoundCount;
         public List<PlayerEntity> GetAllPlayers() => allPlayerList;
 
-        public void Reset()
-        {
-            allInPlayersForRound?.Clear();
-            allPlayerList?.Clear();
-            allInPlayers?.Clear();
-            smallBlindBetDone = false;
-            bigBlindBetDone = false;
-            previousBet = (0, false, false);
-            cardPool?.Clear();
-            isTie = false;
-            maxBetForTurn = 0;
-            currentRaise = 0;
-            playerQueue?.Clear();
-            previousPlayer = null;
-            currentPlayer = null;
-            pots = [new PotEntity(Guid.Empty, 0, 0, false, null)];
-            communityCards?.Clear();
-            gameState = Enums.GameStateEnum.BlindBet;
-            currentRound = 0;
-            currentExtraBettingRound = 0;
-            extraBettingRoundCount = 0;
-            chipAmountBeforeAllIn = 0;
-        }
-
         public void SetupGame(List<PlayerEntity> players, bool isFirstRound)
         {
             currentRound++;

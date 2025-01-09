@@ -20,8 +20,8 @@ builder.Services.AddCors(options =>
 });
 builder.Services.AddMagicOnion(); // Add this line(MagicOnion.Server)
 builder.Services.AddSingleton<IRoomManager>(new RoomManager());
-builder.Services.AddSingleton<IGameLogicManager>(new GameLogicManager());
-builder.Services.AddSingleton<IJokerManager>(new JokerManager());
+builder.Services.AddTransient<IGameLogicManager, GameLogicManager>();
+builder.Services.AddTransient<IJokerManager, JokerManager>();
 builder.WebHost
     .UseUrls("http://0.0.0.0:5137");
 

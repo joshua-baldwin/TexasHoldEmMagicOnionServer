@@ -2463,7 +2463,7 @@ namespace TexasHoldEmUnitTests
             var roomId = Guid.NewGuid();
             self.RoomId = roomId;
             playerList.Set(self.Id, self);;
-            roomManager.AddRoomAndConnection(roomId, playerList, self.Id, Guid.NewGuid());
+            roomManager.AddRoomAndConnection(roomId, playerList, self.Id, Guid.NewGuid(), new GameLogicManager(), new JokerManager());
             
             var existingRoom = roomManager.GetNonFullRoomEntity();
             for (var i = 0; i < 9; i++)
