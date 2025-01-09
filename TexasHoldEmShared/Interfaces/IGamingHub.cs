@@ -16,7 +16,7 @@ namespace THE.Interfaces
         Task CancelStart(Guid playerId);
         Task<Enums.DoActionResponseTypeEnum> DoAction(Guid playerId, Enums.CommandTypeEnum commandType, int betAmount);
         Task<Enums.BuyJokerResponseTypeEnum> BuyJoker(Guid playerId, int jokerId);
-        Task<Enums.UseJokerResponseTypeEnum> UseJoker(Guid jokerUserId, Guid selectedJokerUniqueId, List<Guid> targetPlayerIds, List<CardEntity> holeCardsToDiscard, List<CardEntity> cardsToUpdateWeight);
+        Task<Enums.UseJokerResponseTypeEnum> UseJoker(Guid jokerUserId, Guid selectedJokerUniqueId, List<Guid> targetPlayerIds, List<CardEntity> cardEntities);
         Task DiscardHoleCard(Guid jokerUserId, Guid selectedJokerUniqueId, List<CardEntity> card);
     }
 }

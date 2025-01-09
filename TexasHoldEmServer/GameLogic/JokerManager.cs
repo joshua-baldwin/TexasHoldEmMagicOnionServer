@@ -51,7 +51,7 @@ namespace THE.GameLogic
             return response;
         }
 
-        public Enums.UseJokerResponseTypeEnum UseJoker(IGameLogicManager gameLogicManager, PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, List<CardEntity> holeCardsToDiscard, List<CardEntity> cardsToUpdateWeight, out bool isError, out bool showHand, out string actionMessage)
+        public Enums.UseJokerResponseTypeEnum UseJoker(IGameLogicManager gameLogicManager, PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, List<CardEntity> cardEntities, out bool isError, out bool showHand, out string actionMessage)
         {
             if (!CanUseJoker(jokerUser, targets, jokerEntity, out var message))
             {
@@ -64,7 +64,7 @@ namespace THE.GameLogic
             switch (jokerEntity.JokerType)
             {
                 case Enums.JokerTypeEnum.Hand:
-                    HandleHandInfluence(gameLogicManager, jokerUser, targets, jokerEntity, holeCardsToDiscard, out isError, out actionMessage);
+                    HandleHandInfluence(gameLogicManager, jokerUser, targets, jokerEntity, cardEntities, out isError, out actionMessage);
                     break;
                 case Enums.JokerTypeEnum.Action:
                     HandleActionInfluence(gameLogicManager, jokerUser, targets, jokerEntity, out isError, out actionMessage);
@@ -73,7 +73,7 @@ namespace THE.GameLogic
                     HandleInfoInfluence(jokerUser, targets, jokerEntity, out isError, out showHand, out actionMessage);
                     break;
                 case Enums.JokerTypeEnum.Board:
-                    HandleBoardInfluence(gameLogicManager, jokerUser, jokerEntity, cardsToUpdateWeight, out isError, out actionMessage);
+                    HandleBoardInfluence(gameLogicManager, jokerUser, jokerEntity, cardEntities, out isError, out actionMessage);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -95,39 +95,57 @@ namespace THE.GameLogic
             return Enums.UseJokerResponseTypeEnum.Success;
         }
 
-        private void HandleHandInfluence(IGameLogicManager gameLogicManager, PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, List<CardEntity> holeCardsToDiscard, out bool isError, out string message)
+        private void HandleHandInfluence(IGameLogicManager gameLogicManager, PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity jokerEntity, List<CardEntity> cardEntities, out bool isError, out string message)
         {
             var sbEng = new StringBuilder();
             var sbJap = new StringBuilder();
             sbEng.Append($"Player {jokerUser.Name} used a hand influence joker. {jokerEntity.UseCost} chips were added to the pot.");
             sbJap.Append($"プレイヤー{jokerUser.Name}がhand influenceジョーカーを使いました。{jokerEntity.UseCost}チップがポットに追加された。");
             //currently assuming one ability and one effect
-            foreach (var target in targets)
+            switch (jokerEntity.HandInfluenceType)
             {
-                foreach (var effect in jokerEntity.JokerAbilityEntity.AbilityEffects)
-                {
-                    if (holeCardsToDiscard.Count > effect.TargetNumber)
+                case Enums.HandInfluenceTypeEnum.DrawThenDiscard:
+                case Enums.HandInfluenceTypeEnum.DiscardThenDraw:
+                    foreach (var target in targets)
                     {
-                        message = "Too many cards selected.\n選択されたカードが多すぎる。";
-                        isError = true;
-                        return;
+                        foreach (var effect in jokerEntity.JokerAbilityEntity.AbilityEffects)
+                        {
+                            if (cardEntities.Count > effect.TargetNumber)
+                            {
+                                message = "Too many cards selected.\n選択されたカードが多すぎる。";
+                                isError = true;
+                                return;
+                            }
+
+                            sbEng.Append($"Player {target.Name} drew {effect.TargetNumber} new card(s).");
+                            sbJap.Append($"プレイヤー{target.Name}が{effect.TargetNumber}カードを引いた。");
+                            if (jokerEntity.HandInfluenceType == Enums.HandInfluenceTypeEnum.DiscardThenDraw)
+                            {
+                                gameLogicManager.DiscardToCardPool(target, cardEntities);
+                                target.HoleCards.AddRange(gameLogicManager.DrawFromCardPool(effect.TargetNumber));
+                            }
+                            else
+                            {
+                                target.TempHoleCards.AddRange(gameLogicManager.DrawFromCardPool(effect.TargetNumber));
+                                //discard is a different api
+                            }
+                        }
+                    }
+                    break;
+                case Enums.HandInfluenceTypeEnum.DrawCard:
+                    foreach (var target in targets)
+                    {
+                        foreach (var effect in jokerEntity.JokerAbilityEntity.AbilityEffects)
+                        {
+                            
+                        }
                     }
 
-                    sbEng.Append($"Player {target.Name} drew {effect.TargetNumber} new card(s).");
-                    sbJap.Append($"プレイヤー{target.Name}が{effect.TargetNumber}カードを引いた。");
-                    if (jokerEntity.HandInfluenceType == Enums.HandInfluenceTypeEnum.DiscardThenDraw)
-                    {
-                        gameLogicManager.DiscardToCardPool(target, holeCardsToDiscard);
-                        target.HoleCards.AddRange(gameLogicManager.DrawFromCardPool(effect.TargetNumber));
-                    }
-                    else
-                    {
-                        target.TempHoleCards.AddRange(gameLogicManager.DrawFromCardPool(effect.TargetNumber));
-                        //discard is a different api
-                    }
-
-                }
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
+            
             var full = new StringBuilder(sbEng.ToString());
             full.AppendLine();
             full.Append(sbJap);
