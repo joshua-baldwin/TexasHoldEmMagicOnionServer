@@ -160,6 +160,7 @@ namespace THE.Shared.Enums
             None,
             DrawThenDiscard,
             DiscardThenDraw,
+            DrawCard,
         }
         
         public enum ActionInfluenceTypeEnum
@@ -170,6 +171,7 @@ namespace THE.Shared.Enums
             ChangePosition,
             ChangeStack,
             IncreaseBettingRounds,
+            PreventJoker,
         }
 
         public enum InfoInfluenceTypeEnum
@@ -183,6 +185,7 @@ namespace THE.Shared.Enums
             None,
             IncreaseCardWeight,
             DecreaseCardWeight,
+            PreventCommunityCard,
         }
 
         public enum TargetTypeEnum
