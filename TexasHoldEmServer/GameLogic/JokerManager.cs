@@ -102,48 +102,41 @@ namespace THE.GameLogic
             sbEng.Append($"Player {jokerUser.Name} used a hand influence joker. {jokerEntity.UseCost} chips were added to the pot.");
             sbJap.Append($"プレイヤー{jokerUser.Name}がhand influenceジョーカーを使いました。{jokerEntity.UseCost}チップがポットに追加された。");
             //currently assuming one ability and one effect
-            switch (jokerEntity.HandInfluenceType)
+            foreach (var target in targets)
             {
-                case Enums.HandInfluenceTypeEnum.DrawThenDiscard:
-                case Enums.HandInfluenceTypeEnum.DiscardThenDraw:
-                    foreach (var target in targets)
+                foreach (var effect in jokerEntity.JokerAbilityEntity.AbilityEffects)
+                {
+                    if (cardEntities.Count > effect.TargetNumber)
                     {
-                        foreach (var effect in jokerEntity.JokerAbilityEntity.AbilityEffects)
-                        {
-                            if (cardEntities.Count > effect.TargetNumber)
-                            {
-                                message = "Too many cards selected.\n選択されたカードが多すぎる。";
-                                isError = true;
-                                return;
-                            }
+                        message = "Too many cards selected.\n選択されたカードが多すぎる。";
+                        isError = true;
+                        return;
+                    }
 
+                    switch (jokerEntity.HandInfluenceType)
+                    {
+                        case Enums.HandInfluenceTypeEnum.DrawThenDiscard:
+                        case Enums.HandInfluenceTypeEnum.DiscardThenDraw:
                             sbEng.Append($"Player {target.Name} drew {effect.TargetNumber} new card(s).");
                             sbJap.Append($"プレイヤー{target.Name}が{effect.TargetNumber}カードを引いた。");
                             if (jokerEntity.HandInfluenceType == Enums.HandInfluenceTypeEnum.DiscardThenDraw)
                             {
                                 gameLogicManager.DiscardToCardPool(target, cardEntities);
-                                target.HoleCards.AddRange(gameLogicManager.DrawFromCardPool(effect.TargetNumber));
+                                gameLogicManager.DrawFromCardPool(target, effect.TargetNumber, false);
                             }
                             else
                             {
-                                target.TempHoleCards.AddRange(gameLogicManager.DrawFromCardPool(effect.TargetNumber));
+                                gameLogicManager.DrawFromCardPool(target, effect.TargetNumber, true);
                                 //discard is a different api
                             }
-                        }
+                            break;
+                        case Enums.HandInfluenceTypeEnum.DrawCard:
+                            sbEng.Append($"Player {target.Name} drew {effect.TargetNumber} card(s) from the pool.");
+                            sbJap.Append($"プレイヤー{target.Name}が{effect.TargetNumber}枚のカードをプールから引いた。");
+                            gameLogicManager.DrawFromCardPool(target, cardEntities);
+                            break;
                     }
-                    break;
-                case Enums.HandInfluenceTypeEnum.DrawCard:
-                    foreach (var target in targets)
-                    {
-                        foreach (var effect in jokerEntity.JokerAbilityEntity.AbilityEffects)
-                        {
-                            
-                        }
-                    }
-
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                }
             }
             
             var full = new StringBuilder(sbEng.ToString());
@@ -338,7 +331,7 @@ namespace THE.GameLogic
                 //hand influencers
                 new JokerAbilityEntity(1, "Discard {targetNumber} hole card(s) and draw {targetNumber} more. ハンドを{targetNumber}枚捨てて、{targetNumber}枚弾き直す。", [jokerAbilityEffectEntities[0]]),
                 new JokerAbilityEntity(2, "Draw {targetNumber} card(s) and add to your hand, discard {targetNumber} card(s). 追加で{targetNumber}枚引いて、{targetNumber}枚捨てる。", [jokerAbilityEffectEntities[2]]),
-                new JokerAbilityEntity(3, "Draw the designated card from the pool.\n指定したカードをプールから引く。", [jokerAbilityEffectEntities[4]]),
+                new JokerAbilityEntity(3, "Draw the designated cards from the pool.\n指定したカードをプールから引く。", [jokerAbilityEffectEntities[4]]),
 
                 //action influencers
                 new JokerAbilityEntity(4, "Force the target to {commandType}.ターゲットに{commandType}をさせる", [jokerAbilityEffectEntities[5]]),
@@ -372,7 +365,7 @@ namespace THE.GameLogic
                 new AbilityEffectEntity(2, 1, 0, 2, Enums.CommandTypeEnum.None, "Discard then draw"),
                 new AbilityEffectEntity(3, 2, 0, 1, Enums.CommandTypeEnum.None, "Draw then discard"),
                 new AbilityEffectEntity(4, 2, 0, 2, Enums.CommandTypeEnum.None, "Draw then discard"),
-                new AbilityEffectEntity(5, 3, 0, 0, Enums.CommandTypeEnum.None, "Draw the designated card from the pool"),
+                new AbilityEffectEntity(5, 3, 0, 1, Enums.CommandTypeEnum.None, "Draw the designated cards from the pool"),
 
                 new AbilityEffectEntity(6, 4, 0, 1, Enums.CommandTypeEnum.Raise, "Make the target raise"),
                 new AbilityEffectEntity(7, 5, 0, 1, Enums.CommandTypeEnum.Check, "Prevent the target from checking"),

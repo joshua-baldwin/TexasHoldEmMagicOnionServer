@@ -20,8 +20,8 @@ namespace THE.GameLogic
         void DoAction(Enums.CommandTypeEnum commandType, int chipsBet, out bool isGameOver, out bool isError, out string actionMessage);
         void DiscardAndFinishUsingJoker(PlayerEntity target, JokerEntity joker, List<CardEntity> cardsToDiscard);
         void DiscardToCardPool(PlayerEntity target, List<CardEntity> cardsToDiscard);
-        List<CardEntity> DrawFromCardPool(int numberOfCardsToDraw);
-        List<CardEntity> DrawFromCardPool(List<CardEntity> cardsToDraw);
+        void DrawFromCardPool(PlayerEntity target, int numberOfCardsToDraw, bool addToTempCards); //draw random card
+        void DrawFromCardPool(PlayerEntity target, List<CardEntity> cardsToDraw); //draw specific card
         void CreateQueue(List<PlayerEntity> players);
         List<WinningHandEntity> DoShowdown();
         void AddJokerCostToPot(int cost);

@@ -632,5 +632,31 @@ namespace TexasHoldEmUnitTests
             SetupClass.AssertAfterAction(sut, totalChips, false, isError, false, isGameOver);
             Assert.That(sut.GameLogicManager.GetGameState(), Is.EqualTo(Enums.GameStateEnum.Showdown));
         }
+        
+        [Test]
+        [TestCase(Enums.PlayerRoleEnum.SmallBlind, 600, Enums.PlayerRoleEnum.BigBlind, 600, Enums.PlayerRoleEnum.None, 350)]
+        public void ChooseCardFromPoolTest(Enums.PlayerRoleEnum role1, int chip1, Enums.PlayerRoleEnum role2, int chip2,
+            Enums.PlayerRoleEnum role3, int chip3)
+        {
+            var sut = SetupClass.SetupAndDoBlindBet([
+                ("small", Enums.PlayerRoleEnum.SmallBlind, Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.King, Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Nine, chip1),
+                ("big", Enums.PlayerRoleEnum.BigBlind, Enums.CardSuitEnum.Club, Enums.CardRankEnum.Ten, Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Nine, chip2),
+                ("none3", Enums.PlayerRoleEnum.None, Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Eight, Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Five, chip3),
+            ], true, out var totalChips);
+            
+            sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
+            SetupClass.AssertAfterAction(sut, totalChips, false, false, false, false);
+            sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out _, out _);
+            SetupClass.AssertAfterAction(sut, totalChips, false, false, false, false);
+            sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out _, out _);
+            SetupClass.AssertAfterAction(sut, totalChips, false, false, false, false);
+
+            var p1 = sut.Players[0];
+            var p2 = sut.Players[1];
+            
+            SetupClass.PurchaseAndUseJoker(sut, 103, p1, [p1], [new CardEntity(Enums.CardSuitEnum.Spade, Enums.CardRankEnum.Ace)], ref totalChips);
+            Assert.That(p1.HoleCards.Count, Is.EqualTo(3));
+            Assert.That(p1.HoleCards.FirstOrDefault(x => x.Rank == Enums.CardRankEnum.Ace && x.Suit == Enums.CardSuitEnum.Spade) != null);
+        }
     }
 }

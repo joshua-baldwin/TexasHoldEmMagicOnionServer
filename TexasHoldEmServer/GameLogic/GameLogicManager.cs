@@ -279,7 +279,7 @@ namespace THE.GameLogic
             }
         }
 
-        public List<CardEntity> DrawFromCardPool(int numberOfCardsToDraw)
+        public void DrawFromCardPool(PlayerEntity target, int numberOfCardsToDraw, bool addToTempCards)
         {
             var newCards = new List<CardEntity>();
             for (var i = 0; i < numberOfCardsToDraw; i++)
@@ -288,10 +288,13 @@ namespace THE.GameLogic
                 cardPool.Remove(card);
                 newCards.Add(card);
             }
-            return newCards;
+            if (addToTempCards)
+                target.TempHoleCards.AddRange(newCards);
+            else
+                target.HoleCards.AddRange(newCards);
         }
 
-        public List<CardEntity> DrawFromCardPool(List<CardEntity> cardsToDraw)
+        public void DrawFromCardPool(PlayerEntity target, List<CardEntity> cardsToDraw)
         {
             var newCards = new List<CardEntity>();
             foreach (var card in cardsToDraw)
@@ -300,7 +303,8 @@ namespace THE.GameLogic
                 cardPool.Remove(newCard);
                 newCards.Add(newCard);
             }
-            return newCards;
+            target.HoleCards.AddRange(newCards);
+            target.MaxHoleCards = target.HoleCards.Count;
         }
 
         public void CreateQueue(List<PlayerEntity> players)
