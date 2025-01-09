@@ -1,6 +1,7 @@
 using System.Text;
 using THE.Entities;
 using THE.Shared.Enums;
+using THE.Shared.Utilities;
 
 namespace THE.GameLogic
 {
@@ -67,7 +68,8 @@ namespace THE.GameLogic
                     HandleHandInfluence(gameLogicManager, jokerUser, targets, jokerEntity, cardEntities, out isError, out actionMessage);
                     break;
                 case Enums.JokerTypeEnum.Action:
-                    HandleActionInfluence(gameLogicManager, jokerUser, targets, jokerEntity, out isError, out actionMessage);
+                    var actualTargets = jokerEntity.TargetType == Enums.TargetTypeEnum.All ? gameLogicManager.GetAllPlayers() : targets;
+                    HandleActionInfluence(gameLogicManager, jokerUser, actualTargets, jokerEntity, out isError, out actionMessage);
                     break;
                 case Enums.JokerTypeEnum.Info:
                     HandleInfoInfluence(jokerUser, targets, jokerEntity, out isError, out showHand, out actionMessage);
@@ -193,10 +195,20 @@ namespace THE.GameLogic
                             sbEng.Append("The number of betting turns has increased by one.");
                             sbJp.Append("ベットラウンドの数が１つに増えた。");
                             break;
+                        case Enums.ActionInfluenceTypeEnum.PreventJoker:
+                            jokerEffect = new ActiveJokerEffectEntity(jokerEntity.JokerId, jokerEntity.JokerType, jokerEntity.HandInfluenceType, jokerEntity.ActionInfluenceType, jokerEntity.InfoInfluenceType, jokerEntity.BoardInfluenceType, effect.Id, effect.EffectValue, effect.TargetNumber, effect.CommandType);
+                            target.ActiveEffects.Add(jokerEffect);
+                            break;
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
                 }
+            }
+
+            if (jokerEntity.ActionInfluenceType == Enums.ActionInfluenceTypeEnum.PreventJoker)
+            {
+                sbEng.Append("Players cannot use Jokers during this turn.");
+                sbJp.Append("このターンジョーカーを使えなくなった。");
             }
 
             var full = new StringBuilder(sbEng.ToString());
@@ -282,6 +294,12 @@ namespace THE.GameLogic
             if (jokerUser.Chips <= joker.UseCost)
             {
                 message = "You don't have enough chips to use this Joker.\nこのジョーカーを使うには必要なチップが足りない。";
+                return false;
+            }
+            
+            if (jokerUser.ActiveEffects.Any(activeEffect => activeEffect.EffectId == Constants.CantUseJokerAbilityEffectId))
+            {
+                message = "You can't use Jokers on this turn.\nこのターンジョーカー使えない。";
                 return false;
             }
 

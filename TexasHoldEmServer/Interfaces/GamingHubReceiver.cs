@@ -234,6 +234,7 @@ namespace THE.Interfaces
             var room = roomManager.GetRoomEntity(jokerUser.RoomId);
             var gameLogicManager = room.GameLogicManager;
             var jokerManager = room.JokerManager;
+            var jokerEntity = jokerUser.JokerCards.First(x => x.UniqueId == selectedJokerUniqueId);
             Enums.UseJokerResponseTypeEnum response;
             try
             {
@@ -241,7 +242,7 @@ namespace THE.Interfaces
                 foreach (var id in targetPlayerIds)
                     targetPlayers.Add(storage.AllValues.First(x => x.Id == id));
                 
-                var jokerEntity = jokerUser.JokerCards.First(x => x.UniqueId == selectedJokerUniqueId);
+                
                 response = jokerManager.UseJoker(gameLogicManager, jokerUser, targetPlayers, jokerEntity, cardEntities, out bool isError, out bool showHand, out string message);
                 if (!isError)
                 {
