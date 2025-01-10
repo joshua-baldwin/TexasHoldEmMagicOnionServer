@@ -14,6 +14,5 @@ namespace THE.Shared.Utilities
         
         //Joker
         public static int MaxJokerCount = 3;
-        public static int CantUseJokerAbilityEffectId = 11;
     }
 }

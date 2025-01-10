@@ -302,7 +302,7 @@ namespace THE.GameLogic
                 return false;
             }
             
-            if (jokerUser.ActiveEffects.Any(activeEffect => activeEffect.EffectId == Constants.CantUseJokerAbilityEffectId))
+            if (jokerUser.ActiveEffects.Any(activeEffect => activeEffect.ActionInfluenceType == Enums.ActionInfluenceTypeEnum.PreventJoker))
             {
                 message = "You can't use Jokers on this turn.\nこのターンジョーカー使えない。";
                 return false;
