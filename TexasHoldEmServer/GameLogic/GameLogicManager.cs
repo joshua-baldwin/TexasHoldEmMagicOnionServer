@@ -55,7 +55,7 @@ namespace THE.GameLogic
             SetRoles(players, isFirstRound);
         }
 
-        public void DoAction(Enums.CommandTypeEnum commandType, int chipsBet, out bool isGameOver, out bool isError, out string actionMessage)
+        public void DoAction(Enums.CommandTypeEnum commandType, int chipsBet, out bool stateChanged, out bool isGameOver, out bool isError, out string actionMessage)
         {
             PotEntity potEntity;
             isGameOver = false;
@@ -66,6 +66,7 @@ namespace THE.GameLogic
             {
                 actionMessage = message;
                 isError = true;
+                stateChanged = false;
                 return;
             }
             
@@ -77,6 +78,7 @@ namespace THE.GameLogic
                     {
                         actionMessage = message;
                         isError = true;
+                        stateChanged = false;
                         return;
                     }
                     actionMessage = $"{currentPlayer.Name} bet {betAmount}.";
@@ -101,6 +103,7 @@ namespace THE.GameLogic
                     {
                         actionMessage = message;
                         isError = true;
+                        stateChanged = false;
                         return;
                     }
                     actionMessage = $"{currentPlayer.Name} bet {Constants.MinBet}.";
@@ -121,6 +124,7 @@ namespace THE.GameLogic
                     {
                         actionMessage = message;
                         isError = true;
+                        stateChanged = false;
                         return;
                     }
                     
@@ -142,6 +146,7 @@ namespace THE.GameLogic
                     {
                         actionMessage = message;
                         isError = true;
+                        stateChanged = false;
                         return;
                     }
                     //if there was a call after an all in, add it to the amount so we recalculate pots correctly
@@ -161,6 +166,7 @@ namespace THE.GameLogic
                     {
                         actionMessage = message;
                         isError = true;
+                        stateChanged = false;
                         return;
                     }
                     //if there was a bet after an all in, add it to the amount so we recalculate pots correctly
@@ -243,7 +249,7 @@ namespace THE.GameLogic
                 }
             }
 
-            UpdateGameState();
+            stateChanged = UpdateGameState();
         }
 
         public void DiscardAndFinishUsingJoker(PlayerEntity target, JokerEntity joker, List<CardEntity> cardsToDiscard)
@@ -566,7 +572,7 @@ namespace THE.GameLogic
             chipAmountBeforeAllIn = 0;
         }
 
-        private void UpdateGameState()
+        private bool UpdateGameState()
         {
             var gameStateChanged = false;
             if (playerQueue.Count == 1 || playerQueue.All(x => x.IsAllIn) || (playerQueue.Count(x => x.IsAllIn) == playerQueue.Count - 1 && playerQueue.All(x => x.HasTakenAction)))
@@ -644,9 +650,11 @@ namespace THE.GameLogic
                 }
             }
 
-            if (!gameStateChanged || (gameStateChanged && gameState == Enums.GameStateEnum.PreFlop))
-                return;
+            return gameStateChanged && (!gameStateChanged || gameState != Enums.GameStateEnum.PreFlop);
+        }
 
+        public void UpdateAfterGameStateChanged()
+        {
             foreach (var player in playerQueue)
                 player.OrderInQueue = player.OriginalOrderInQueue;
 

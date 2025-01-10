@@ -16,7 +16,8 @@ namespace THE.GameLogic
         int GetExtraBettingRoundsCount();
         List<PlayerEntity> GetAllPlayers();
         void SetupGame(List<PlayerEntity> players, bool isFirstRound);
-        void DoAction(Enums.CommandTypeEnum commandType, int chipsBet, out bool isGameOver, out bool isError, out string actionMessage);
+        void DoAction(Enums.CommandTypeEnum commandType, int chipsBet, out bool stateChanged, out bool isGameOver, out bool isError, out string actionMessage);
+        void UpdateAfterGameStateChanged();
         void DiscardAndFinishUsingJoker(PlayerEntity target, JokerEntity joker, List<CardEntity> cardsToDiscard);
         void DiscardToCardPool(PlayerEntity target, List<CardEntity> cardsToDiscard);
         void DrawFromCardPool(PlayerEntity target, int numberOfCardsToDraw, bool addToTempCards); //draw random card

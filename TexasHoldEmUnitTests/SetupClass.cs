@@ -76,8 +76,8 @@ namespace TexasHoldEmUnitTests
             totalChips = playersToCreate.Select(x => x.Chips).Sum();
             sut.GameLogicManager.CreateQueue(sut.Players);
 
-            sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.SmallBlindBet, 0, out _, out _, out _);
-            sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.BigBlindBet, 0, out _, out _, out _);
+            DoAction(sut, Enums.CommandTypeEnum.SmallBlindBet, 0, totalChips, false, false);
+            DoAction(sut, Enums.CommandTypeEnum.BigBlindBet, 0, totalChips, false, false);
             
             Assert.That(sut.Players.All(player => player.CardsAreValid()));
 
@@ -85,6 +85,14 @@ namespace TexasHoldEmUnitTests
                 SetNewHoleCards(sut.Players[i], [new CardEntity(playersToCreate[i].Suit1, playersToCreate[i].Rank1), new CardEntity(playersToCreate[i].Suit2, playersToCreate[i].Rank2)]);
 
             return sut;
+        }
+
+        public static void DoAction(TestSystem sut, Enums.CommandTypeEnum commandType, int amount, int totalChips, bool shouldBeError, bool shouldBeGameOver)
+        {
+            sut.GameLogicManager.DoAction(commandType, amount, out var stateChanged, out var isGameOver, out var isError, out var actionMessage);
+            AssertAfterAction(sut, totalChips, shouldBeError, isError, shouldBeGameOver, isGameOver);
+            if (stateChanged)
+                sut.GameLogicManager.UpdateAfterGameStateChanged();
         }
 
         public static void AssertBeforeAction(TestSystem sut)

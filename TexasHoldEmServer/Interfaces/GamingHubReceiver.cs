@@ -171,7 +171,9 @@ namespace THE.Interfaces
             try
             {
                 var previousPlayer = gameLogicManager.GetCurrentPlayer();
-                gameLogicManager.DoAction(commandType, betAmount, out bool isGameOver, out bool isError, out string actionMessage);
+                gameLogicManager.DoAction(commandType, betAmount, out bool stateChanged, out bool isGameOver, out bool isError, out string actionMessage);
+                if (stateChanged)
+                    gameLogicManager.UpdateAfterGameStateChanged();
                 Console.WriteLine(actionMessage);
                 if (isError)
                     BroadcastToSelf(group).OnDoAction(commandType, storage.AllValues.ToList(), previousPlayer.Id, gameLogicManager.GetCurrentPlayer().Id, gameLogicManager.GetPots(), gameLogicManager.GetCommunityCards(), gameLogicManager.GetGameState(), gameLogicManager.GetCurrentExtraBettingRound(), isError, actionMessage, []);
