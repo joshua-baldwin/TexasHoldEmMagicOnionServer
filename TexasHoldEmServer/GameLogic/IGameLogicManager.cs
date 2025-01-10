@@ -5,7 +5,6 @@ namespace THE.GameLogic
 {
     public interface IGameLogicManager
     {
-        List<CardEntity> GetCardPool();
         Queue<PlayerEntity> GetPlayerQueue();
         PlayerEntity GetPreviousPlayer();
         PlayerEntity GetCurrentPlayer();
@@ -21,7 +20,7 @@ namespace THE.GameLogic
         void DiscardAndFinishUsingJoker(PlayerEntity target, JokerEntity joker, List<CardEntity> cardsToDiscard);
         void DiscardToCardPool(PlayerEntity target, List<CardEntity> cardsToDiscard);
         void DrawFromCardPool(PlayerEntity target, int numberOfCardsToDraw, bool addToTempCards); //draw random card
-        void DrawFromCardPool(PlayerEntity target, List<CardEntity> cardsToDraw); //draw specific card
+        void DrawFromCardPool(PlayerEntity target, List<CardEntity> cardsToDraw, bool duplicate); //draw specific card
         void CreateQueue(List<PlayerEntity> players);
         List<WinningHandEntity> DoShowdown();
         void AddJokerCostToPot(int cost);

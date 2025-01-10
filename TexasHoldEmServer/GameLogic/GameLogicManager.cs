@@ -30,7 +30,6 @@ namespace THE.GameLogic
 
         #region Interface methods
 
-        public List<CardEntity> GetCardPool() => cardPool;
         public Queue<PlayerEntity> GetPlayerQueue() => playerQueue;
         public PlayerEntity GetPreviousPlayer() => previousPlayer;
         public PlayerEntity GetCurrentPlayer() => currentPlayer;
@@ -294,13 +293,20 @@ namespace THE.GameLogic
                 target.HoleCards.AddRange(newCards);
         }
 
-        public void DrawFromCardPool(PlayerEntity target, List<CardEntity> cardsToDraw)
+        public void DrawFromCardPool(PlayerEntity target, List<CardEntity> cardsToDraw, bool duplicate)
         {
             var newCards = new List<CardEntity>();
             foreach (var card in cardsToDraw)
             {
-                var newCard = cardPool.First(c => c.Suit == card.Suit && c.Rank == card.Rank);
-                cardPool.Remove(newCard);
+                CardEntity newCard;
+                if (duplicate)
+                    newCard = new CardEntity(card.Suit, card.Rank);   
+                else
+                {
+                    newCard = cardPool.First(c => c.Suit == card.Suit && c.Rank == card.Rank);
+                    cardPool.Remove(newCard);
+                }
+
                 newCards.Add(newCard);
             }
             target.HoleCards.AddRange(newCards);

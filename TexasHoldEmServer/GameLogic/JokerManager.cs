@@ -135,7 +135,7 @@ namespace THE.GameLogic
                         case Enums.HandInfluenceTypeEnum.DrawCard:
                             sbEng.Append($"Player {target.Name} drew {effect.TargetNumber} card(s) from the pool.");
                             sbJap.Append($"プレイヤー{target.Name}が{effect.TargetNumber}枚のカードをプールから引いた。");
-                            gameLogicManager.DrawFromCardPool(target, cardEntities);
+                            gameLogicManager.DrawFromCardPool(target, cardEntities, true);
                             break;
                     }
                 }
