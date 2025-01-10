@@ -251,7 +251,7 @@ namespace THE.GameLogic
             showHand = false;
         }
         
-        private void HandleBoardInfluence(IGameLogicManager gameLogicManager, PlayerEntity jokerUser, JokerEntity jokerEntity, List<CardEntity> cardsToUpdateWeight, out bool isError, out string message)
+        private void HandleBoardInfluence(IGameLogicManager gameLogicManager, PlayerEntity jokerUser, JokerEntity jokerEntity, List<CardEntity> cardEntities, out bool isError, out string message)
         {
             var sbEng = new StringBuilder();
             var sbJp = new StringBuilder();
@@ -262,14 +262,19 @@ namespace THE.GameLogic
                 switch (jokerEntity.BoardInfluenceType)
                 {
                     case Enums.BoardInfluenceTypeEnum.IncreaseCardWeight:
-                        gameLogicManager.UpdateCardWeight(cardsToUpdateWeight, effect.EffectValue, true);
+                        gameLogicManager.UpdateCardWeight(cardEntities, effect.EffectValue, true);
                         sbEng.Append($"Player {jokerUser.Name} updated the card weights.");
                         sbJp.Append($"プレイヤー{jokerUser.Name}がカードの重みを更新した。");
                         break;
                     case Enums.BoardInfluenceTypeEnum.DecreaseCardWeight:
-                        gameLogicManager.UpdateCardWeight(cardsToUpdateWeight, effect.EffectValue, false);
+                        gameLogicManager.UpdateCardWeight(cardEntities, effect.EffectValue, false);
                         sbEng.Append($"Player {jokerUser.Name} updated the card weights.");
                         sbJp.Append($"プレイヤー{jokerUser.Name}がカードの重みを更新した。");
+                        break;
+                    case Enums.BoardInfluenceTypeEnum.PreventCommunityCard:
+                        gameLogicManager.LockCommunityCards(cardEntities);
+                        sbEng.Append("A community card has been locked.");
+                        sbJp.Append("コミュニティカードがロックされた。");
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();

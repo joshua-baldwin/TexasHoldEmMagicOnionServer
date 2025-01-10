@@ -404,6 +404,12 @@ namespace THE.GameLogic
             }
         }
 
+        public void LockCommunityCards(List<CardEntity> cardsToLock)
+        {
+            foreach (var card in cardsToLock)
+                communityCards.First(c => c.Suit == card.Suit && c.Rank == card.Rank).IsLockedByJoker = true;
+        }
+
         #endregion
 
         private void RemoveFromPots()
@@ -822,7 +828,7 @@ namespace THE.GameLogic
                 var player = showdownPlayers.First();
                 if (gameState != Enums.GameStateEnum.GameOver)
                 {
-                    var hand = player.HoleCards.Concat(communityCards).ToList();
+                    var hand = player.HoleCards.Concat(communityCards.Where(card => !card.IsLockedByJoker)).ToList();
                     var rank = HandRankingLogic.GetHandRanking(hand);
                     player.BestHand = new BestHandEntity { Cards = hand.Where(x => x.IsFinalHand).ToList(), HandRanking = rank };
                     winningHand.HandRanking = rank;
@@ -840,7 +846,7 @@ namespace THE.GameLogic
                 Enums.HandRankingType ranking;
                 if (player.BestHand == null)
                 {
-                    var hand = player.HoleCards.Concat(communityCards).ToList();
+                    var hand = player.HoleCards.Concat(communityCards.Where(card => !card.IsLockedByJoker)).ToList();
                     ranking = HandRankingLogic.GetHandRanking(hand);
                     player.BestHand = new BestHandEntity { Cards = hand.Where(x => x.IsFinalHand).ToList(), HandRanking = ranking };
                 }

@@ -28,6 +28,7 @@ namespace THE.GameLogic
         void UpdateQueue(PlayerEntity playerToChange);
         void IncreaseNumberOfBettingRounds();
         void UpdateCardWeight(List<CardEntity> card, int multiplier, bool increaseWeight);
+        void LockCommunityCards(List<CardEntity> cardsToLock);
     }
 
     public interface IGameLogicManagerForTesting

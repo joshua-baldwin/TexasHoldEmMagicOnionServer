@@ -690,5 +690,54 @@ namespace TexasHoldEmUnitTests
             sut.JokerManager.UseJoker(sut.GameLogicManager, p2, [p1], p2.JokerCards.First(), [], out var isJokerError, out _, out _);
             SetupClass.AssertAfterJokerAction(sut, totalChips, true, isJokerError);
         }
+        
+        [Test]
+        [TestCase(Enums.PlayerRoleEnum.SmallBlind, 100, Enums.PlayerRoleEnum.BigBlind, 100)]
+        public void CantUseCommunityCardTest(Enums.PlayerRoleEnum role1, int chip1, Enums.PlayerRoleEnum role2, int chip2)
+        {
+            var sut = SetupClass.SetupAndDoBlindBet([
+                ("small", Enums.PlayerRoleEnum.SmallBlind, Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.King, Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Nine, chip1),
+                ("big", Enums.PlayerRoleEnum.BigBlind, Enums.CardSuitEnum.Club, Enums.CardRankEnum.Ten, Enums.CardSuitEnum.Heart, Enums.CardRankEnum.Nine, chip2),
+            ], true, out var totalChips);
+            
+            sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out var isError, out _);
+            SetupClass.AssertAfterAction(sut, totalChips, false, isError, false, false);
+            sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Check, 0, out _, out isError, out _);
+            SetupClass.AssertAfterAction(sut, totalChips, false, isError, false, false);
+
+            sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 1, out _, out isError, out _);
+            SetupClass.AssertAfterAction(sut, totalChips, false, isError, false, false);
+            sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _);
+            SetupClass.AssertAfterAction(sut, totalChips, false, isError, false, false);
+            
+            sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 1, out _, out isError, out _);
+            SetupClass.AssertAfterAction(sut, totalChips, false, isError, false, false);
+            sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _);
+            SetupClass.AssertAfterAction(sut, totalChips, false, isError, false, false);
+            
+            //king nine
+            //ten nine
+            sut.GameLogicManager.SetCommunityCardsForUnitTests(new List<CardEntity>()
+            {
+                new CardEntity(Enums.CardSuitEnum.Club, Enums.CardRankEnum.Nine),
+                new CardEntity(Enums.CardSuitEnum.Club, Enums.CardRankEnum.Ten),
+                new CardEntity(Enums.CardSuitEnum.Club, Enums.CardRankEnum.Three),
+                new CardEntity(Enums.CardSuitEnum.Diamond, Enums.CardRankEnum.Three),
+                new CardEntity(Enums.CardSuitEnum.Club, Enums.CardRankEnum.Two),
+            });
+            
+            var p1 = sut.Players[0];
+            var p2 = sut.Players[1];
+            
+            SetupClass.PurchaseAndUseJoker(sut, 113, p1, [], [new CardEntity(Enums.CardSuitEnum.Club, Enums.CardRankEnum.Ten)], ref totalChips);
+            sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Raise, 1, out _, out isError, out _);
+            SetupClass.AssertAfterAction(sut, totalChips, false, isError, false, false);
+            sut.GameLogicManager.DoAction(Enums.CommandTypeEnum.Call, 0, out _, out isError, out _);
+            SetupClass.AssertAfterAction(sut, totalChips, false, isError, false, false);
+            Assert.That(sut.GameLogicManager.GetGameState(), Is.EqualTo(Enums.GameStateEnum.Showdown));
+
+            var winners = sut.GameLogicManager.DoShowdown();
+            Assert.That(winners.First().Winner.Id, Is.EqualTo(p1.Id));
+        }
     }
 }

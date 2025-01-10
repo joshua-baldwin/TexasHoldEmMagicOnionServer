@@ -18,6 +18,9 @@ namespace THE.Entities
         
         [Key(3)]
         public bool IsFinalHand { get; set; }
+        
+        [Key(4)]
+        public bool IsLockedByJoker { get; set; }
 
         public CardEntity(Enums.CardSuitEnum suit, Enums.CardRankEnum rank)
         {
