@@ -191,7 +191,7 @@ namespace THE.GameLogic
                         chipAmountBeforeAllIn = pots[0].PotAmount;
 
                     allInPlayersForRound.Add(currentPlayer);
-                    actionMessage = $"{currentPlayer.Name} went all in.";
+                    actionMessage = $"{currentPlayer.Name} went all in with {currentPlayer.Chips} chips.";
                     
                     var isRaise = previousBet.Amount != 0 &&
                                   currentPlayer.Chips > previousBet.Amount &&
