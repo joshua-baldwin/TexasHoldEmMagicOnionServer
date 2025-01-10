@@ -646,13 +646,6 @@ namespace THE.GameLogic
 
             if (!gameStateChanged || (gameStateChanged && gameState == Enums.GameStateEnum.PreFlop))
                 return;
-            
-            if (gameState != Enums.GameStateEnum.PreFlop)
-            {
-                foreach (var player in playerQueue)
-                    player.CurrentBet = 0;
-                previousBet = (0, false, false);
-            }
 
             foreach (var player in playerQueue)
                 player.OrderInQueue = player.OriginalOrderInQueue;
@@ -676,6 +669,8 @@ namespace THE.GameLogic
 
             allInPlayers.ForEach(x => x.LastCommand = 0);
 
+            foreach (var player in playerQueue)
+                player.CurrentBet = 0;
             previousBet = (0, false, false);
             currentRaise = 0;
             allInPlayersForRound.Clear();
