@@ -135,7 +135,7 @@ namespace THE.Interfaces
                 foreach (var player in eligiblePlayers)
                     ids.Add(room.GetConnectionId(player.Id));
 
-                BroadcastTo(group, ids.ToArray()).OnGameStart(room.GameLogicManager.GetPlayerQueue().ToList(), room.GameLogicManager.GetCardPool(), room.GameLogicManager.GetCurrentPlayer(), room.GameLogicManager.GetGameState(), room.GameLogicManager.GetCurrentRound(), isFirstRound);
+                BroadcastTo(group, ids.ToArray()).OnGameStart(room.GameLogicManager.GetPlayerQueue().ToList(), room.GameLogicManager.GetCurrentPlayer(), room.GameLogicManager.GetGameState(), room.GameLogicManager.GetCurrentRound(), isFirstRound);
             }
             catch (Exception)
             {
@@ -174,11 +174,11 @@ namespace THE.Interfaces
                 gameLogicManager.DoAction(commandType, betAmount, out bool isGameOver, out bool isError, out string actionMessage);
                 Console.WriteLine(actionMessage);
                 if (isError)
-                    BroadcastToSelf(group).OnDoAction(commandType, storage.AllValues.ToList(), gameLogicManager.GetCardPool(), previousPlayer.Id, gameLogicManager.GetCurrentPlayer().Id, gameLogicManager.GetPots(), gameLogicManager.GetCommunityCards(), gameLogicManager.GetGameState(), gameLogicManager.GetCurrentExtraBettingRound(), isError, actionMessage, []);
+                    BroadcastToSelf(group).OnDoAction(commandType, storage.AllValues.ToList(), previousPlayer.Id, gameLogicManager.GetCurrentPlayer().Id, gameLogicManager.GetPots(), gameLogicManager.GetCommunityCards(), gameLogicManager.GetGameState(), gameLogicManager.GetCurrentExtraBettingRound(), isError, actionMessage, []);
                 else if (isGameOver)
                 {
                     var winnerList = gameLogicManager.DoShowdown();
-                    Broadcast(group).OnDoAction(commandType, storage.AllValues.ToList(), gameLogicManager.GetCardPool(), previousPlayer.Id, gameLogicManager.GetCurrentPlayer().Id, gameLogicManager.GetPots(), gameLogicManager.GetCommunityCards(), gameLogicManager.GetGameState(), gameLogicManager.GetCurrentExtraBettingRound(), isError, actionMessage, winnerList);
+                    Broadcast(group).OnDoAction(commandType, storage.AllValues.ToList(), previousPlayer.Id, gameLogicManager.GetCurrentPlayer().Id, gameLogicManager.GetPots(), gameLogicManager.GetCommunityCards(), gameLogicManager.GetGameState(), gameLogicManager.GetCurrentExtraBettingRound(), isError, actionMessage, winnerList);
                 }
                 else
                 {
@@ -186,7 +186,7 @@ namespace THE.Interfaces
                     if (gameLogicManager.GetGameState() == Enums.GameStateEnum.Showdown)
                         winnerList = gameLogicManager.DoShowdown();
 
-                    Broadcast(group).OnDoAction(commandType, storage.AllValues.ToList(), gameLogicManager.GetCardPool(), previousPlayer.Id, gameLogicManager.GetCurrentPlayer().Id, gameLogicManager.GetPots(), gameLogicManager.GetCommunityCards(), gameLogicManager.GetGameState(), gameLogicManager.GetCurrentExtraBettingRound(), isError, actionMessage, winnerList);
+                    Broadcast(group).OnDoAction(commandType, storage.AllValues.ToList(), previousPlayer.Id, gameLogicManager.GetCurrentPlayer().Id, gameLogicManager.GetPots(), gameLogicManager.GetCommunityCards(), gameLogicManager.GetGameState(), gameLogicManager.GetCurrentExtraBettingRound(), isError, actionMessage, winnerList);
                 }
             }
             catch (Exception ex)
@@ -250,10 +250,10 @@ namespace THE.Interfaces
                     var sb = new StringBuilder();
                     targetNames.ForEach(x => sb.Append($"{x} "));
                     Console.WriteLine($"Player {jokerUser.Name} used {jokerEntity.JokerType} influence joker against player(s) {sb}, response: {response}");
-                    Broadcast(group).OnUseJoker(storage.AllValues.ToList(), gameLogicManager.GetCardPool(), gameLogicManager.GetCommunityCards(), jokerUser, targetPlayers, jokerEntity, gameLogicManager.GetCurrentPlayer().Id, gameLogicManager.GetPots(), isError, showHand, message);
+                    Broadcast(group).OnUseJoker(storage.AllValues.ToList(), gameLogicManager.GetCommunityCards(), jokerUser, targetPlayers, jokerEntity, gameLogicManager.GetCurrentPlayer().Id, gameLogicManager.GetPots(), isError, showHand, message);
                 }
                 else
-                    BroadcastToSelf(group).OnUseJoker(storage.AllValues.ToList(), gameLogicManager.GetCardPool(), gameLogicManager.GetCommunityCards(), jokerUser, targetPlayers, jokerEntity, gameLogicManager.GetCurrentPlayer().Id, gameLogicManager.GetPots(), isError, false, message);
+                    BroadcastToSelf(group).OnUseJoker(storage.AllValues.ToList(), gameLogicManager.GetCommunityCards(), jokerUser, targetPlayers, jokerEntity, gameLogicManager.GetCurrentPlayer().Id, gameLogicManager.GetPots(), isError, false, message);
             }
             catch (Exception)
             {
