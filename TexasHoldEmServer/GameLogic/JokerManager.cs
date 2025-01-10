@@ -317,6 +317,13 @@ namespace THE.GameLogic
                         message = "This effect is already active.\nこの効果はもう既に発揮されている。";
                         return false;
                     }
+
+                    if ((joker.ActionInfluenceType == Enums.ActionInfluenceTypeEnum.Force && target.ActiveEffects.Any(activeEffect => activeEffect.ActionInfluenceType == Enums.ActionInfluenceTypeEnum.Prevent)) ||
+                        (joker.ActionInfluenceType == Enums.ActionInfluenceTypeEnum.Prevent && target.ActiveEffects.Any(activeEffect => activeEffect.ActionInfluenceType == Enums.ActionInfluenceTypeEnum.Force)))
+                    {
+                        message = "This effect can't be added.\nこの効果は付与できない。";
+                        return false;
+                    }
                 }
             }
 
