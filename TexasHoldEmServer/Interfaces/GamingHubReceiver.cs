@@ -250,10 +250,10 @@ namespace THE.Interfaces
                     var sb = new StringBuilder();
                     targetNames.ForEach(x => sb.Append($"{x} "));
                     Console.WriteLine($"Player {jokerUser.Name} used {jokerEntity.JokerType} influence joker against player(s) {sb}, response: {response}");
-                    Broadcast(group).OnUseJoker(storage.AllValues.ToList(), gameLogicManager.GetCardPool(), jokerUser, targetPlayers, jokerEntity, gameLogicManager.GetCurrentPlayer().Id, gameLogicManager.GetPots(), isError, showHand, message);
+                    Broadcast(group).OnUseJoker(storage.AllValues.ToList(), gameLogicManager.GetCardPool(), gameLogicManager.GetCommunityCards(), jokerUser, targetPlayers, jokerEntity, gameLogicManager.GetCurrentPlayer().Id, gameLogicManager.GetPots(), isError, showHand, message);
                 }
                 else
-                    BroadcastToSelf(group).OnUseJoker(storage.AllValues.ToList(), gameLogicManager.GetCardPool(), jokerUser, targetPlayers, jokerEntity, gameLogicManager.GetCurrentPlayer().Id, gameLogicManager.GetPots(), isError, false, message);
+                    BroadcastToSelf(group).OnUseJoker(storage.AllValues.ToList(), gameLogicManager.GetCardPool(), gameLogicManager.GetCommunityCards(), jokerUser, targetPlayers, jokerEntity, gameLogicManager.GetCurrentPlayer().Id, gameLogicManager.GetPots(), isError, false, message);
             }
             catch (Exception)
             {

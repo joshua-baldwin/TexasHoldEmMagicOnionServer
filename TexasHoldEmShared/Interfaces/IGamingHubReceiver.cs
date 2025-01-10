@@ -14,7 +14,7 @@ namespace THE.Interfaces
         void OnCancelGameStart();
         void OnDoAction(Enums.CommandTypeEnum commandType, List<PlayerEntity> playerEntities, List<CardEntity> cardPool, Guid previousPlayerId, Guid currentPlayerId, List<PotEntity> pots, List<CardEntity> communityCards, Enums.GameStateEnum gameState, int currentExtraBettingRound, bool isError, string actionMessage, List<WinningHandEntity> winnerList);
         void OnBuyJoker(PlayerEntity player, JokerEntity joker);
-        void OnUseJoker(List<PlayerEntity> playerEntities, List<CardEntity> cardPool, PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity joker, Guid currentPlayerId, List<PotEntity> pots, bool isError, bool showHand, string actionMessage);
+        void OnUseJoker(List<PlayerEntity> playerEntities, List<CardEntity> cardPool, List<CardEntity> communityCards, PlayerEntity jokerUser, List<PlayerEntity> targets, JokerEntity joker, Guid currentPlayerId, List<PotEntity> pots, bool isError, bool showHand, string actionMessage);
         void OnDiscardHoleCard(PlayerEntity player, List<CardEntity> card, string actionMessage);
     }
 }
