@@ -161,7 +161,16 @@ namespace THE.GameLogic
                     DistributeBetAmountToPots(callAmount);
                     break;
                 case Enums.CommandTypeEnum.Raise:
-                    betAmount = chipsBet + previousBet.Amount;
+                    callAmount = previousBet.Amount - currentPlayer.CurrentBet;
+                    //if previous player raised first match that amount then add the raise chips
+                    if (callAmount > 0)
+                        betAmount = chipsBet + callAmount;
+                    //if this is big blind raise during preflop
+                    else if (playerQueue.All(player => player.CurrentBet == playerQueue.First().CurrentBet))
+                        betAmount = chipsBet;
+                    //otherwise do normal raise
+                    else
+                        betAmount = chipsBet + previousBet.Amount;
                     if (!CanPlaceBet((betAmount, chipsBet), out message, true))
                     {
                         actionMessage = message;
@@ -224,7 +233,7 @@ namespace THE.GameLogic
                     currentPlayer.CurrentBet += currentPlayer.Chips;
                     currentPlayer.Chips = 0;
                     if (currentPlayer.AllInAmount > maxBetForTurn)
-                        maxBetForTurn = currentPlayer.AllInAmount;
+                        maxBetForTurn = currentPlayer.CurrentBet; //the total current bet needs to be matched
 
                     RecalculatePots();
                     break;

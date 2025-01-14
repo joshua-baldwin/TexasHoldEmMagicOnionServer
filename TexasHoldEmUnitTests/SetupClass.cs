@@ -92,7 +92,11 @@ namespace TexasHoldEmUnitTests
             sut.GameLogicManager.DoAction(commandType, amount, out var stateChanged, out var isGameOver, out var isError, out var actionMessage);
             AssertAfterAction(sut, totalChips, shouldBeError, isError, shouldBeGameOver, isGameOver);
             if (stateChanged)
+            {
+                var nonAllInPlayers = sut.GameLogicManager.GetAllPlayers().Where(x => !x.IsAllIn && !x.HasFolded).ToList();
+                Assert.That(nonAllInPlayers.All(x => x.CurrentBet == nonAllInPlayers.First().CurrentBet));
                 sut.GameLogicManager.UpdateAfterGameStateChanged();
+            }
         }
 
         public static void AssertBeforeAction(TestSystem sut)
